@@ -12,6 +12,7 @@ import { createMarkerCanvas } from "./map-canvas.js";
 import { iconURL } from "./map-glyphs.js";
 import { verbFor } from "../data/map-verbs.js";
 import { summarize, progressHTML, layersFor, markerDone } from "./map-progress.js";
+import { buildRoute, phaseStarts, stopStates } from "./map-route.js";
 import * as ms from "./map-state.js";
 import * as sync from "../lib/sync.js";
 
@@ -108,6 +109,8 @@ async function start() {
   map.createPane("places").style.zIndex = 440; // above the marker dots, below the route pins
   map.getPane("places").style.pointerEvents = "none";
   placeLayer = L.layerGroup().addTo(map);
+  stopLayer = L.layerGroup().addTo(map);
+  arrowLayer = L.layerGroup().addTo(map);
   pinLayer = L.layerGroup().addTo(map);
   map.createPane("route").style.zIndex = 450;
   cv = createMarkerCanvas(L, map, { isFound: (id) => doneId(id) });
@@ -443,32 +446,98 @@ function wireFs() {
   });
 }
 
-// ---- route phase pins ----
+// ---- the route on the map ----
+// The path joins, in step order, the markers each route step is linked to (graces to rest at, bosses, items, NPCs),
+// so it follows what the checklist says instead of jumping from one phase pin to the next.
+
+let routeCache = { key: null, route: null };
+let legsShown = [];
+let arrowLayer, stopLayer;
+
+function getRoute() {
+  const w = world();
+  if (routeCache.key !== w) {
+    const phases = PHASES.filter((p) => Boolean(p.dlc) === (w === "dlc"));
+    routeCache = { key: w, route: buildRoute({ byId: D.byId, stepLocs: D.stepLocs }, phases, allSteps, (p) => PHASES.indexOf(p)) };
+  }
+  return routeCache.route;
+}
+
+// The marker that best stands for a stop: a boss or key item over a grace or an NPC.
+const REP_ORDER = ["boss", "crown", "horned", "key", "stonekey", "rune", "map", "weapon", "ash", "spell", "talisman"];
+function repMarker(stop) {
+  return [...stop.markers].sort((a, b) => (REP_ORDER.indexOf(a.glyph) + 99) % 99 - (REP_ORDER.indexOf(b.glyph) + 99) % 99)[0];
+}
+const stopMarker = (stop) => repMarker(stop);
+
+// Where a phase starts on the map: its first stop, or the recorded focus place for phases with no stops.
+function phaseAnchor(pid) {
+  const st = phaseStarts(getRoute()).get(pid);
+  return st ? stopMarker(st) : D.byId.get(D.focus[pid]);
+}
+
+function drawArrows() {
+  if (!arrowLayer) return;
+  arrowLayer.clearLayers();
+  const sc = 2 ** map.getZoom();
+  for (const { a, b, state } of legsShown) {
+    const len = Math.hypot(b.x - a.x, b.y - a.y) * sc;
+    if (len < 46) continue;
+    const ang = (Math.atan2(b.y - a.y, b.x - a.x) * 180) / Math.PI;
+    L.marker([-(a.y + b.y) / 2, (a.x + b.x) / 2], { interactive: false, keyboard: false, pane: "route", icon: L.divIcon({ className: "mp-arrow-wrap", html: `<svg class="mp-arrow ${state}" viewBox="0 0 12 12" style="transform:rotate(${ang.toFixed(1)}deg)" aria-hidden="true"><path d="M2 1.5L10.5 6L2 10.5L4 6Z"/></svg>`, iconSize: [0, 0] }) }).addTo(arrowLayer);
+  }
+}
 
 function refreshPins() {
   if (!map) return;
   pinLayer.clearLayers();
   routeLayer.clearLayers();
-  if (!ms.prefs().route) return;
-  const w = world(), cur = currentPhase();
-  const all = PHASES.map((p, pi) => [p, pi, D.byId.get(D.focus[p.id])]).filter(([p, , m]) => Boolean(p.dlc) === (w === "dlc") && m);
-  all.slice(1).forEach(([, bi, b], i) => {
-    const a = all[i][2];
-    if (a.layer !== shown || b.layer !== shown) return;
-    const state = cur < 0 || bi <= cur ? "walked" : bi === cur + 1 ? "next" : "ahead";
-    L.polyline([[-a.y, a.x], [-b.y, b.x]], { pane: "route", interactive: false, className: "mp-seg " + state }).addTo(routeLayer);
+  stopLayer.clearLayers();
+  legsShown = [];
+  if (!ms.prefs().route) { arrowLayer.clearLayers(); refreshExtra(); return; }
+  const route = getRoute();
+  const st = stopStates(route, store.isDone);
+  const cur = currentPhase();
+  const focus = focusPhases();
+  for (const leg of route.legs) {
+    if (leg.a.layer !== shown) continue;
+    const state = leg.i < st.next || st.next < 0 ? "walked" : leg.i === st.next ? "next" : "ahead";
+    legsShown.push({ a: leg.a, b: leg.b, state });
+    L.polyline([[-leg.a.y, leg.a.x], [-leg.b.y, leg.b.x]], { pane: "route", interactive: false, className: "mp-seg " + state }).addTo(routeLayer);
+  }
+  drawArrows();
+  // Small dots on every stop; the phases you are on get the full icons with their order (see refreshExtra).
+  route.stops.forEach((s, i) => {
+    if (s.layer !== shown || focus.has(s.phase)) return;
+    const state = st.done[i] ? "done" : i === st.next ? "next" : "ahead";
+    L.circleMarker([-s.y, s.x], { pane: "route", radius: 5, weight: 2, className: "mp-stop " + state, bubblingMouseEvents: false })
+      .on("click", () => selectMarker(D.byId.get(stopMarker(s).id), s.phase))
+      .bindTooltip(stopMarker(s).title, { direction: "top", offset: [0, -6] })
+      .addTo(stopLayer);
   });
-  for (const [p, pi, m] of all) {
-    if (m.layer !== shown) continue;
+  // Phase pins sit where each phase starts.
+  const world_ = world();
+  PHASES.forEach((p, pi) => {
+    if (Boolean(p.dlc) !== (world_ === "dlc")) return;
+    const a = phaseAnchor(p.id);
+    if (!a || a.layer !== shown) return;
     const cls = [pi === cur ? "cur" : phaseDone(pi) ? "done" : "", selected?.phase === p.id ? "sel" : ""].join(" ");
-    const pin = L.marker([-m.y, m.x], {
+    const pin = L.marker([-a.y, a.x], {
       icon: L.divIcon({ className: "mp-pin-wrap", html: `<span class="mp-pin ${cls}">${phaseLabel(pi)}</span>`, iconSize: [0, 0] }),
-      title: `Phase ${phaseLabel(pi)}: ${p.n}`, riseOnHover: true, zIndexOffset: pi === cur ? 1000 : 0,
+      title: `Phase ${phaseLabel(pi)}: ${p.n}`, riseOnHover: true, zIndexOffset: 800 + (pi === cur ? 1000 : 0),
     }).on("click", () => showSheet({ phase: p.id })).addTo(pinLayer);
     const el = pin.getElement();
     el.setAttribute("role", "button");
     el.setAttribute("aria-label", `Phase ${phaseLabel(pi)}: ${p.n}`);
+  });
+  // Where the path leaves or enters this image (underground entrances and the like).
+  for (const br of route.breaks) {
+    for (const [s, text] of [[br.from, `To ${LAYER_NAME[br.to.layer]}`], [br.to, `From ${LAYER_NAME[br.from.layer]}`]]) {
+      if (s.layer !== shown) continue;
+      L.marker([-s.y, s.x], { interactive: false, keyboard: false, pane: "route", icon: L.divIcon({ className: "mp-break-wrap", html: `<span class="mp-break">${esc(text)}</span>`, iconSize: [0, 0] }) }).addTo(pinLayer);
+    }
   }
+  refreshExtra();
 }
 
 // ---- detail sheet ----
@@ -530,13 +599,23 @@ function renderSheet(sel, box) {
 const phaseOf = (sel) => sel?.phase || sel?.from || null;
 const stepMarkers = (id) => (D?.stepLocs[id] || []).map((i) => D.byId.get(i)).filter(Boolean);
 
-// The markers a phase's steps refer to, ringed on the current layer even when their category is switched off.
+// The phase you are on and the one you picked get their stops drawn as full icons numbered in visiting order,
+// plus any other markers their steps mention (ringed without a number), even when their category is switched off.
+const focusPhases = () => new Set([PHASES[currentPhase()]?.id, phaseOf(selected)].filter(Boolean));
+
 function refreshExtra() {
-  if (!cv) return;
-  const pid = phaseOf(selected);
-  const p = pid && PHASES.find((x) => x.id === pid);
-  const list = [];
-  if (p) for (const s of allSteps.filter((x) => x.pi === PHASES.indexOf(p))) for (const m of stepMarkers(s.id)) if (m.layer === shown && !list.includes(m)) list.push(m);
+  if (!cv || !D) return;
+  const route = ms.prefs().route ? getRoute() : { stops: [] };
+  const list = [], used = new Set();
+  const sel = phaseOf(selected);
+  for (const s of route.stops) {
+    if (!focusPhases().has(s.phase) || s.layer !== shown) continue;
+    const rep = stopMarker(s);
+    list.push({ ...rep, x: s.x, y: s.y, seq: s.seq, phaseId: s.phase });
+    s.markers.forEach((m) => used.add(m.id));
+  }
+  const p = sel && PHASES.find((x) => x.id === sel);
+  if (p) for (const s of allSteps.filter((x) => x.pi === PHASES.indexOf(p))) for (const m of stepMarkers(s.id)) if (m.layer === shown && !used.has(m.id)) { used.add(m.id); list.push({ ...m }); }
   cv.setExtra(list);
 }
 
@@ -584,7 +663,7 @@ function selectPhase(pid, fly = true) {
   if (pi < 0) return;
   const p = PHASES[pi];
   if (scope() === "both") { const w = p.dlc ? "dlc" : "base"; if (picked !== w && (picked || "base") !== w) { picked = w; saveLayer(); syncChrome(); setMode(mode()); } }
-  const m = D.byId.get(D.focus[pid]);
+  const m = phaseAnchor(pid);
   if (fly && m && allowed(m.layer)) {
     if (m.layer !== shown) { under = m.layer === "under"; saveLayer(); syncChrome(); if (mode() !== shown) setMode(mode()); }
     goTo(m, 2);
@@ -739,13 +818,16 @@ function goTo(m, rel = 3) {
 async function findMe() {
   await ensureMap();
   if (!map) return;
+  const route = getRoute();
+  const { next } = stopStates(route, store.isDone);
+  const stop = next >= 0 ? route.stops[next] : null;
   const cur = currentPhase();
   const p = PHASES[cur];
   if (!p) { status("Every step in this scope is done."); return; }
-  const m = D.byId.get(D.focus[p.id]);
+  const m = stop ? stopMarker(stop) : phaseAnchor(p.id);
   if (!m || !allowed(m.layer)) { status(`No map spot recorded for ${p.n} yet.`); return; }
   goTo(m, 2.5);
-  showSheet({ phase: p.id });
+  showSheet({ phase: stop?.phase || p.id });
 }
 
 function selectMarker(m, from) {
@@ -813,13 +895,15 @@ function wireMap() {
     } else lastTap = { t: e.timeStamp, x: e.clientX, y: e.clientY };
   });
   map.on("click", (e) => {
-    const m = cv.hit(e.containerPoint, cv.tol());
-    if (m) selectMarker(m);
+    const hit = cv.hit(e.containerPoint, cv.tol());
+    const m = hit && (D.byId.get(hit.id) || hit);
+    if (m) selectMarker(m, hit.phaseId);
     else if (selected?.m && selected.from) showSheet({ phase: selected.from });
     else closeSheet();
   });
   wireMini();
   map.on("moveend zoomend", () => { saveView(); zoomState(); });
+  map.on("zoomend", drawArrows);
   map.on("resize", () => { if (!restoring) { const c = map.getCenter(); limits(); map.setView(c, Math.max(map.getZoom(), map.getMinZoom()), { animate: false }); } });
   const tip = $("mapTip"), el = map.getContainer();
   let raf = 0;

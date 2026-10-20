@@ -134,3 +134,23 @@ test("map links: trophies, legendaries and goals also cover their markers throug
   for (const [k, loc] of Object.entries(COLLECT_LOCS)) assert.ok((STEP_LOCS[byCollectible[k].id] || []).map(String).includes(String(loc)), `collectible ${k}`);
   for (const [k, locs] of Object.entries(GOAL_LOCS)) for (const l of locs) assert.ok((STEP_LOCS[byGoal[k].id] || []).map(String).includes(String(l)), `goal ${k}`);
 });
+
+test("route path: stops follow step order, merge stacked markers, skip collections and break at layer changes", async () => {
+  const { buildRoute, phaseStarts, stopStates } = await import("../js/ui/map-route.js");
+  const mk = (id, x, y, layer = "base") => ({ id: String(id), x, y, layer });
+  const byId = new Map([mk(1, 100, 100), mk(2, 102, 101), mk(3, 400, 100), mk(4, 700, 100), mk(5, 100, 900), mk(6, 900, 900), mk(7, 50, 50, "under"), mk(8, 55, 55, "under")].map((m) => [m.id, m]));
+  const D = { byId, stepLocs: { "a.0": ["1", "2"], "a.1": ["3"], "a.2": ["5", "6", "4", "3"], "a.3": ["7", "8"], "b.0": ["4"], "a.tip": ["1"] } };
+  const phases = [{ id: "a" }, { id: "b" }];
+  const steps = [{ id: "a.0", kind: "go", pi: 0 }, { id: "a.1", kind: "boss", pi: 0 }, { id: "a.2", kind: "item", pi: 0 }, { id: "a.3", kind: "go", pi: 0 }, { id: "a.tip", kind: "tip", pi: 0 }, { id: "b.0", kind: "boss", pi: 1 }];
+  const r = buildRoute(D, phases, steps, (p) => (p.id === "a" ? 0 : 1));
+  // a.0 merges markers 1 and 2 into one stop, a.1 is a second stop, a.2 is a spread-out collection (skipped), a.3 moves to another layer
+  assert.deepEqual(r.stops.map((s) => s.markers.map((m) => m.id).join("+")), ["1+2", "3", "7+8", "4"]);
+  assert.equal(r.stops[0].steps.length, 1);
+  assert.equal(r.stops.length, 4);
+  assert.equal(r.legs.length, 1, "one leg on the surface, then the line breaks for the underground and again back to the surface");
+  assert.equal(r.breaks.length, 2);
+  assert.equal(phaseStarts(r).get("b").markers[0].id, "4");
+  const st = stopStates(r, (id) => id === "a.0");
+  assert.deepEqual(st.done, [true, false, false, false]);
+  assert.equal(st.next, 1);
+});

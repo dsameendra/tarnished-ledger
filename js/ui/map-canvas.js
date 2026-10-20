@@ -83,6 +83,14 @@ export function createMarkerCanvas(L, map, { isFound }) {
       ctx.globalAlpha = isFound(m.id) ? 0.55 : 1;
       ctx.drawImage(sp, x - sp.full / 2, y - sp.full / 2, sp.full, sp.full);
       ctx.globalAlpha = 1;
+      if (m.seq) {
+        const bx = x + big * 0.62, by = y - big * 0.62;
+        ctx.beginPath(); ctx.arc(bx, by, 8.5, 0, 6.2832);
+        ctx.fillStyle = isFound(m.id) ? "#8fd06a" : "#f2c14e"; ctx.fill();
+        ctx.lineWidth = 2; ctx.strokeStyle = "#14130e"; ctx.stroke();
+        ctx.fillStyle = "#14130e"; ctx.font = "700 10px system-ui, sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+        ctx.fillText(String(m.seq), bx, by + 0.5);
+      }
     }
     if (selected) {
       const [x, y] = place(selected, sc, min);

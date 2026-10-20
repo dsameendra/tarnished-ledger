@@ -575,3 +575,16 @@ html.map-fs, html.map-fs body { overflow: hidden; overscroll-behavior: none; }
 .ms-steps { margin-top: 2px; }
 .ps-t small { color: var(--muted); font-weight: 700; margin-right: 4px; }
 .phase .ph-links { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+
+/* map: the route path, its direction arrows, stops and layer changes */
+.mp-stop { stroke: #14130e; stroke-width: 2; fill-opacity: .95; cursor: pointer; }
+.mp-stop.done { fill: #8fd06a; }
+.mp-stop.next { fill: #f2c14e; }
+.mp-stop.ahead { fill: #fffdf6; }
+.mp-arrow-wrap { width: 0; height: 0; background: none; border: 0; }
+.mp-arrow { position: absolute; left: -7px; top: -7px; width: 14px; height: 14px; stroke: #14130e; stroke-width: 1.2; filter: drop-shadow(0 0 1px #000); }
+.mp-arrow.walked { fill: #8fd06a; } .mp-arrow.next { fill: #f2c14e; } .mp-arrow.ahead { fill: #fffdf6; }
+.mp-break-wrap { width: 0; height: 0; background: none; border: 0; }
+.mp-break { position: absolute; transform: translate(-50%, -165%); white-space: nowrap; background: #14130e; color: #fffdf6; border: 1px solid #f2c14e; border-radius: 999px; padding: 2px 9px; font: 700 11px system-ui, sans-serif; box-shadow: 0 1px 5px rgb(0 0 0 / .6); pointer-events: none; }
+.maplegend .lg-line { display: inline-block; width: 18px; height: 0; border-top: 4px solid; border-radius: 2px; margin-right: 5px; vertical-align: 2px; }
+.maplegend .lg-line.done { border-color: #8fd06a; } .maplegend .lg-line.next { border-color: #f2c14e; } .maplegend .lg-line.ahead { border-top: 3px dashed #fffdf6; }
