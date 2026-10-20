@@ -83,8 +83,10 @@ Plain ES modules, `localStorage` and a service worker. No framework, no bundler,
 | `js/ui/` | One module per tab |
 | `js/data/` | Route, trophies, map, guide and DLC data |
 | `sw.js`, `manifest.webmanifest` | Offline cache and install metadata |
-| `scripts/`, `test/` | Data checks and unit tests |
-| `docs/` | Architecture, data format, sync options, deployment |
+| `scripts/`, `test/` | Data checks, map calibration and data build scripts, unit tests |
+| `vendor/leaflet/` | Leaflet 1.9.4 (BSD-2), loaded when the Map tab opens |
+| `assets/map/` | Map art and marker data (see Credits) |
+| `docs/` | Architecture, map viewer and data, sync options, deployment |
 
 Read [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the design, [docs/DATA.md](docs/DATA.md) for the route format and how to add a phase, and [docs/DEPLOY.md](docs/DEPLOY.md) for releasing.
 

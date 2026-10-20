@@ -22,7 +22,10 @@ A static site with no build step: ES modules, `localStorage`, a service worker.
 - All paths are relative, so the app works under `/tarnished-ledger/`.
 
 ## Scope
-`model.scope()` returns `base`, `both` or `dlc` from the `dlc` and `focus` settings. Only in-scope phases render, and counts follow the scope. In `dlc` scope the Legendary tab is hidden, Trophies becomes Goals, and the map shows the DLC graph.
+`model.scope()` returns `base`, `both` or `dlc` from the `dlc` and `focus` settings. Only in-scope phases render, and counts follow the scope. In `dlc` scope the Legendary tab is hidden, Trophies becomes Goals, and the map shows only the Realm of Shadow.
+
+## Map
+See [MAP.md](MAP.md) for the Leaflet viewer, its data contract and how to extend it.
 
 ## Checks and tests
 - `npm run check` (`scripts/check.mjs`): route data (ids, kinds, trophy/collectible/goal keys, duplicate step text, map pins), counters against the store and model, every `SHELL` file exists and every shipped file is listed, `index.html` links and the ids looked up with `$("...")`, manifest paths, icon sizes and theme colour.
