@@ -3,3 +3,5 @@ Thumbs.db
 node_modules/
 *.zip
 .claude/settings.local.json
+.claude/
+.impeccable/

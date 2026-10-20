@@ -1,6 +1,7 @@
 import * as store from "../lib/store.js";
 import * as sync from "../lib/sync.js";
-import { $, $$ } from "../lib/dom.js";
+import { $, $$, emit, on } from "../lib/dom.js";
+import { currentTab } from "./nav.js";
 import { validIds } from "../lib/model.js";
 import { SOURCES } from "../data/links.js";
 
@@ -37,6 +38,7 @@ export function paintStorage() {
   $("storeStatus").textContent = store.isStorageOK()
     ? "Every tick saves instantly in this browser."
     : "This browser is blocking storage, so ticks will be lost when you close the page. Turn off private browsing, or use sync or a backup.";
+  paintWelcome();
 }
 
 export function paintWake(state) {
@@ -50,19 +52,32 @@ export function paintWake(state) {
     : "Stops the screen dimming while this page is open.";
 }
 
+const SYNC_HELP = [
+  [/token/i, "Create a new classic token with the gist scope and connect again."],
+  [/offline/i, "Your ticks are safe here and will sync once you are back online."],
+  [/rate limit/i, "Wait a few minutes, then press Sync now."],
+];
+
 function paintSync(st) {
   const connected = sync.isConnected();
-  const cls = st.state === "ok" || st.state === "idle" ? "on" : st.state;
+  const failed = st.state === "err" || (st.state === "off" && st.message !== "Not connected");
+  const cls = st.state === "ok" || st.state === "idle" ? "on" : failed ? "err" : st.state;
+  const time = st.at ? new Date(st.at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "";
+  const label = failed ? "Sync problem"
+    : st.state === "busy" ? st.message
+    : connected ? (st.state === "ok" && time ? "Connected, last synced " + time : "Connected")
+    : "Not connected. Progress stays on this device.";
   $("syncState").className = "sync-state " + cls;
-  $("syncState").querySelector("span").textContent = connected && st.state === "ok" && st.at
-    ? "Synced " + new Date(st.at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
-    : st.message;
+  $("syncState").querySelector("span").textContent = label;
   $("connectRow").hidden = connected;
   $("connectedRow").hidden = !connected;
+  $("syncBtn").disabled = st.state === "busy";
   $("syncPill").hidden = !connected;
   $("syncPill").className = "pill " + cls;
-  $("syncPill").querySelector("span").textContent = st.state === "err" ? "Sync problem" : st.state === "busy" ? "Syncing" : "Synced";
-  $("syncMsg").textContent = st.state === "err" ? st.message : "";
+  $("syncPill").querySelector("span").textContent = failed ? "Sync problem" : st.state === "busy" ? "Syncing" : "Synced";
+  const help = failed && SYNC_HELP.find(([re]) => re.test(st.message));
+  $("syncMsg").className = "msg" + (failed ? " err" : "");
+  $("syncMsg").textContent = failed ? st.message + (help ? " " + help[1] : "") : "";
 }
 
 function say(text, bad = false) {
@@ -88,7 +103,68 @@ export function refreshBackup() {
   $("backupHint").textContent = t ? "Last backup: " + new Date(t).toLocaleString() : "Download a file you can keep anywhere, or copy a short code.";
 }
 
+let pending = null;
+
+function restore(text, kind) {
+  try { say(`Restored ${store.importData(text, validIds)} done steps from the ${kind}.`); if (kind === "code") $("importBox").value = ""; refreshBackup(); }
+  catch { say(kind === "file" ? "That file is not a Ledger backup." : "That code was not recognised.", true); }
+}
+
+function askRestore(text, kind) {
+  const n = store.doneIds().length;
+  if (!n) return restore(text, kind);
+  pending = { text, kind };
+  say("");
+  $("restoreText").textContent = `Restoring replaces the ${n} done step${n === 1 ? "" : "s"} on this device with the ${kind}'s progress${sync.isConnected() ? " and syncs to your other devices" : ""}.`;
+  $("restoreConfirm").hidden = false;
+  $("restoreNo").focus();
+}
+
+const WELCOME = "tarnished-ledger:welcome";
+const seen = () => { try { return Boolean(localStorage.getItem(WELCOME)); } catch { return true; } };
+
+function paintWelcome() {
+  $("welcome").hidden = seen() || currentTab() !== "route" || store.doneIds().length > 0;
+}
+
+function dismissWelcome() {
+  try { localStorage.setItem(WELCOME, "1"); } catch { /* ignore */ }
+  paintWelcome();
+}
+
+function tabKeys() {
+  const tabs = () => $$("#tabs button");
+  const wire = () => {
+    tabs().forEach((b) => {
+      b.id = "tab-" + b.dataset.tab;
+      b.setAttribute("aria-controls", "v-" + b.dataset.tab);
+      b.tabIndex = b.getAttribute("aria-selected") === "true" ? 0 : -1;
+      const panel = $("v-" + b.dataset.tab);
+      panel.setAttribute("role", "tabpanel");
+      panel.setAttribute("aria-labelledby", b.id);
+    });
+  };
+  new MutationObserver(wire).observe($("tabs"), { childList: true, subtree: true, attributeFilter: ["aria-selected"] });
+  wire();
+  $("tabs").addEventListener("keydown", (e) => {
+    const list = tabs();
+    const i = list.indexOf(document.activeElement);
+    const to = { ArrowRight: i + 1, ArrowDown: i + 1, ArrowLeft: i - 1, ArrowUp: i - 1, Home: 0, End: list.length - 1 }[e.key];
+    if (i < 0 || to === undefined) return;
+    e.preventDefault();
+    const b = list[(to + list.length) % list.length];
+    b.focus();
+    b.click();
+  });
+}
+
 export function initSettings() {
+  tabKeys();
+  $$(".skip").forEach((a) => a.addEventListener("click", (e) => { e.preventDefault(); $("main").focus(); }));
+  $("welcomeOk").addEventListener("click", dismissWelcome);
+  $("welcomeSet").addEventListener("click", () => { dismissWelcome(); emit("tab", "set"); });
+  on("shown", paintWelcome);
+
   $$("[data-set]").forEach((box) => box.addEventListener("click", (e) => {
     const b = e.target.closest("button");
     if (b) store.setSetting(box.dataset.set, b.dataset.v);
@@ -113,11 +189,13 @@ export function initSettings() {
     $("installHint").textContent = "Installed. You are running it as an app.";
   }
 
-  $("connectBtn").addEventListener("click", async () => {
+  const connect = async () => {
     $("connectBtn").disabled = true;
-    try { await sync.connect($("tokenInput").value); $("tokenInput").value = ""; } catch { /* shown by status */ }
+    try { await sync.connect($("tokenInput").value); $("tokenInput").value = ""; } catch (e) { $("syncMsg").className = "msg err"; $("syncMsg").textContent = e.message; }
     $("connectBtn").disabled = false;
-  });
+  };
+  $("connectBtn").addEventListener("click", connect);
+  $("tokenInput").addEventListener("keydown", (e) => { if (e.key === "Enter") connect(); });
   $("syncBtn").addEventListener("click", () => sync.syncNow());
   $("disconnectBtn").addEventListener("click", () => sync.disconnect());
   sync.onStatus(paintSync);
@@ -132,22 +210,31 @@ export function initSettings() {
   $("importFile").addEventListener("change", async (e) => {
     const f = e.target.files[0];
     e.target.value = "";
-    if (!f) return;
-    try { say(`Restored ${store.importData(await f.text(), validIds)} done steps.`); refreshBackup(); } catch { say("That file is not a Ledger backup.", true); }
+    if (f) askRestore(await f.text(), "file");
   });
   $("copyBtn").addEventListener("click", async () => {
     try { await navigator.clipboard.writeText(code()); say("Code copied."); } catch { $("exportBox").select(); say("Select the code and copy it by hand.", true); }
   });
-  $("importBtn").addEventListener("click", () => {
-    try { say(`Imported ${store.importData($("importBox").value, validIds)} done steps.`); $("importBox").value = ""; refreshBackup(); } catch { say("That code was not recognised.", true); }
-  });
+  $("importBtn").addEventListener("click", () => askRestore($("importBox").value, "code"));
+  $("restoreYes").addEventListener("click", () => { $("restoreConfirm").hidden = true; restore(pending.text, pending.kind); });
+  $("restoreNo").addEventListener("click", () => { $("restoreConfirm").hidden = true; say("Restore cancelled. Nothing changed."); });
 
-  $("resetBtn").addEventListener("click", () => { $("resetBtn").hidden = true; $("resetConfirm").hidden = false; });
-  $("resetNo").addEventListener("click", () => { $("resetBtn").hidden = false; $("resetConfirm").hidden = true; });
+  $("resetBtn").addEventListener("click", () => {
+    const n = store.doneIds().length;
+    if (!n) { $("resetMsg").textContent = "Nothing to clear yet."; return; }
+    $("resetMsg").textContent = "";
+    $("resetText").textContent = `Clear ${n} done step${n === 1 ? "" : "s"} on this device? This cannot be undone${sync.isConnected() ? " and will sync to your other devices" : ""}.`;
+    $("resetBtn").hidden = true;
+    $("resetConfirm").hidden = false;
+    $("resetNo").focus();
+  });
+  const closeReset = () => { $("resetBtn").hidden = false; $("resetConfirm").hidden = true; $("resetBtn").focus(); };
+  $("resetNo").addEventListener("click", closeReset);
+  $("resetConfirm").addEventListener("keydown", (e) => { if (e.key === "Escape") closeReset(); });
   $("resetYes").addEventListener("click", () => {
     store.resetProgress([...validIds]);
-    $("resetBtn").hidden = false;
-    $("resetConfirm").hidden = true;
+    closeReset();
+    $("resetMsg").textContent = "Progress cleared.";
     refreshBackup();
   });
 
