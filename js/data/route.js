@@ -5,7 +5,7 @@ export const PHASES=[
 {id:"prep",n:"Before You Start",sub:"Setup for the whole run",s:[
 ["tip","Choose a route now: one playthrough with save backups (Route A) or three playthroughs (Route B). Read the Endings & Saves tab."],
 ["tip","Pick one weapon to upgrade all game. God-Slaying Armament needs a normal weapon at +25 or a special (somber) weapon at +10."],
-["tip","Pick up every Stonesword Key you see. You will use them on: Night's Sacred Ground (Mimic Tear Ashes, up to 2), Golden Lineage Evergaol (Godfrey Icon), Sainted Hero's Grave (1 to 2), Chelona's Rise (Ranni's Dark Moon), Cave of the Forlorn (Golden Order Greatsword) and the Marika's Soreseal gate. That is around 7 to 9 in total."],
+["tip","Pick up every Stonesword Key you see. You will use them on: Night's Sacred Ground (Mimic Tear Ashes, up to 2), Golden Lineage Evergaol (Godfrey Icon), Sainted Hero's Grave (1 to 2), Cave of the Forlorn (2, for the Golden Order Greatsword) and the Marika's Soreseal gate. That is around 7 to 9 in total."],
 ["tip","Legendary Armaments and Talismans can be handed to you by another player in co-op. Legendary Ashen Remains and Spells cannot. Weapons from Remembrances don't count."],
 ["tip","You don't need every weapon, spell or boss. Only the items and bosses in this list count."]]},
 {id:"limw",n:"West Limgrave",sub:"Margit and the Roundtable",s:[
@@ -35,7 +35,7 @@ export const PHASES=[
 {id:"liu1",n:"Liurnia, Part 1",sub:"Getting into the Academy",s:[
 ["go","Go through Stormveil past Godrick's arena and rest at the Lake-Facing Cliffs grace."],
 ["map","Map Fragment: Liurnia, East. Near the cliffs where you enter the lake."],
-["go","Head north and touch the Laskar Ruins grace, then reach and touch the South Raya Lucaria Gate grace."],
+["go","Head north and touch the Laskyar Ruins grace, then reach and touch the South Raya Lucaria Gate grace."],
 ["go","Head north-west and rest at the Scenic Isle grace as a checkpoint."],
 ["boss","Malefactor's Evergaol: beat Adan, Thief of Fire for Flame of the Fell God.",{c:"sp1"}],
 ["key","Village of the Albinaurics (west, under the large plateau): before the big bridge, hit the pot that is really Albus and talk to him. He gives the Haligtree Secret Medallion (Right)."],
@@ -142,7 +142,7 @@ export const PHASES=[
 ["go","Warp to Astel's arena and take the lift north up to the Moonlight Altar."],
 ["quest","Cathedral of Manus Celes: go underground, find Ranni and give her the Dark Moon Ring. Pick up the Dark Moon Greatsword after she leaves.",{c:"arm9"}],
 ["boss","Ringleader's Evergaol: beat Alecto for Black Knife Tiche.",{c:"ash5"}],
-["go","Chelona's Rise: use a Stonesword Key on the imp statue at the tower entrance. Three spectral turtles hold the seal."],
+["go","Chelona's Rise: the tower is sealed. Kill the three Giant Ghostly Turtles (the "great wise beasts") spread across the plateau and the seal lifts. Do not fast travel or rest at a grace while hunting them, or the ones left will despawn."],
 ["boss","Kill the three turtles: one to the right of the tower on the cliff wall, one on a cliff north-east of the tower and one north-west, reached with a wind gust. If they don't appear, wait for night."],
 ["item","Climb Chelona's Rise and take Ranni's Dark Moon from the top.",{c:"sp6"}]]},
 {id:"mtn",n:"Forbidden Lands & Mountaintops",sub:"Castle Sol, Fire Giant",s:[
@@ -150,14 +150,14 @@ export const PHASES=[
 ["go","Ride to the Grand Lift of Rold (a Black Blade Kindred guards it) and take it up."],
 ["go","Follow the narrow path to the frozen river, head east, and climb the cliffs to the north to Castle Sol."],
 ["item","Eclipse Shotel: on the altar of the Church of the Eclipse in Castle Sol.",{c:"arm6"}],
-["boss","Defeat Commander Niall. He gives the Haligtree Secret Medallion (Left).",{tr:"niall"}],
+["boss","Defeat Commander Niall. This opens the way to the roof of the tower in the northeast of Castle Sol, where the Haligtree Secret Medallion (Left) lies.",{tr:"niall"}],
 ["item","Heretical Rise: from the broken bridge, follow the invisible path (look for frost on it) to the tower balcony. Take Founding Rain of Stars at the top.",{c:"sp7"}],
 ["warn","Check your inventory for the Bolt of Gransax before going further."],
 ["boss","Head south, cross the chain, and defeat the Fire Giant.",{tr:"firegiant"}],
 ["go","Go up to the Forge of the Giants, cross the limb to the grace and talk to Melina. You'll wake up in Crumbling Farum Azula; graces elsewhere still work.",{tr:"erdtree"}]]},
 {id:"snow",n:"Consecrated Snowfield",sub:"Hidden late-game area",s:[
 ["go","Warp to the Grand Lift of Rold and hold up the joined Haligtree Secret Medallion to reach the Consecrated Snowfield."],
-["boss","Cave of the Forlorn (needs a Stonesword Key): defeat the Misbegotten Crusader at the end for the Golden Order Greatsword.",{c:"arm7"}],
+["boss","Cave of the Forlorn (the entrance needs two Stonesword Keys): defeat the Misbegotten Crusader at the end for the Golden Order Greatsword.",{c:"arm7"}],
 ["go","Ordina, Liturgical Town: enter the Evergaol, light the 4 statue torches to break the seal, and take the waygate to the Haligtree. Touch the first grace."],
 ["go","Back in the Snowfield, take the portal to Mohgwyn Palace and touch the first grace."]]},
 {id:"mohg",n:"Mohgwyn Palace",sub:"Mohg, Lord of Blood",s:[

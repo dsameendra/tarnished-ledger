@@ -12,8 +12,7 @@ export const STONESWORD = [
   ["Night's Sacred Ground, Nokron", "Mimic Tear Ashes", "up to 2"],
   ["Golden Lineage Evergaol, Altus Plateau", "Godfrey Icon", "1"],
   ["Sainted Hero's Grave, Altus Plateau", "Ancient Dragon Knight Kristoff Ashes", "1 to 2"],
-  ["Chelona's Rise, Moonlight Altar", "Ranni's Dark Moon", "1"],
-  ["Cave of the Forlorn, Mountaintops", "Golden Order Greatsword", "1"],
+  ["Cave of the Forlorn, Mountaintops", "Golden Order Greatsword", "2"],
   ["Prayer Room gate, Elphael", "Marika's Soreseal", "1"],
 ];
 
