@@ -132,13 +132,11 @@ function dismissWelcome() {
   paintWelcome();
 }
 
-function tabKeys() {
+function tabPanels() {
   const tabs = () => $$("#tabs button");
   const wire = () => {
     tabs().forEach((b) => {
       b.id = "tab-" + b.dataset.tab;
-      b.setAttribute("aria-controls", "v-" + b.dataset.tab);
-      b.tabIndex = b.getAttribute("aria-selected") === "true" ? 0 : -1;
       const panel = $("v-" + b.dataset.tab);
       panel.setAttribute("role", "tabpanel");
       panel.setAttribute("aria-labelledby", b.id);
@@ -146,20 +144,10 @@ function tabKeys() {
   };
   new MutationObserver(wire).observe($("tabs"), { childList: true, subtree: true, attributeFilter: ["aria-selected"] });
   wire();
-  $("tabs").addEventListener("keydown", (e) => {
-    const list = tabs();
-    const i = list.indexOf(document.activeElement);
-    const to = { ArrowRight: i + 1, ArrowDown: i + 1, ArrowLeft: i - 1, ArrowUp: i - 1, Home: 0, End: list.length - 1 }[e.key];
-    if (i < 0 || to === undefined) return;
-    e.preventDefault();
-    const b = list[(to + list.length) % list.length];
-    b.focus();
-    b.click();
-  });
 }
 
 export function initSettings() {
-  tabKeys();
+  tabPanels();
   $$(".skip").forEach((a) => a.addEventListener("click", (e) => { e.preventDefault(); $("main").focus(); }));
   $("welcomeOk").addEventListener("click", dismissWelcome);
   $("welcomeSet").addEventListener("click", () => { dismissWelcome(); emit("tab", "set"); });

@@ -93,7 +93,7 @@ const idList = [...html.matchAll(/\sid="([^"]+)"/g)].map((m) => m[1]);
 const dup = idList.filter((v, i) => idList.indexOf(v) !== i);
 if (dup.length) err(`index.html has duplicate ids: ${[...new Set(dup)]}`);
 const ids = new Set(idList);
-const made = new Set(["counters", "nextDone", "nextShow"]); // created by JavaScript
+const made = new Set(["counters", "goalGroups", "nextDone", "nextShow"]); // created by JavaScript
 for (const f of shipped.filter((f) => f.endsWith(".js") && !f.includes("data"))) {
   for (const m of read(f).matchAll(/\$\("([A-Za-z][\w-]*)"\)/g)) {
     if (!ids.has(m[1]) && !made.has(m[1])) err(`${f}: looks up #${m[1]} which is not in index.html`);
