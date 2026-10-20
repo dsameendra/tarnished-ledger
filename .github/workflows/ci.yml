@@ -3,13 +3,21 @@ on:
   push:
     branches: [main]
   pull_request:
+permissions:
+  contents: read
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
 jobs:
   check:
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 22
+      # Route data, service worker file list, manifest and index.html ids.
       - run: npm run check
+      # Store merge logic and gist sync, against a fake localStorage and fake GitHub API.
       - run: npm test

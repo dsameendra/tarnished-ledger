@@ -1,9 +1,13 @@
-// Sanity checks for the route data. Run with `npm run check`.
+// Sanity checks for the route data and the shipped files. Run with `npm run check`.
+import { readFileSync, readdirSync, existsSync, statSync } from "node:fs";
+import { join } from "node:path";
+import { fileURLToPath } from "node:url";
 import { PHASES } from "../js/data/route.js";
 import { DLC_PHASES } from "../js/data/dlc-route.js";
 import { GOALS, COUNTERS } from "../js/data/dlc-goals.js";
 import { TROPHIES, COLLECTIONS } from "../js/data/trophies.js";
 import { PINS, DLC_PINS, DLC_EDGES, DLC_AREAS, AREAS } from "../js/data/map.js";
+import { COUNTER_MAX } from "../js/lib/store.js";
 
 const errors = [];
 const err = (m) => errors.push(m);
@@ -35,8 +39,82 @@ for (const k of trophyKeys) if (k !== "platinum" && !COLLECTIONS[k] && !seenTr.h
 for (const c of collectibles) if (!seenC.has(c)) err(`collectible ${c} has no step`);
 for (const k of goalKeys) if (!seenG.has(k)) err(`goal ${k} has no step`);
 for (const [a, b] of DLC_EDGES) if (!DLC_PINS[a] || !DLC_PINS[b]) err(`edge ${a}-${b} references a missing pin`);
-for (const c of COUNTERS) if (c.levels.at(-1) !== c.max) err(`counter ${c.id}: last level ${c.levels.at(-1)} != max ${c.max}`);
 for (const id of Object.keys(AREAS)) if (!seenPhase.has(id)) err(`AREAS has unknown phase ${id}`);
 
+// The same sentence on two steps usually means a copy and paste slip.
+const seenText = new Map();
+for (const p of [...PHASES, ...DLC_PHASES]) {
+  p.s.forEach(([, text], i) => {
+    const at = `${p.id}.${i}`;
+    if (text !== text.trim()) err(`${at}: text has leading or trailing space`);
+    const key = text.trim().toLowerCase();
+    if (seenText.has(key)) err(`${at}: same text as ${seenText.get(key)}`);
+    seenText.set(key, at);
+  });
+}
+
+// Goals and counters must agree with the store and the model.
+const goalAll = GOALS.flatMap(([, items]) => items.map(([k]) => k));
+if (new Set(goalAll).size !== goalAll.length) err("duplicate goal key");
+const counterIds = COUNTERS.map((c) => c.id);
+if (new Set(counterIds).size !== counterIds.length) err("duplicate counter id");
+if (JSON.stringify([...counterIds].sort()) !== JSON.stringify(Object.keys(COUNTER_MAX).sort())) err(`COUNTERS ids [${counterIds}] do not match store COUNTER_MAX [${Object.keys(COUNTER_MAX)}]`);
+for (const c of COUNTERS) {
+  if (COUNTER_MAX[c.id] !== c.max) err(`counter ${c.id}: max ${c.max} != store COUNTER_MAX ${COUNTER_MAX[c.id]}`);
+  if (c.levels.at(-1) !== c.max) err(`counter ${c.id}: last level ${c.levels.at(-1)} != max ${c.max}`);
+  if (c.levels.some((v, i) => i > 0 && v <= c.levels[i - 1])) err(`counter ${c.id}: levels are not strictly increasing`);
+}
+const root = fileURLToPath(new URL("..", import.meta.url));
+const read = (f) => readFileSync(join(root, f), "utf8");
+const blessTotal = Number(/blessings: \[[^\]]*,\s*(\d+)\]/.exec(read("js/lib/model.js"))?.[1]);
+if (blessTotal !== COUNTERS.reduce((n, c) => n + c.max, 0)) err(`model.js blessings total ${blessTotal} != sum of counter maxima`);
+
+// The service worker precache list must match what ships.
+const swSrc = read("sw.js");
+const shell = JSON.parse("[" + /const SHELL = \[([\s\S]*?)\];/.exec(swSrc)[1].replace(/,\s*$/, "") + "]");
+const shellSet = new Set(shell.map((f) => (f === "./" ? "index.html" : f)));
+if (shell.length !== new Set(shell).size) err("SHELL has duplicate entries");
+for (const f of shellSet) if (!existsSync(join(root, f))) err(`SHELL lists missing file ${f}`);
+const walk = (dir) => readdirSync(join(root, dir)).flatMap((n) => {
+  const rel = join(dir, n);
+  return statSync(join(root, rel)).isDirectory() ? walk(rel) : [rel];
+});
+const shipped = ["js", "css", "assets"].flatMap(walk).filter((f) => !f.endsWith(".DS_Store"));
+for (const f of [...shipped, "manifest.webmanifest"]) if (!shellSet.has(f)) err(`${f} ships but is not in the sw.js SHELL`);
+if (!/const CACHE = PREFIX \+ "v\d+"/.test(swSrc)) err('sw.js CACHE must be PREFIX + "v<number>"');
+
+// index.html: local links exist, ids are unique, and every id the code looks up by name is present.
+const html = read("index.html");
+for (const m of html.matchAll(/(?:src|href)="([^"#?]+)"/g)) {
+  if (/^(https?:|mailto:|data:)/.test(m[1])) continue;
+  if (!existsSync(join(root, m[1]))) err(`index.html references missing file ${m[1]}`);
+}
+const idList = [...html.matchAll(/\sid="([^"]+)"/g)].map((m) => m[1]);
+const dup = idList.filter((v, i) => idList.indexOf(v) !== i);
+if (dup.length) err(`index.html has duplicate ids: ${[...new Set(dup)]}`);
+const ids = new Set(idList);
+const made = new Set(["counters", "nextDone", "nextShow"]); // created by JavaScript
+for (const f of shipped.filter((f) => f.endsWith(".js") && !f.includes("data"))) {
+  for (const m of read(f).matchAll(/\$\("([A-Za-z][\w-]*)"\)/g)) {
+    if (!ids.has(m[1]) && !made.has(m[1])) err(`${f}: looks up #${m[1]} which is not in index.html`);
+  }
+}
+
+// Manifest: relative paths so it works under a GitHub Pages sub-path, real icons of the stated size.
+const man = JSON.parse(read("manifest.webmanifest"));
+for (const key of ["name", "short_name", "start_url", "scope", "display", "theme_color", "background_color", "icons"]) if (!man[key]) err(`manifest is missing ${key}`);
+if (String(man.start_url).startsWith("/")) err("manifest start_url must be relative so it works under a sub-path");
+if (String(man.scope).startsWith("/")) err("manifest scope must be relative so it works under a sub-path");
+const startFile = String(man.start_url || "").split(/[?#]/)[0];
+if (startFile && startFile !== "./" && !existsSync(join(root, startFile))) err(`manifest start_url ${man.start_url} does not exist`);
+for (const ic of man.icons || []) {
+  if (!existsSync(join(root, ic.src))) { err(`manifest icon ${ic.src} is missing`); continue; }
+  const b = readFileSync(join(root, ic.src));
+  if (b.toString("latin1", 1, 4) !== "PNG") err(`${ic.src} is not a PNG`);
+  else if (ic.sizes !== `${b.readUInt32BE(16)}x${b.readUInt32BE(20)}`) err(`${ic.src}: manifest says ${ic.sizes} but the file is ${b.readUInt32BE(16)}x${b.readUInt32BE(20)}`);
+}
+const themeMeta = /<meta name="theme-color" content="(#[0-9a-fA-F]+)"/.exec(html)?.[1];
+if (themeMeta && man.theme_color && themeMeta.toLowerCase() !== man.theme_color.toLowerCase()) err(`index.html theme-color ${themeMeta} != manifest ${man.theme_color}`);
+
 if (errors.length) { console.error(errors.join("\n")); process.exit(1); }
-console.log(`ok: ${seenPhase.size} phases, ${trophyKeys.size} trophies, ${goalKeys.size} goals`);
+console.log(`ok: ${seenPhase.size} phases, ${trophyKeys.size} trophies, ${goalKeys.size} goals, ${shellSet.size} shell files`);

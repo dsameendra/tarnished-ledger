@@ -10,8 +10,8 @@ A phase is `{id, n, sub, s: [step, ...]}`. A step is `[kind, text, options]`.
 1. Add it to `js/data/route.js` (base) or `js/data/dlc-route.js` (DLC) with a unique id.
 2. Give it a map pin: `PINS` for base, `DLC_PINS` plus `DLC_AREAS` (and `DLC_EDGES` for connections) for the DLC. Base wiki terms go in `AREAS`.
 3. Add any new goal to `js/data/dlc-goals.js`, or trophy to `trophies.js`.
-4. Run `npm run check`.
-5. Add new files to `SHELL` in `sw.js` and bump the cache name.
+4. Run `npm run check`. It also rejects duplicate step text, unknown keys, counters that disagree with the store, and files missing from `SHELL`.
+5. Add any new file to `SHELL` in `sw.js` (the check tells you which) and bump the cache name.
 
 ## DLC
 The DLC has no trophies. Goals (`GOALS`) are ticked through their route step. Counters (`COUNTERS`) hold cumulative `levels` thresholds, verified against the wiki: Scadutree 50 fragments to level 20, Revered Spirit Ash 25 ashes to level 10. Only add facts you have verified.
