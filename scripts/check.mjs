@@ -83,7 +83,7 @@ const walk = (dir) => readdirSync(join(root, dir)).flatMap((n) => {
 });
 // Map images and marker JSON are large, so they are cached on first use rather than at install.
 const lazy = (f) => f.startsWith("assets/map/");
-const shipped = ["js", "css", "assets"].flatMap(walk).filter((f) => !f.endsWith(".DS_Store") && !lazy(f));
+const shipped = ["js", "css", "assets", "vendor"].flatMap(walk).filter((f) => !f.endsWith(".DS_Store") && !f.endsWith("LICENSE") && !lazy(f));
 for (const f of [...shipped, "manifest.webmanifest"]) if (!shellSet.has(f)) err(`${f} ships but is not in the sw.js SHELL`);
 if (!/const CACHE = PREFIX \+ "v\d+"/.test(swSrc)) err('sw.js CACHE must be PREFIX + "v<number>"');
 
