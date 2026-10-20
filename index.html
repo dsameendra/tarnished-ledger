@@ -48,7 +48,7 @@
     </div>
 
     <div class="hero">
-      <div class="ring" role="img" aria-label="Overall progress">
+      <div class="ring" id="ring" role="img" aria-label="Overall progress">
         <svg viewBox="0 0 100 100" aria-hidden="true"><circle class="trk" cx="50" cy="50" r="44"/><circle class="val" id="ringVal" cx="50" cy="50" r="44" stroke-dasharray="276.46" stroke-dashoffset="276.46"/><circle class="inner" cx="50" cy="50" r="36"/></svg>
         <b><div><div id="pct">0%</div><span>done</span></div></b>
       </div>
@@ -70,13 +70,15 @@
       <div class="toolbar">
         <label class="search"><span class="sr">Search the route</span>
           <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>
-          <input id="q" type="search" placeholder="Search steps, bosses, items" autocomplete="off" enterkeyhint="search">
+          <input id="q" type="search" placeholder="Search steps, bosses, items" autocomplete="off" enterkeyhint="search" aria-controls="phases">
+          <button type="button" class="qclear" id="qClear" aria-label="Clear search" hidden>&times;</button>
         </label>
         <button class="btn" id="hideBtn" type="button" aria-pressed="false">Hide done</button>
         <button class="btn" id="foldBtn" type="button">Collapse all</button>
       </div>
+      <p class="qcount" id="qCount" role="status" aria-live="polite" hidden></p>
       <div id="phases"></div>
-      <p class="empty" id="noResults" hidden>No steps match that search.</p>
+      <p class="empty" id="noResults" hidden>No steps match that search. Try a boss, place or item name.</p>
     </section>
 
     <section id="v-tro" hidden>
