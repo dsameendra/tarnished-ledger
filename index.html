@@ -109,8 +109,10 @@
             <button type="button" data-v="under" aria-pressed="false">Underground</button>
           </div>
         </div>
-        <div id="map"></div>
-        <div class="legend"><span><i style="background:var(--ok)"></i>Done</span><span><i style="background:var(--accent)"></i>You are here</span><span><i style="background:var(--line)"></i>Ahead</span><span id="legUnder">Dashed outline = underground</span></div>
+        <div class="maptools2"><div class="seg" id="mapZoom" role="group" aria-label="Zoom"><button type="button" data-z="out" aria-label="Zoom out">−</button><button type="button" data-z="fit" aria-pressed="false">Fit</button><button type="button" data-z="in" aria-label="Zoom in">+</button></div><button type="button" class="btn" id="mapHere">Find me</button></div>
+        <div id="map" tabindex="0" aria-label="Route map, scrollable"></div>
+        <div class="mappick" id="mapPick" hidden></div>
+        <div class="legend"><span><i style="background:var(--ok)"></i>Done</span><span><i style="background:var(--accent)"></i>You are here</span><span><i style="background:var(--raised);border:2px solid var(--muted);width:11px;height:11px;box-sizing:border-box"></i>Ahead</span><span id="legUnder">Dashed outline = underground</span></div>
       </div>
       <ul class="phaselist" id="phaseList"></ul>
       <p class="note" id="mapLinks" style="margin-top:14px"></p>

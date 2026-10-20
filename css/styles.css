@@ -239,20 +239,38 @@ ol.steps { list-style: none; margin: 0; padding: 0 10px 10px; display: flex; fle
 /* map */
 .mapcard { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 10px; margin-bottom: 14px; }
 .maptools { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; padding: 4px 4px 8px; }
-#map svg { width: 100%; height: auto; display: block; max-width: 760px; margin: 0 auto; }
-.rg { fill: color-mix(in srgb, var(--accent) 9%, var(--raised)); stroke: color-mix(in srgb, var(--accent) 35%, var(--line)); stroke-width: 1; }
-.rg.under { fill: none; stroke-dasharray: 4 3; }
+.maptools2 { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 0 4px 8px; }
+#mapZoom button { min-width: 44px; font-size: 1.05rem; }
+#map { overflow: auto; max-height: min(72vh, 760px); border-radius: 10px; background: color-mix(in srgb, var(--bg) 55%, var(--surface)); border: 1px solid var(--line); overscroll-behavior: contain; touch-action: pan-x pan-y pinch-zoom; }
+#map svg { display: block; height: auto; }
+.rg { fill: color-mix(in srgb, var(--accent) 11%, var(--raised)); stroke: color-mix(in srgb, var(--accent) 45%, var(--line)); stroke-width: 1.6; }
+.rg.under { fill: none; stroke-dasharray: 8 6; }
 .dim .rg:not(.under), .dim .rl:not(.u) { opacity: .25; }
 .hide-under .under, .hide-under .rl.u { display: none; }
-.rl { font-family: var(--display); font-size: 8.5px; fill: var(--muted); letter-spacing: .06em; text-anchor: middle; pointer-events: none; }
-.rl.u { font-size: 6.5px; }
-.rpath { fill: none; stroke: var(--accent); stroke-width: 1.2; stroke-dasharray: 2 3; opacity: .55; }
-.pin circle { stroke: var(--surface); stroke-width: 1.5; fill: var(--line); cursor: pointer; }
-.pin text { font-size: 6.5px; font-weight: 700; text-anchor: middle; fill: var(--fg); pointer-events: none; }
-.pin.done circle { fill: var(--ok); } .pin.done text { fill: var(--surface); }
-.pin.cur circle { fill: var(--accent); } .pin.cur text { fill: var(--onaccent); }
-.pin .halo { fill: none; stroke: var(--accent); stroke-width: 1; opacity: .5; animation: pulse 2s infinite; }
-@keyframes pulse { 0% { r: 7; } 100% { r: 13; opacity: 0; } }
+.rl { font-family: var(--display); font-size: 15px; font-weight: 700; fill: var(--fg); opacity: .78; letter-spacing: .07em; text-anchor: middle; pointer-events: none; paint-order: stroke; stroke: var(--surface); stroke-width: 4px; stroke-linejoin: round; }
+.rl.u { font-size: 12px; font-weight: 500; letter-spacing: .03em; font-style: italic; }
+.seg-l { stroke: var(--muted); stroke-width: 2; stroke-dasharray: 4 6; opacity: .22; stroke-linecap: round; }
+.seg-l.next { stroke: var(--accent); stroke-width: 3; opacity: .95; }
+.seg-l.walked { stroke: var(--ok); stroke-dasharray: none; stroke-width: 3; opacity: .9; }
+#map .edge { stroke: var(--muted); stroke-width: 3; opacity: .55; stroke-linecap: round; }
+#map .rl.pl { font-size: 14px; letter-spacing: .02em; opacity: 1; stroke: var(--bg); stroke-width: 5px; }
+#map .rl.pl.sub { font-size: 12px; font-style: italic; font-weight: 400; opacity: .7; }
+.pin { cursor: pointer; outline: none; }
+.pin .dot { fill: var(--raised); }
+.pin text { font-size: 15px; font-weight: 700; text-anchor: middle; fill: var(--fg); pointer-events: none; }
+.pin .dot { stroke: var(--muted); stroke-width: 2; }
+.pin.done .dot { fill: var(--ok); stroke: var(--surface); } .pin.done text { fill: var(--surface); }
+.pin.cur .dot { fill: var(--accent); stroke: var(--surface); } .pin.cur text { fill: var(--onaccent); }
+.pin .halo { fill: none; stroke: var(--accent); stroke-width: 2.5; opacity: .6; animation: pulse 2s infinite; }
+.pin .ring-sel { fill: none; stroke: var(--fg); stroke-width: 2.5; }
+.pin:hover .dot, .pin:focus-visible .dot { stroke: var(--accent); stroke-width: 3.5; }
+@keyframes pulse { 0% { r: 14; } 100% { r: 26; opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .pin .halo { animation: none; } }
+.mappick { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-top: 10px; padding: 10px 12px; border: 1px solid var(--accent); border-radius: 10px; background: var(--accent-soft); }
+.mappick[hidden] { display: none; }
+.mappick .pk-num { font-family: var(--display); font-weight: 700; font-size: 1.25rem; color: var(--accent); min-width: 2.2rem; }
+.mappick .pk-txt { flex: 1 1 10rem; min-width: 0; display: grid; }
+.mappick small { color: var(--muted); }
 .legend { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; font-size: .78rem; color: var(--muted); padding: 2px 0 4px; }
 .legend i { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 5px; vertical-align: -1px; }
 .phaselist { display: grid; gap: 6px; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); margin: 0; padding: 0; list-style: none; }
@@ -320,5 +338,3 @@ textarea { width: 100%; min-height: 70px; font: inherit; font-size: .82rem; back
 .counter .of { color: var(--muted); }
 .counter .note { margin: 6px 0 0; font-size: .86rem; }
 .counter .btn:disabled { opacity: .4; cursor: default; }
-#map .edge { stroke: var(--line); stroke-width: 1.6; }
-#map .rl.pl { text-anchor: middle; font-size: 6.5px; }

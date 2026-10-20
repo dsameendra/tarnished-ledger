@@ -1,6 +1,6 @@
 // Offline cache for the app shell. Same-origin files and the Google Fonts hosts only:
 // calls to api.github.com (sync) are never intercepted or cached.
-const CACHE = "tarnished-ledger-v4";
+const CACHE = "tarnished-ledger-v5";
 const SHELL = [
   "./", "index.html", "manifest.webmanifest", "css/styles.css", "js/app.js",
   "js/data/route.js", "js/data/trophies.js", "js/data/map.js", "js/data/links.js", "js/data/guide.js", "js/data/dlc-route.js", "js/data/dlc-goals.js",
