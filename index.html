@@ -34,6 +34,7 @@
 </head>
 <body>
 <noscript><p style="padding:24px">Tarnished's Ledger needs JavaScript to run.</p></noscript>
+<a class="skip" href="#main">Skip to content</a>
 <div class="shell">
 
   <aside class="rail">
@@ -64,7 +65,16 @@
     <nav class="nav" aria-label="Sections"><div role="tablist" id="tabs"></div></nav>
   </aside>
 
-  <main>
+  <main id="main" tabindex="-1">
+    <aside class="welcome" id="welcome" hidden aria-labelledby="welcomeH">
+      <h2 id="welcomeH">Welcome, Tarnished</h2>
+      <ul>
+        <li><b>Ticking:</b> tap a step to mark it done. Ticks save instantly on this device, and finishing a step ticks its trophies for you.</li>
+        <li><b>Expansion:</b> Settings has a switch for Shadow of the Erdtree, which adds its own route and goals.</li>
+        <li><b>Sync:</b> Settings can link a private GitHub gist so your phone and computer share one list.</li>
+      </ul>
+      <div class="acts"><button type="button" class="btn primary" id="welcomeOk">Got it</button><button type="button" class="btn" id="welcomeSet">Open settings</button></div>
+    </aside>
     <section id="v-route" aria-labelledby="t-route">
       <div class="next" id="next"></div>
       <div class="toolbar">
@@ -128,66 +138,90 @@
 
       <div class="group">
         <h3>Appearance</h3>
-        <div class="set"><span class="lbl">Theme</span><div class="seg" data-set="mode" role="group" aria-label="Theme"><button type="button" data-v="system">System</button><button type="button" data-v="light">Light</button><button type="button" data-v="dark">Dark</button></div></div>
-        <div class="set"><span class="lbl">Accent</span><div class="swatches" data-set="accent" role="group" aria-label="Accent colour">
+        <div class="set"><span class="lbl" id="l-mode">Theme</span><div class="seg" data-set="mode" role="group" aria-labelledby="l-mode"><button type="button" data-v="system">System</button><button type="button" data-v="light">Light</button><button type="button" data-v="dark">Dark</button></div></div>
+        <div class="set"><span class="lbl" id="l-accent">Accent</span><div class="swatches" data-set="accent" role="group" aria-labelledby="l-accent">
           <button type="button" data-v="gold" aria-label="Erdtree gold" style="background:#c39a3f"></button>
           <button type="button" data-v="crimson" aria-label="Scarlet rot" style="background:#b8434e"></button>
           <button type="button" data-v="frost" aria-label="Moonlight blue" style="background:#5f94bb"></button>
           <button type="button" data-v="silver" aria-label="Ash silver" style="background:#9a9ca4"></button></div></div>
-        <div class="set"><span class="lbl">Text size</span><div class="seg" data-set="size" role="group" aria-label="Text size"><button type="button" data-v="s">Small</button><button type="button" data-v="m">Medium</button><button type="button" data-v="l">Large</button></div></div>
-        <div class="set"><span class="lbl">Compact steps</span><button type="button" class="switch" role="switch" data-sw="compact" aria-label="Compact steps"></button><span class="hint">Tighter rows without icons or tags.</span></div>
+        <div class="set"><span class="lbl" id="l-size">Text size</span><div class="seg" data-set="size" role="group" aria-labelledby="l-size"><button type="button" data-v="s">Small</button><button type="button" data-v="m">Medium</button><button type="button" data-v="l">Large</button></div></div>
+        <div class="set"><span class="lbl" id="l-compact">Compact steps</span><button type="button" class="switch" role="switch" data-sw="compact" aria-labelledby="l-compact"></button><span class="hint">Tighter rows without icons or tags.</span></div>
       </div>
 
       <div class="group">
-        <h3>Content</h3>
-        <div class="set"><span class="lbl">Shadow of the Erdtree</span><button type="button" class="switch" role="switch" data-sw="dlc" aria-label="Include Shadow of the Erdtree"></button><span class="hint">Adds the DLC route, goals and blessing counters. The DLC has no trophies, so it never changes your trophy list.</span></div>
-        <div class="set" id="focusRow" hidden><span class="lbl">Playing</span><div class="seg" data-set="focus" role="group" aria-label="What you are playing"><button type="button" data-v="both">Main game and DLC</button><button type="button" data-v="dlc">DLC only</button></div><span class="hint">DLC only hides the main game route, trophies and legendaries. Your ticks are kept.</span></div>
+        <h3>Expansion</h3>
+        <div class="set"><span class="lbl" id="l-dlc">Shadow of the Erdtree</span><button type="button" class="switch" role="switch" data-sw="dlc" aria-labelledby="l-dlc" aria-describedby="h-dlc"></button><span class="hint" id="h-dlc">Adds the DLC route, goals and blessing counters. The DLC has no trophies, so it never changes your trophy list. Turning it off only hides it; your DLC ticks are kept.</span></div>
+        <div class="set sub" id="focusRow" hidden><span class="lbl" id="l-focus">Playing</span><div class="seg" data-set="focus" role="group" aria-labelledby="l-focus" aria-describedby="h-focus"><button type="button" data-v="both">Main game and DLC</button><button type="button" data-v="dlc">DLC only</button></div><span class="hint" id="h-focus">DLC only hides the main game route, trophies and legendaries. Your ticks are kept.</span></div>
       </div>
 
       <div class="group">
         <h3>Route</h3>
-        <div class="set"><span class="lbl">Platform</span><div class="seg" data-set="platform" role="group" aria-label="Platform"><button type="button" data-v="ps">PlayStation</button><button type="button" data-v="xbox">Xbox</button><button type="button" data-v="steam">PC</button></div><span class="hint">PlayStation shows Bronze, Silver, Gold and Platinum trophies. Xbox and PC call them achievements.</span></div>
-        <div class="set"><span class="lbl">Hide completed steps</span><button type="button" class="switch" role="switch" data-sw="hide" aria-label="Hide completed steps"></button></div>
-        <div class="set"><span class="lbl">Show tips</span><button type="button" class="switch" role="switch" data-sw="tips" aria-label="Show tips"></button><span class="hint">Dashed advice notes between steps.</span></div>
-        <div class="set"><span class="lbl">Open current phase automatically</span><button type="button" class="switch" role="switch" data-sw="autoopen" aria-label="Open current phase automatically"></button><span class="hint">Folds finished phases and opens the one you are on.</span></div>
+        <div class="set"><span class="lbl" id="l-platform">Platform</span><div class="seg" data-set="platform" role="group" aria-labelledby="l-platform"><button type="button" data-v="ps">PlayStation</button><button type="button" data-v="xbox">Xbox</button><button type="button" data-v="steam">PC</button></div><span class="hint">PlayStation shows Bronze, Silver, Gold and Platinum trophies. Xbox and PC call them achievements.</span></div>
+        <div class="set"><span class="lbl" id="l-hide">Hide completed steps</span><button type="button" class="switch" role="switch" data-sw="hide" aria-labelledby="l-hide"></button></div>
+        <div class="set"><span class="lbl" id="l-tips">Show tips</span><button type="button" class="switch" role="switch" data-sw="tips" aria-labelledby="l-tips"></button><span class="hint">Dashed advice notes between steps.</span></div>
+        <div class="set"><span class="lbl" id="l-autoopen">Open current phase automatically</span><button type="button" class="switch" role="switch" data-sw="autoopen" aria-labelledby="l-autoopen"></button><span class="hint">Folds finished phases and opens the one you are on.</span></div>
+      </div>
+
+      <div class="group" id="syncGroup">
+        <h3>Sync between devices</h3>
+        <div class="set stack">
+          <span class="hint">Optional. Progress is stored in a private gist on your own GitHub account, so there is no server and nothing to sign up for. The token stays in this browser and you can revoke it on GitHub at any time.</span>
+          <div class="sync-state" id="syncState" role="status"><i></i><span>Not connected</span></div>
+          <div id="connectRow">
+            <ol class="steps-help">
+              <li><a href="https://github.com/settings/tokens/new?scopes=gist&amp;description=Tarnished%27s%20Ledger" target="_blank" rel="noopener">Create a classic token on GitHub</a> with only the <b>gist</b> scope.</li>
+              <li>Copy it, paste it below and press Connect. Repeat on each device.</li>
+            </ol>
+            <label class="lbl" for="tokenInput">GitHub token</label>
+            <input id="tokenInput" type="password" placeholder="ghp_…" autocomplete="off" autocapitalize="off" spellcheck="false" aria-describedby="syncMsg">
+            <div class="acts"><button type="button" class="btn primary" id="connectBtn">Connect</button></div>
+          </div>
+          <div class="acts" id="connectedRow" hidden><button type="button" class="btn" id="syncBtn">Sync now</button><button type="button" class="btn danger" id="disconnectBtn">Disconnect</button></div>
+          <div class="msg" id="syncMsg" role="status"></div>
+        </div>
       </div>
 
       <div class="group">
-        <h3>Device</h3>
-        <div class="set"><span class="lbl">Keep screen on</span><button type="button" class="switch" role="switch" data-sw="awake" aria-label="Keep screen on"></button><span class="hint" id="wakeHint">Stops the screen dimming while this page is open.</span></div>
+        <h3>Backup and restore</h3>
+        <div class="set stack">
+          <span class="hint" id="backupHint">Download a file you can keep anywhere, or copy a short code.</span>
+          <div class="acts"><button type="button" class="btn" id="exportFile">Download backup</button><button type="button" class="btn" id="importFileBtn">Restore from file</button><input type="file" id="importFile" accept="application/json,.json" hidden></div>
+          <label class="lbl" for="exportBox">Your progress code</label>
+          <textarea id="exportBox" readonly></textarea>
+          <div class="acts"><button type="button" class="btn" id="copyBtn">Copy code</button></div>
+          <label class="lbl" for="importBox">Restore from a code</label>
+          <textarea id="importBox" placeholder="Paste a progress code here"></textarea>
+          <div class="acts"><button type="button" class="btn" id="importBtn">Restore code</button></div>
+          <div class="callout" id="restoreConfirm" hidden role="alertdialog" aria-labelledby="restoreText">
+            <p id="restoreText" style="margin:0 0 8px"></p>
+            <div class="acts" style="margin-top:0"><button type="button" class="btn danger" id="restoreYes">Replace my progress</button><button type="button" class="btn" id="restoreNo">Cancel</button></div>
+          </div>
+          <div class="msg" id="ioMsg" role="status"></div>
+        </div>
+      </div>
+
+      <div class="group">
+        <h3>This device</h3>
+        <div class="set stack"><span class="lbl">Saved on this device</span>
+          <span class="hint" id="storeStatus">Every tick saves instantly in this browser.</span>
+          <span class="hint">An installed home-screen app on iPhone has its own storage, separate from Safari. Use sync or a backup to bring your progress across.</span>
+        </div>
+        <div class="set"><span class="lbl" id="l-awake">Keep screen on</span><button type="button" class="switch" role="switch" data-sw="awake" aria-labelledby="l-awake" aria-describedby="wakeHint"></button><span class="hint" id="wakeHint">Stops the screen dimming while this page is open.</span></div>
         <div class="set stack" id="installRow"><span class="lbl">Install as an app</span>
           <span class="hint" id="installHint">On iPhone: open this page in Safari, tap Share, then Add to Home Screen. On Android or desktop Chrome: use the browser menu, then Install app.</span>
           <div class="acts"><button type="button" class="btn primary" id="installBtn" hidden>Install</button></div>
         </div>
       </div>
 
-      <div class="group">
-        <h3>Saving and sync</h3>
-        <div class="set stack"><span class="lbl">Saved on this device</span>
-          <span class="hint" id="storeStatus">Every tick saves instantly in this browser.</span>
-          <span class="hint">An installed home-screen app on iPhone has its own storage, separate from Safari. Use sync or a backup code to bring your progress across.</span>
-        </div>
-        <div class="set stack"><span class="lbl">Sync between devices</span>
-          <span class="hint">Optional. Progress is stored in a private gist on your own GitHub account, so there is no server. Create a classic personal access token at github.com/settings/tokens with only the <b>gist</b> scope, then paste it on each device. The token stays in this browser and can be revoked any time.</span>
-          <div class="sync-state" id="syncState"><i></i><span>Not connected</span></div>
-          <div id="connectRow">
-            <input id="tokenInput" type="password" placeholder="GitHub token (ghp_…)" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="GitHub personal access token">
-            <div class="acts"><button type="button" class="btn primary" id="connectBtn">Connect</button></div>
+      <div class="group danger-zone">
+        <h3>Reset</h3>
+        <div class="set stack"><span class="hint">Clears every tick on this device. Appearance and other settings stay. If sync is on, the reset syncs to your other devices too, so download a backup first if you might want it back.</span>
+          <div class="acts"><button type="button" class="btn danger" id="resetBtn">Reset progress…</button></div>
+          <div class="callout" id="resetConfirm" hidden role="alertdialog" aria-labelledby="resetText">
+            <p id="resetText" style="margin:0 0 8px"></p>
+            <div class="acts" style="margin-top:0"><button type="button" class="btn danger" id="resetYes">Yes, clear everything</button><button type="button" class="btn" id="resetNo">Cancel</button></div>
           </div>
-          <div class="acts" id="connectedRow" hidden><button type="button" class="btn" id="syncBtn">Sync now</button><button type="button" class="btn danger" id="disconnectBtn">Disconnect</button></div>
-          <div class="msg" id="syncMsg"></div>
-        </div>
-        <div class="set stack"><span class="lbl">Backup</span>
-          <span class="hint" id="backupHint">Download a file you can keep anywhere, or copy a short code.</span>
-          <div class="acts"><button type="button" class="btn" id="exportFile">Download backup</button><button type="button" class="btn" id="importFileBtn">Restore from file</button><input type="file" id="importFile" accept="application/json,.json" hidden></div>
-          <textarea id="exportBox" readonly aria-label="Progress code"></textarea>
-          <div class="acts"><button type="button" class="btn" id="copyBtn">Copy code</button></div>
-          <textarea id="importBox" placeholder="Paste a progress code here" aria-label="Import code"></textarea>
-          <div class="acts"><button type="button" class="btn" id="importBtn">Import code</button></div>
-          <div class="msg" id="ioMsg"></div>
-        </div>
-        <div class="set stack"><span class="lbl">Reset</span><span class="hint">Clears every tick on this device. Settings stay. If sync is on, the reset syncs too.</span>
-          <div class="acts"><button type="button" class="btn danger" id="resetBtn">Reset progress…</button><span id="resetConfirm" hidden><button type="button" class="btn danger" id="resetYes">Yes, clear all</button> <button type="button" class="btn" id="resetNo">Cancel</button></span></div>
+          <div class="msg" id="resetMsg" role="status"></div>
         </div>
       </div>
 
