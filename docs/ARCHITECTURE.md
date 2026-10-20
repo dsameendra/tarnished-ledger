@@ -10,7 +10,10 @@ A static site with no build step: ES modules, `localStorage`, a service worker.
 - `sw.js`: network-first cache of same-origin files and Google Fonts. Never touches api.github.com. Add new files to `SHELL` and bump `CACHE` on each release.
 
 ## Scope
-`model.scope()` returns `base`, `both` or `dlc` from the `dlc` and `focus` settings. Only in-scope phases render, and counts follow the scope. In `dlc` scope the Legendary tab is hidden, Trophies becomes Goals, and the map shows the DLC graph.
+`model.scope()` returns `base`, `both` or `dlc` from the `dlc` and `focus` settings. Only in-scope phases render, and counts follow the scope. In `dlc` scope the Legendary tab is hidden, Trophies becomes Goals, and the map shows only the Realm of Shadow.
+
+## Map
+See [MAP.md](MAP.md) for the Leaflet viewer, its data contract and how to extend it.
 
 ## Checks
 `npm run check` validates the route data. `npm test` unit-tests the store merge logic.

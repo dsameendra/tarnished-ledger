@@ -41,7 +41,8 @@ Then open http://localhost:8080. The service worker only registers over HTTPS or
 | `js/data/` | Route, trophies, map, guide and DLC data |
 | `sw.js`, `manifest.webmanifest` | Offline cache and install metadata |
 | `scripts/check.mjs`, `test/` | Data checks and unit tests (`npm run check`, `npm test`) |
-| `docs/` | Architecture, data format, sync options, deploy notes |
+| `vendor/leaflet/` | Leaflet 1.9.4 (BSD-2), loaded when the Map tab opens |
+| `docs/` | Architecture, map viewer, data format, sync options, deploy notes |
 
 ## Editing the route
 
