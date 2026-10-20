@@ -98,21 +98,31 @@
     </section>
 
     <section id="v-map" hidden>
-      <h2 class="view-h">Route map</h2>
-      <p class="note" id="mapNote">A schematic of the Lands Between, not to scale. Numbers match the route phases. Tap one to open it.</p>
+      <h2 class="view-h">Map</h2>
+      <p class="note" id="mapNote">Drag to pan, pinch or scroll to zoom. Numbered pins are route phases. Tap a marker for details.</p>
       <div class="mapcard">
         <div class="maptools">
-          <div class="seg" id="mapWorld" role="group" aria-label="Map" hidden><button type="button" data-v="base" aria-pressed="true">Lands Between</button><button type="button" data-v="dlc" aria-pressed="false">Shadow Realm</button></div>
-          <div class="seg" id="mapLayer" role="group" aria-label="Map layer">
-            <button type="button" data-v="both" aria-pressed="true">All</button>
-            <button type="button" data-v="surface" aria-pressed="false">Surface</button>
-            <button type="button" data-v="under" aria-pressed="false">Underground</button>
-          </div>
+          <div class="seg" id="mapWorld" role="group" aria-label="World" hidden><button type="button" data-v="base" aria-pressed="true">Lands Between</button><button type="button" data-v="dlc" aria-pressed="false">Realm of Shadow</button></div>
+          <div class="seg" id="mapLayer" role="group" aria-label="Map layer"><button type="button" data-v="base" aria-pressed="true">Surface</button><button type="button" data-v="under" aria-pressed="false">Underground</button></div>
+          <button type="button" class="btn" id="mapHere">Find me</button>
+          <button type="button" class="btn" id="mapFilterBtn" aria-expanded="false" aria-controls="mapPanel">Markers <span id="mapFilterCount"></span></button>
         </div>
-        <div class="maptools2"><div class="seg" id="mapZoom" role="group" aria-label="Zoom"><button type="button" data-z="out" aria-label="Zoom out">−</button><button type="button" data-z="fit" aria-pressed="false">Fit</button><button type="button" data-z="in" aria-label="Zoom in">+</button></div><button type="button" class="btn" id="mapHere">Find me</button></div>
-        <div id="map" tabindex="0" aria-label="Route map, scrollable"></div>
-        <div class="mappick" id="mapPick" hidden></div>
-        <div class="legend"><span><i style="background:var(--ok)"></i>Done</span><span><i style="background:var(--accent)"></i>You are here</span><span><i style="background:var(--raised);border:2px solid var(--muted);width:11px;height:11px;box-sizing:border-box"></i>Ahead</span><span id="legUnder">Dashed outline = underground</span></div>
+        <p class="mapstatus" id="mapStatus" role="status" aria-live="polite"></p>
+        <div class="mapwrap" id="mapWrap">
+          <div class="mapstage">
+            <div id="map" aria-label="Interactive map. Drag to pan, plus and minus keys to zoom."></div>
+            <div class="mapsearch">
+              <input type="search" id="mapSearch" placeholder="Find a marker by name" aria-label="Find a marker by name" autocomplete="off" disabled>
+              <ul id="mapResults" aria-label="Matching markers" hidden></ul>
+            </div>
+            <div class="mapctl" id="mapZoom" role="group" aria-label="Zoom"><button type="button" data-z="in" aria-label="Zoom in">+</button><button type="button" data-z="out" aria-label="Zoom out">&minus;</button><button type="button" data-z="fit" aria-label="Fit the whole map">&#x2922;</button></div>
+            <div class="maptip" id="mapTip" hidden></div>
+            <div class="maploading" id="mapLoading" role="status">Loading map&hellip;</div>
+            <div class="mapsheet" id="mapSheet" hidden></div>
+          </div>
+          <aside class="mappanel" id="mapPanel" aria-label="Marker filters" hidden></aside>
+        </div>
+        <div class="maplegend"><span><i style="background:var(--ok)"></i>Phase done</span><span><i style="background:var(--accent)"></i>You are here</span><span><i style="background:var(--raised);border:2px solid var(--muted);width:11px;height:11px;box-sizing:border-box"></i>Phase ahead</span></div>
       </div>
       <ul class="phaselist" id="phaseList"></ul>
       <p class="note" id="mapLinks" style="margin-top:14px"></p>
