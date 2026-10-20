@@ -98,3 +98,11 @@ Every category has its own icon in `js/data/map-icons.js` (`[glyph, colour]`), a
 - **Wording**: `js/data/map-verbs.js` picks the words by what a marker is: bosses and enemies say *Mark defeated / Defeated*, items, gear, materials and key items say *Mark picked up / Picked up*, graces and landmarks say *discovered*, dungeons and evergaols say *cleared*, imp seal statues say *opened*, characters say *met*, and puzzles and quests say *done*. Add an exception by category id in `BY_CAT`.
 - **Linked to the route**: a marker is done when you tick it on the map or when a route step that covers it is ticked. `STEP_LOCS` is the main table. Trophies, legendary items and DLC goals are linked through the step that completes them (`TROPHY_LOCS`, `COLLECT_LOCS`, `GOAL_LOCS`). Ticking a marker that is the only one a step covers (one boss, one item) also ticks that step, and unticking undoes it; steps that cover several markers are never ticked from the map.
 - **Progress section** under the map (closed by default, so the map fills the screen): counts and lists per category, "Essentials" (graces, bosses, route items) or every marker, with *Yet to defeat / pick up / discover* and the finished ones. Tapping an item flies to it. The same section has the route phase list on a second tab. `summarize()` in `js/ui/map-progress.js` is pure and unit tested.
+
+## Route steps on the map
+
+- Selecting a numbered pin, a phase in the Route phases tab, or "Show phase on map" on the Route tab shows that phase's checklist: in the sheet when the map is maximized, and as a card under the map otherwise (the sheet then only has a short header and a "Steps below" button, so the map keeps the screen).
+- Steps are real checkboxes: ticking one is the same as ticking it in the route, so the progress, trophies and every marker it covers update at once.
+- Steps that have markers get a **Show** button. One marker opens its details with a "Back to phase steps" button; several are framed together. The phase's markers are ringed on the map even when their category is switched off.
+- Prev and Next walk the route phase by phase and fly to each pin.
+- A marker's sheet lists the route steps that cover it as tickable rows. On the Route tab, steps with markers have a **Show on map** button.

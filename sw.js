@@ -2,7 +2,7 @@
 // calls to api.github.com (sync) are never intercepted or cached.
 // Keep SHELL in step with the files in the repo: `npm run check` fails when they drift apart.
 const PREFIX = "tarnished-ledger-";
-const CACHE = PREFIX + "v11";
+const CACHE = PREFIX + "v12";
 const SHELL = [
   "./", "index.html", "manifest.webmanifest", "css/styles.css", "js/app.js",
   "js/data/route.js", "js/data/trophies.js", "js/data/map.js", "js/data/links.js", "js/data/guide.js", "js/data/dlc-route.js", "js/data/dlc-goals.js", "js/data/map-calib.js", "js/data/map-categories.js", "js/data/map-markers.js", "js/data/map-guide.js", "js/data/map-places.js", "js/data/map-icons.js", "js/data/map-verbs.js", "js/ui/map-progress.js",

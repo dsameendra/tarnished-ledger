@@ -544,3 +544,34 @@ html.map-fs, html.map-fs body { overflow: hidden; overscroll-behavior: none; }
 .pg-more { padding: 4px 0; }
 .ms-note { margin: 4px 0 0; color: var(--muted); font-size: .86rem; }
 .mapcredit { margin-top: 6px; }
+
+/* map: route phase checklist, in the sheet when maximized and as a card under the map otherwise */
+.ps-list { list-style: none; margin: 8px 0 4px; padding: 0; display: grid; gap: 4px; }
+.ps { display: flex; align-items: flex-start; gap: 6px; border-radius: 10px; }
+.ps-l { flex: 1; min-width: 0; display: grid; grid-template-columns: 26px 22px minmax(0, 1fr); column-gap: 8px; align-items: start; padding: 8px 6px; min-height: 44px; cursor: pointer; border-radius: 10px; }
+.ps-l:hover { background: var(--accent-soft); }
+.ps-l input { width: 22px; height: 22px; margin: 1px 0 0; accent-color: var(--accent); }
+.ps-ic { display: grid; place-items: center; width: 22px; height: 22px; color: var(--accent); }
+.ps-ic svg { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+.ps-t { line-height: 1.4; font-size: .95rem; }
+.ps.done .ps-t { color: var(--muted); text-decoration: line-through; text-decoration-color: color-mix(in srgb, var(--muted) 55%, transparent); }
+.ps.tip { padding: 6px 8px; color: var(--muted); font-size: .88rem; }
+.ps.tip .ps-ic { width: 26px; }
+.ps-loc { flex: none; align-self: center; display: inline-flex; align-items: center; gap: 4px; min-height: 44px; padding: 0 10px; border: 1px solid var(--edge); border-radius: 9px; background: var(--raised); color: var(--accent); cursor: pointer; font: inherit; font-size: .82rem; font-weight: 700; }
+.ps-loc:hover, .ps-loc:focus-visible { background: var(--accent-soft); }
+.ms-back { display: inline-flex; align-items: center; min-height: 44px; margin: -4px 0 2px; padding: 0 10px 0 4px; background: none; border: 0; color: var(--accent); cursor: pointer; font: inherit; font-weight: 700; }
+.mapsheet.phase .ms-h { padding-right: 44px; }
+.mapsheet .pg-bar { margin: 8px 0 2px; }
+.phasecard { position: relative; margin: 0 0 14px; padding: 12px 14px 14px; border: 1px solid var(--accent); border-radius: 14px; background: var(--surface); }
+.phasecard[hidden] { display: none; }
+.phasecard .ps-list { grid-template-columns: minmax(0, 1fr); }
+@media (min-width: 900px) { .phasecard .ps-list { grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 10px; } }
+.phasecard .ps-l { cursor: pointer; }
+.mapcard.fs .mapsheet.phase { max-height: calc(100% - 20px); }
+@media (min-width: 900px) { .mapcard.fs .mapsheet.phase { width: 400px; top: 66px; max-height: calc(100% - 84px); } }
+.maplink { display: inline-flex; align-items: center; min-height: 36px; padding: 0 12px; margin-top: 2px; border: 1px solid var(--edge); border-radius: 999px; background: var(--raised); color: var(--accent); font: inherit; font-size: .84rem; font-weight: 700; cursor: pointer; }
+.maplink:hover, .maplink:focus-visible { background: var(--accent-soft); }
+.ms-sub { margin: 10px 0 0; font: 700 .86rem var(--body); color: var(--muted); }
+.ms-steps { margin-top: 2px; }
+.ps-t small { color: var(--muted); font-weight: 700; margin-right: 4px; }
+.phase .ph-links { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }

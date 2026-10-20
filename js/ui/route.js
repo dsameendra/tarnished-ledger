@@ -3,6 +3,7 @@ import { $, $$, emit, on } from "../lib/dom.js";
 import { PHASES, steps, tickSteps, scopedSteps, inScope, phaseLabel, stepById, currentPhase, phaseCounts, collectibleName, collectibleGroup, trophyName, wikiUrl, goalList } from "../lib/model.js";
 import { ico, tickSVG, COLLECTION_ICON } from "../lib/icons.js";
 import { BOSS_TERMS } from "../data/links.js";
+import { STEP_LOCS } from "../data/map-guide.js";
 import { AREAS, DLC_AREAS } from "../data/map.js";
 import { trophyWord } from "../lib/labels.js";
 
@@ -31,7 +32,9 @@ function links(s) {
   const l = [];
   if (s.opts.c) l.push([collectibleName[s.opts.c], wikiUrl(collectibleName[s.opts.c])]);
   if (s.opts.tr && BOSS_TERMS[s.opts.tr]) l.push([BOSS_TERMS[s.opts.tr], wikiUrl(BOSS_TERMS[s.opts.tr])]);
-  return l.length ? `<div class="links">${l.map(([n, u]) => `<a href="${u}" target="_blank" rel="noopener">${n} on the wiki ↗</a>`).join("")}</div>` : "";
+  const wiki = l.map(([n, u]) => `<a href="${u}" target="_blank" rel="noopener">${n} on the wiki ↗</a>`).join("");
+  const map = STEP_LOCS[s.id] ? `<button type="button" class="maplink" data-locate="${s.id}" aria-label="Show this step on the map">Show on map</button>` : "";
+  return wiki || map ? `<div class="links">${wiki}${map}</div>` : "";
 }
 
 function stepHTML(s) {
@@ -49,7 +52,7 @@ const attr = (t) => plain(t).toLowerCase();
 function phaseHTML(p, pi, openId) {
   const items = steps.filter((s) => s.pi === pi).map(stepHTML).join("");
   const term = AREAS[p.id] || DLC_AREAS[p.id];
-  const area = term ? `<div class="ph-links"><a href="${wikiUrl(term)}" target="_blank" rel="noopener">${term} on the wiki ↗</a></div>` : "";
+  const area = `<div class="ph-links">${term ? `<a href="${wikiUrl(term)}" target="_blank" rel="noopener">${term} on the wiki ↗</a>` : ""}<button type="button" class="maplink" data-mapphase="${p.id}">Show phase on map</button></div>`;
   const open = store.setting("autoopen") ? pi === openId : !store.get().closed[p.id];
   return `<details class="phase" id="p-${p.id}" data-pid="${p.id}" ${open ? "open" : ""}>
 <summary><span class="num">${phaseLabel(pi)}</span><span class="ph-title"><h3>${p.n}</h3><small>${p.sub}</small><div class="ph-bar"><i></i></div></span><span class="count"></span><svg class="chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 10l5 5 5-5"/></svg></summary>
@@ -189,6 +192,10 @@ export function initRoute() {
   const box = $("phases");
   box.addEventListener("click", (e) => {
     if (e.target.closest("a")) return;
+    const mp = e.target.closest("[data-mapphase]");
+    if (mp) { emit("mapphase", mp.dataset.mapphase); return; }
+    const loc = e.target.closest("[data-locate]");
+    if (loc) { emit("locate", loc.dataset.locate); return; }
     const li = e.target.closest(".step[data-id]");
     if (li) toggle(li.dataset.id);
   });

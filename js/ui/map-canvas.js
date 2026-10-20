@@ -9,6 +9,7 @@ export function createMarkerCanvas(L, map, { isFound }) {
   const cv = L.DomUtil.create("canvas", "", pane);
   const ctx = cv.getContext("2d");
   let items = [];
+  let extra = []; // markers to always show and ring, for example the ones a selected route phase refers to
   let selected = null;
   let raf = 0;
   const stats = { drawn: 0, total: 0, ms: 0, size: 0 };
@@ -70,6 +71,19 @@ export function createMarkerCanvas(L, map, { isFound }) {
       ctx.fill(p);
     }
     ctx.globalAlpha = 1;
+    for (const m of extra) {
+      const [x, y] = place(m, sc, min);
+      if (x < -40 || y < -40 || x > sz.x + 40 || y > sz.y + 40) continue;
+      const big = Math.max(size, 20) + 2;
+      const sp = sprite(m.glyph, m.color, big, dpr);
+      ctx.beginPath();
+      ctx.arc(x, y, big * 0.85, 0, 6.2832);
+      ctx.lineWidth = 4; ctx.strokeStyle = "#14130e"; ctx.stroke();
+      ctx.lineWidth = 2; ctx.strokeStyle = isFound(m.id) ? "#8fd06a" : "#f2c14e"; ctx.stroke();
+      ctx.globalAlpha = isFound(m.id) ? 0.55 : 1;
+      ctx.drawImage(sp, x - sp.full / 2, y - sp.full / 2, sp.full, sp.full);
+      ctx.globalAlpha = 1;
+    }
     if (selected) {
       const [x, y] = place(selected, sc, min);
       const big = Math.max(size, 20) + 6;
@@ -90,6 +104,7 @@ export function createMarkerCanvas(L, map, { isFound }) {
     stats,
     drawNow: draw,
     setItems(list) { items = list; redraw(); },
+    setExtra(list) { extra = list; redraw(); },
     setSelected(m) { selected = m; redraw(); },
     // Nearest visible marker within tol css px of a container point.
     hit(pt, tol) {
@@ -101,6 +116,7 @@ export function createMarkerCanvas(L, map, { isFound }) {
         const d = dx * dx + dy * dy;
         if (d <= bd) { bd = d; best = m; }
       };
+      extra.forEach(test);
       items.forEach(test);
       if (selected) test(selected);
       return best;

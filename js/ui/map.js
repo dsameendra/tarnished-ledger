@@ -2,7 +2,9 @@
 // a filter panel, search, and the route phase pins. Leaflet and the map data load on first open.
 import * as store from "../lib/store.js";
 import { $, emit, on } from "../lib/dom.js";
-import { PHASES, tickSteps, currentPhase, phaseLabel, phaseCounts, scope, stepById, wikiUrl } from "../lib/model.js";
+import { PHASES, steps as allSteps, tickSteps, currentPhase, phaseLabel, phaseCounts, scope, stepById, wikiUrl } from "../lib/model.js";
+import { ico } from "../lib/icons.js";
+import { toggle as toggleStep } from "./route.js";
 import { MAP_LINKS } from "../data/links.js";
 import { PLACES } from "../data/map-places.js";
 import { loadMapData } from "./map-data.js";
@@ -274,7 +276,7 @@ function refreshFound() {
   if (!map || !D) return;
   refreshItems();
   cv.redraw();
-  if (selected?.m) showSheet({ m: selected.m }, true);
+  if (selected) showSheet(selected, true);
   scheduleBelow();
 }
 
@@ -413,6 +415,7 @@ function setFs(on, fromHistory = false) {
       map.setView(c, Math.max(map.getMinZoom(), Math.min(map.getMaxZoom(), fitZ + z)), { animate: false });
       drawMini();
       zoomState();
+      if (selected) showSheet(selected, true); else paintPhaseCard();
     });
   }
 }
@@ -474,37 +477,151 @@ function closeSheet() {
   selected = null;
   $("mapSheet").hidden = true;
   if (cv) cv.setSelected(null);
+  paintPhaseCard();
+  refreshExtra();
   if (map) refreshPins();
 }
 
 function showSheet(sel, keep = false) {
   selected = sel;
   const box = $("mapSheet");
+  const active = document.activeElement?.closest?.("#mapSheet") ? document.activeElement.dataset.pstep : null;
+  const scrolled = box.querySelector(".ps-list")?.scrollTop || 0;
+  try { renderSheet(sel, box); } finally {
+    if (box.querySelector(".ps-list")) box.querySelector(".ps-list").scrollTop = scrolled;
+    if (active) box.querySelector(`[data-pstep="${CSS.escape(active)}"]`)?.focus({ preventScroll: true });
+  }
+}
+
+function renderSheet(sel, box) {
   if (sel.phase) {
-    const pi = PHASES.findIndex((p) => p.id === sel.phase);
-    const p = PHASES[pi];
-    const [d, t] = phaseCounts(pi);
-    box.innerHTML = `<button type="button" class="ms-x" data-close aria-label="Close details">&times;</button>
-      <div class="ms-h"><span class="ms-num">${phaseLabel(pi)}</span><div><b>${esc(p.n)}</b><small>${esc(p.sub)} · ${d}/${t} steps</small></div></div>
-      <div class="ms-act"><button type="button" class="btn primary" data-open="${p.id}">Open in route</button></div>`;
+    box.classList.toggle("phase", true);
+    // Maximized: the sheet holds the whole checklist. Otherwise a short card, with the checklist under the map.
+    box.innerHTML = fs ? phasePanelHTML(sel.phase, false) : phasePanelHTML(sel.phase, true);
     if (cv) cv.setSelected(null);
+    paintPhaseCard();
   } else {
+    box.classList.toggle("phase", false);
     const m = sel.m, c = D.catById.get(m.cat), v = verbFor(c);
     const grp = D.groups.find((g) => g.id === c.group);
     const steps = (D.stepsOf.get(m.id) || []).map((id) => stepById.get(id)).filter(Boolean).slice(0, 4);
     const via = steps.find((s) => store.isDone(s.id));
     const done = doneOf(m);
     const where = LAYER_NAME[m.layer] + (m.sub && m.sub !== "_" ? ` · ${m.sub[0].toUpperCase()}${m.sub.slice(1)}` : "");
+    const back = sel.from && PHASES.find((p) => p.id === sel.from);
     box.innerHTML = `<button type="button" class="ms-x" data-close aria-label="Close details">&times;</button>
+      ${back ? `<button type="button" class="ms-back" data-backphase="${back.id}">&lsaquo; Back to phase ${phaseLabel(PHASES.indexOf(back))} steps</button>` : ""}
       <div class="ms-h"><img src="${iconURL(m.glyph, m.color, 28)}" alt="" width="34" height="34"><div><b>${esc(m.title)}</b><small>${esc(c.title)}${grp ? " · " + esc(grp.title) : ""} · ${esc(where)}</small></div></div>
       ${m.note ? `<p>${esc(m.note)}</p>` : ""}
       <label class="mp-row ms-tick"><input type="checkbox" data-done="${esc(m.id)}" ${done ? "checked" : ""}><span>${done ? esc(v.done) : esc(v.mark)}</span></label>
       ${via && !ms.isFound(m.id) ? `<p class="ms-note">Counted because the route step is ticked.</p>` : ""}
-      <div class="ms-act"><a class="btn" href="${wikiUrl(m.title)}" target="_blank" rel="noopener">Wiki ↗</a>${steps.map((s) => `<button type="button" class="btn" data-step="${s.id}">Show step ${phaseLabel(s.pi)}: ${esc(s.text.length > 36 ? s.text.slice(0, 35) + "…" : s.text)}</button>`).join("")}</div>`;
+      ${steps.length ? `<h4 class="ms-sub">Route ${steps.length > 1 ? "steps" : "step"}</h4><ul class="ps-list ms-steps">${steps.map((s) => `<li class="ps ${store.isDone(s.id) ? "done" : ""}"><label class="ps-l"><input type="checkbox" data-pstep="${s.id}" ${store.isDone(s.id) ? "checked" : ""}><span class="ps-ic" aria-hidden="true">${ico(s.kind)}</span><span class="ps-t"><small>Phase ${phaseLabel(s.pi)}</small> ${esc(s.text)}</span></label></li>`).join("")}</ul>` : ""}
+      <div class="ms-act"><a class="btn" href="${wikiUrl(m.title)}" target="_blank" rel="noopener">Wiki ↗</a>${steps.length ? `<button type="button" class="btn" data-step="${steps[0].id}">Open in route</button>` : ""}</div>`;
     if (cv) cv.setSelected(m);
+    paintPhaseCard();
   }
   box.hidden = false;
+  refreshExtra();
   if (map) refreshPins();
+}
+
+// ---- route phase checklist on the map ----
+
+const phaseOf = (sel) => sel?.phase || sel?.from || null;
+const stepMarkers = (id) => (D?.stepLocs[id] || []).map((i) => D.byId.get(i)).filter(Boolean);
+
+// The markers a phase's steps refer to, ringed on the current layer even when their category is switched off.
+function refreshExtra() {
+  if (!cv) return;
+  const pid = phaseOf(selected);
+  const p = pid && PHASES.find((x) => x.id === pid);
+  const list = [];
+  if (p) for (const s of allSteps.filter((x) => x.pi === PHASES.indexOf(p))) for (const m of stepMarkers(s.id)) if (m.layer === shown && !list.includes(m)) list.push(m);
+  cv.setExtra(list);
+}
+
+function phaseStepsHTML(pid) {
+  const pi = PHASES.findIndex((p) => p.id === pid);
+  const showTips = store.setting("tips");
+  return allSteps.filter((s) => s.pi === pi && (s.kind !== "tip" || showTips)).map((s) => {
+    if (s.kind === "tip") return `<li class="ps tip"><span class="ps-ic" aria-hidden="true">✦</span><span class="ps-t">${esc(s.text)}</span></li>`;
+    const done = store.isDone(s.id);
+    const here = stepMarkers(s.id).filter((m) => allowed(m.layer));
+    return `<li class="ps ${done ? "done" : ""}"><label class="ps-l"><input type="checkbox" data-pstep="${s.id}" ${done ? "checked" : ""}><span class="ps-ic" aria-hidden="true">${ico(s.kind)}</span><span class="ps-t">${esc(s.text)}</span></label>${here.length ? `<button type="button" class="ps-loc" data-plocate="${s.id}" aria-label="Show on the map: ${esc(s.text.slice(0, 60))}"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M12 21s7-6.2 7-11.5A7 7 0 0 0 5 9.5C5 14.8 12 21 12 21Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><circle cx="12" cy="9.5" r="2.4" fill="currentColor"/></svg><span>${here.length > 1 ? here.length + " places" : "Show"}</span></button>` : ""}</li>`;
+  }).join("");
+}
+
+function phasePanelHTML(pid, compact) {
+  const pi = PHASES.findIndex((p) => p.id === pid);
+  const p = PHASES[pi];
+  const [d, t] = phaseCounts(pi);
+  const world = PHASES.filter((x) => Boolean(x.dlc) === Boolean(p.dlc));
+  const at = world.indexOf(p);
+  const prev = world[at - 1], next = world[at + 1];
+  const head = `<button type="button" class="ms-x" data-close aria-label="Close details">&times;</button>
+    <div class="ms-h"><span class="ms-num">${phaseLabel(pi)}</span><div><b>${esc(p.n)}</b><small>${esc(p.sub)} · ${d}/${t} steps done</small></div></div>
+    <span class="pg-bar" aria-hidden="true"><i style="width:${t ? Math.round((d / t) * 100) : 0}%"></i></span>`;
+  const nav = `<div class="ms-act"><button type="button" class="btn" data-phasego="${prev?.id || ""}" ${prev ? "" : "disabled"} aria-label="Previous phase">&lsaquo; Prev</button><button type="button" class="btn" data-phasego="${next?.id || ""}" ${next ? "" : "disabled"} aria-label="Next phase">Next &rsaquo;</button><button type="button" class="btn" data-open="${p.id}">Open in route</button></div>`;
+  if (compact) return `${head}<div class="ms-act"><button type="button" class="btn primary" data-stepsbelow>Steps below &darr;</button><button type="button" class="btn" data-open="${p.id}">Open in route</button></div>`;
+  return `${head}<ol class="ps-list">${phaseStepsHTML(pid)}</ol>${nav}`;
+}
+
+// Not maximized: the checklist sits under the map, so the map keeps the whole screen.
+function paintPhaseCard() {
+  const card = $("mapPhaseCard");
+  const pid = !fs && phaseOf(selected);
+  if (!pid) { card.hidden = true; return; }
+  const keep = document.activeElement?.closest?.("#mapPhaseCard") ? document.activeElement.dataset.pstep : null;
+  const top = card.querySelector(".ps-list")?.scrollTop || 0;
+  card.hidden = false;
+  card.innerHTML = phasePanelHTML(pid, false);
+  card.querySelector(".ps-list").scrollTop = top;
+  if (keep) card.querySelector(`[data-pstep="${CSS.escape(keep)}"]`)?.focus({ preventScroll: true });
+}
+
+function selectPhase(pid, fly = true) {
+  const pi = PHASES.findIndex((p) => p.id === pid);
+  if (pi < 0) return;
+  const p = PHASES[pi];
+  if (scope() === "both") { const w = p.dlc ? "dlc" : "base"; if (picked !== w && (picked || "base") !== w) { picked = w; saveLayer(); syncChrome(); setMode(mode()); } }
+  const m = D.byId.get(D.focus[pid]);
+  if (fly && m && allowed(m.layer)) {
+    if (m.layer !== shown) { under = m.layer === "under"; saveLayer(); syncChrome(); if (mode() !== shown) setMode(mode()); }
+    goTo(m, 2);
+  }
+  showSheet({ phase: pid });
+}
+
+// Show where a step happens: one marker opens its details, several are framed together.
+function focusStep(stepId) {
+  const from = phaseOf(selected) || PHASES[stepById.get(stepId)?.pi]?.id;
+  const list = stepMarkers(stepId).filter((m) => allowed(m.layer));
+  if (!list.length) { status("This step has no marker on the map."); return; }
+  const first = list[0];
+  if (list.length === 1 || list.some((m) => m.layer !== first.layer)) { goTo(first); selectMarker(first, from); return; }
+  if (first.layer !== shown) { under = first.layer === "under"; saveLayer(); syncChrome(); setMode(mode()); }
+  const ll = list.map((m) => [-m.y, m.x]);
+  const o = { padding: [70, 70], maxZoom: Math.min(map.getMaxZoom(), fitZ + 3), animate: !mq("(prefers-reduced-motion: reduce)"), duration: 0.7 };
+  map.flyToBounds(ll, o);
+  status(`${list.length} places for this step, ringed on the map.`);
+}
+
+function wirePhasePanels() {
+  const handle = (e) => {
+    const t = e.target;
+    if (t.matches?.("[data-pstep]") && e.type === "change") { toggleStep(t.dataset.pstep); return; }
+    if (e.type !== "click") return;
+    const b = t.closest("button");
+    if (!b) return;
+    if (b.dataset.plocate) focusStep(b.dataset.plocate);
+    else if (b.dataset.phasego) selectPhase(b.dataset.phasego);
+    else if (b.dataset.stepsbelow !== undefined) $("mapPhaseCard").scrollIntoView({ block: "start", behavior: mq("(prefers-reduced-motion: reduce)") ? "auto" : "smooth" });
+    else if (b.dataset.backphase) showSheet({ phase: b.dataset.backphase });
+    // The sheet has its own close and open handlers; the card under the map needs them here.
+    else if (e.currentTarget.id === "mapPhaseCard" && b.dataset.close !== undefined) closeSheet();
+    else if (e.currentTarget.id === "mapPhaseCard" && b.dataset.open) emit("phase", b.dataset.open);
+  };
+  for (const id of ["mapPhaseCard", "mapSheet"]) { $(id).addEventListener("click", handle); $(id).addEventListener("change", handle); }
 }
 
 // Ticking a marker also ticks a route step that covers only that marker (one boss, one item), and the
@@ -631,9 +748,9 @@ async function findMe() {
   showSheet({ phase: p.id });
 }
 
-function selectMarker(m) {
+function selectMarker(m, from) {
   if (!mq("(min-width: 900px)") && !$("mapPanel").hidden) setPanel(false, false);
-  showSheet({ m });
+  showSheet({ m, from: from ?? phaseOf(selected) ?? undefined });
 }
 
 function search(q) {
@@ -678,7 +795,7 @@ export function renderMap() {
   if (!visible()) { dirty = true; return; }
   if (selected?.phase && Boolean(PHASES.find((p) => p.id === selected.phase)?.dlc) !== (world() === "dlc")) selected = null;
   if (mode() !== shown) setMode(mode());
-  else { refreshPins(); refreshItems(); cv.redraw(); if (selected?.m) showSheet({ m: selected.m }, true); }
+  else { refreshPins(); refreshItems(); cv.redraw(); if (selected) showSheet(selected, true); }
 }
 
 function wireMap() {
@@ -697,7 +814,9 @@ function wireMap() {
   });
   map.on("click", (e) => {
     const m = cv.hit(e.containerPoint, cv.tol());
-    if (m) selectMarker(m); else closeSheet();
+    if (m) selectMarker(m);
+    else if (selected?.m && selected.from) showSheet({ phase: selected.from });
+    else closeSheet();
   });
   wireMini();
   map.on("moveend zoomend", () => { saveView(); zoomState(); });
@@ -727,10 +846,15 @@ export function initMap() {
     else if (kind === "mapprefs" && detail !== "local") applyPrefs();
   });
   sync.onStatus(paintSaveNote);
-  $("phaseList").addEventListener("click", (e) => {
+  $("phaseList").addEventListener("click", async (e) => {
     const t = e.target.closest("[data-phase]");
-    if (t) open(t.dataset.phase);
+    if (!t) return;
+    await ensureMap();
+    if (!map) return;
+    selectPhase(t.dataset.phase);
+    if (!fs) $("mapPhaseCard").scrollIntoView({ block: "nearest", behavior: mq("(prefers-reduced-motion: reduce)") ? "auto" : "smooth" });
   });
+  wirePhasePanels();
   $("mapZoom").addEventListener("click", (e) => {
     const b = e.target.closest("button");
     if (!b || !map) return;
@@ -858,6 +982,13 @@ export function initMap() {
   };
   on("shown", (id) => { if (id === "map") shown_(); else if (fs) setFs(false); });
   // Route steps can emit("locate", stepId) to open the map at the step's first location.
+  on("mapphase", async (pid) => {
+    emit("tab", "map");
+    await ensureMap();
+    if (!map) return;
+    map.invalidateSize({ animate: false });
+    selectPhase(pid);
+  });
   on("locate", async (stepId) => {
     emit("tab", "map");
     await ensureMap();
@@ -865,7 +996,7 @@ export function initMap() {
     if (!m) return;
     map.invalidateSize({ animate: false });
     goTo(m);
-    selectMarker(m);
+    selectMarker(m, PHASES[stepById.get(stepId)?.pi]?.id);
   });
   if (visible()) shown_();
 }
