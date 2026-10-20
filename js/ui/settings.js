@@ -145,7 +145,7 @@ export function initSettings() {
   $("resetBtn").addEventListener("click", () => { $("resetBtn").hidden = true; $("resetConfirm").hidden = false; });
   $("resetNo").addEventListener("click", () => { $("resetBtn").hidden = false; $("resetConfirm").hidden = true; });
   $("resetYes").addEventListener("click", () => {
-    store.resetProgress();
+    store.resetProgress([...validIds]);
     $("resetBtn").hidden = false;
     $("resetConfirm").hidden = true;
     refreshBackup();

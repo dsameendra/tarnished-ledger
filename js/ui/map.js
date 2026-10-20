@@ -15,6 +15,7 @@ let picked = null;
 let selected = null;
 let zoom = null; // null = fit the card width
 let recenter = true;
+let basePos = null;
 
 const phaseDone = (pi) => {
   const l = tickSteps.filter((s) => s.pi === pi);
@@ -66,7 +67,9 @@ function baseSVG(cur) {
     ...REGIONS.map(([n, x, y, rx, ry]) => [x * K, (y - ry) * K + 16, n.length * 5.2, 9]),
     ...UNDERGROUND.filter(([n]) => !n.startsWith("Siofra")).map(([n, x, y, rx, ry]) => [x * K, (y + ry) * K + 13, n.length * 3.4, 8]),
   ];
-  const pos = spread(list.map(([p]) => [p.id, PINS[p.id][0] * K, PINS[p.id][1] * K]), PIN_R * 2.4, W, H, boxes);
+  // Pin positions depend only on static data, so the relaxation runs once instead of on every tick.
+  basePos ||= spread(list.map(([p]) => [p.id, PINS[p.id][0] * K, PINS[p.id][1] * K]), PIN_R * 2.4, W, H, boxes);
+  const pos = basePos;
   let h = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Schematic map of the Lands Between with the route phases" class="${layer === "under" ? "dim" : ""} ${layer === "surface" ? "hide-under" : ""}">`;
   REGIONS.forEach(([n, x, y, rx, ry]) => { h += `<ellipse class="rg" cx="${x * K}" cy="${y * K}" rx="${rx * K}" ry="${ry * K}"/>`; });
   UNDERGROUND.forEach(([n, x, y, rx, ry]) => { h += `<ellipse class="rg under" cx="${x * K}" cy="${y * K}" rx="${rx * K}" ry="${ry * K}"/>`; });
@@ -111,6 +114,8 @@ function pickCard(pos) {
 }
 
 export function renderMap() {
+  // Nothing to draw while the tab is hidden; the "shown" handler renders it when the player opens it.
+  if ($("v-map").hidden) return;
   const w = world();
   const cur = currentPhase();
   const sc = scope();
