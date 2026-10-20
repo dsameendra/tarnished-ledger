@@ -1,0 +1,22 @@
+name: Route correction
+description: A step is wrong, missing or out of order
+labels: [route]
+body:
+  - type: input
+    id: where
+    attributes:
+      label: Phase and step
+      description: For example "Phase 9, Siofra River & Nokron, 'Defeat ...'"
+    validations:
+      required: true
+  - type: textarea
+    id: what
+    attributes:
+      label: What is wrong, and what should it say
+    validations:
+      required: true
+  - type: input
+    id: source
+    attributes:
+      label: Source
+      description: Link to a wiki page, guide or video timestamp
