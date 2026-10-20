@@ -16,15 +16,21 @@ export const DEFAULTS = {
   tips: true,
   autoopen: true,
   awake: true,
+  dlc: false,
+  focus: "both",
 };
 
-let state = { v: 2, marks: {}, settings: { ...DEFAULTS }, closed: {}, lastBackup: 0 };
+const PROFILE_KEYS = ["platform", "dlc", "focus"];
+export const COUNTER_MAX = { sf: 50, rsa: 25 };
+
+let state = { v: 3, marks: {}, counters: {}, profileT: 0, settings: { ...DEFAULTS }, closed: {}, lastBackup: 0 };
 const listeners = new Set();
 let storageOK = true;
 
 export const get = () => state;
 export const isDone = (id) => state.marks[id]?.[0] === 1;
 export const setting = (k) => state.settings[k];
+export const counter = (id) => state.counters[id]?.[0] || 0;
 export const isStorageOK = () => storageOK;
 export function onChange(fn) { listeners.add(fn); return () => listeners.delete(fn); }
 function emit(kind, detail) { listeners.forEach((fn) => fn(kind, detail)); }
@@ -48,6 +54,8 @@ export function load() {
         marks: s.marks || {},
         settings: { ...DEFAULTS, ...(s.settings || {}) },
         closed: s.closed || {},
+        counters: s.counters || {},
+        profileT: s.profileT || 0,
       };
       return;
     }
@@ -73,8 +81,16 @@ export function setDone(id, value) {
 
 export function setSetting(key, value) {
   state.settings[key] = value;
+  if (PROFILE_KEYS.includes(key)) state.profileT = Date.now();
   write();
   emit("settings", key);
+}
+
+export function setCounter(id, value) {
+  const max = COUNTER_MAX[id] ?? 0;
+  state.counters[id] = [Math.max(0, Math.min(max, Math.round(value))), Date.now()];
+  write();
+  emit("counters");
 }
 
 export function setClosed(id, closed) {
@@ -113,16 +129,43 @@ export function mergeMarks(remote) {
   return changed;
 }
 
+// Merge counters and the shared profile (platform, DLC choice) from a remote snapshot.
+export function mergeExtras(remote) {
+  let counters = false;
+  for (const [id, r] of Object.entries(remote?.counters || {})) {
+    if (!(id in COUNTER_MAX) || !Array.isArray(r) || r.length < 2) continue;
+    const l = state.counters[id];
+    if (!l || r[1] > l[1]) { state.counters[id] = [Math.max(0, Math.min(COUNTER_MAX[id], Number(r[0]) || 0)), Number(r[1]) || 0]; counters = true; }
+  }
+  const prof = remote?.profile;
+  const changed = [];
+  if (prof && Number(prof.t) > state.profileT) {
+    for (const k of PROFILE_KEYS) {
+      if (k in prof && prof[k] !== state.settings[k]) { state.settings[k] = prof[k]; changed.push(k); }
+    }
+    state.profileT = Number(prof.t);
+  }
+  if (counters || changed.length) write();
+  if (counters) emit("counters");
+  changed.forEach((k) => emit("settings", k));
+  return counters || changed.length > 0;
+}
+
 // True when remote already holds everything local knows.
 export function remoteCovers(remote) {
-  return Object.entries(state.marks).every(([id, l]) => {
-    const r = remote?.[id];
+  const marks = remote?.marks || {};
+  const okMarks = Object.entries(state.marks).every(([id, l]) => {
+    const r = marks[id];
     return r && r[1] >= l[1];
   });
+  const okCounters = Object.entries(state.counters).every(([id, l]) => (remote?.counters?.[id]?.[1] || 0) >= l[1]);
+  return okMarks && okCounters && (remote?.profile?.t || 0) >= state.profileT;
 }
 
 export function snapshot() {
-  return { app: "tarnished-ledger", v: 2, savedAt: Date.now(), marks: state.marks };
+  const profile = { t: state.profileT };
+  PROFILE_KEYS.forEach((k) => { profile[k] = state.settings[k]; });
+  return { app: "tarnished-ledger", v: 3, savedAt: Date.now(), marks: state.marks, counters: state.counters, profile };
 }
 
 // Accepts a v2 snapshot, a legacy "ER1:" code, or a v1 backup. Returns the number of done steps.
@@ -150,6 +193,12 @@ export function importData(input, validIds) {
     const done = Array.isArray(m) ? m[0] : m;
     state.marks[id] = [done ? 1 : 0, now + 1];
     if (done) n++;
+  }
+  if (input.counters && typeof input.counters === "object") {
+    for (const [id, c] of Object.entries(input.counters)) {
+      if (id in COUNTER_MAX && Array.isArray(c)) state.counters[id] = [Math.max(0, Math.min(COUNTER_MAX[id], Number(c[0]) || 0)), now + 1];
+    }
+    emit("counters");
   }
   write();
   emit("marks");

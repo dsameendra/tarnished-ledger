@@ -1,15 +1,25 @@
 // Derived lookups over the route data. Everything here is pure except for reads from the store.
 
-import { PHASES } from "../data/route.js";
+import { PHASES as BASE_PHASES } from "../data/route.js";
+import { DLC_PHASES } from "../data/dlc-route.js";
+import { GOALS } from "../data/dlc-goals.js";
 import { TROPHIES, COLLECTIONS } from "../data/trophies.js";
-import { isDone } from "./store.js";
+import { isDone, setting, counter } from "./store.js";
 
-export { PHASES, TROPHIES, COLLECTIONS };
+export { TROPHIES, COLLECTIONS, GOALS };
+
+export const PHASES = [
+  ...BASE_PHASES.map((p) => ({ ...p, dlc: false })),
+  ...DLC_PHASES.map((p) => ({ ...p, dlc: true })),
+];
+const baseCount = BASE_PHASES.length;
+export const phaseLabel = (pi) => (PHASES[pi].dlc ? "D" + (pi - baseCount + 1) : String(pi));
 
 export const steps = [];
 export const stepById = new Map();
 export const byTrophy = {};
 export const byCollectible = {};
+export const byGoal = {};
 
 PHASES.forEach((phase, pi) => phase.s.forEach(([kind, text, opts], si) => {
   const step = { id: `${phase.id}.${si}`, kind, text, opts: opts || {}, pi };
@@ -17,6 +27,7 @@ PHASES.forEach((phase, pi) => phase.s.forEach(([kind, text, opts], si) => {
   stepById.set(step.id, step);
   if (step.opts.tr) byTrophy[step.opts.tr] = step;
   if (step.opts.c) byCollectible[step.opts.c] = step;
+  if (step.opts.g) byGoal[step.opts.g] = step;
 }));
 
 export const tickSteps = steps.filter((s) => s.kind !== "tip");
@@ -29,9 +40,21 @@ Object.entries(COLLECTIONS).forEach(([group, [, items]]) => items.forEach(([id, 
   collectibleGroup[id] = group;
 }));
 export const collectibleIds = Object.keys(collectibleName);
+export const goalList = GOALS.flatMap(([, items]) => items);
+
+// "base", "both" or "dlc", from the two settings.
+export function scope() {
+  if (!setting("dlc")) return "base";
+  return setting("focus") === "dlc" ? "dlc" : "both";
+}
+export function inScope(pi) {
+  const s = scope();
+  return s === "both" || (s === "dlc") === Boolean(PHASES[pi].dlc);
+}
+export const scopedSteps = () => tickSteps.filter((s) => inScope(s.pi));
 
 export function currentPhase() {
-  const next = tickSteps.find((s) => !isDone(s.id));
+  const next = scopedSteps().find((s) => !isDone(s.id));
   return next ? next.pi : -1;
 }
 
@@ -42,14 +65,18 @@ export function trophyDone(key) {
   return step ? isDone(step.id) : false;
 }
 
+export const goalDone = (key) => Boolean(byGoal[key] && isDone(byGoal[key].id));
+
 export function counts() {
-  const stepsDone = tickSteps.filter((s) => isDone(s.id)).length;
+  const list = scopedSteps();
   const trophiesDone = TROPHIES.filter((t) => trophyDone(t[0])).length;
   const legendDone = collectibleIds.filter((id) => byCollectible[id] && isDone(byCollectible[id].id)).length;
   return {
-    steps: [stepsDone, tickSteps.length],
+    steps: [list.filter((s) => isDone(s.id)).length, list.length],
     trophies: [trophiesDone, TROPHIES.length],
     legends: [legendDone, collectibleIds.length],
+    goals: [goalList.filter(([k]) => goalDone(k)).length, goalList.length],
+    blessings: [counter("sf") + counter("rsa"), 75],
   };
 }
 

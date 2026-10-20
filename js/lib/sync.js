@@ -72,7 +72,7 @@ async function readRemote() {
     const raw = await fetch(file.raw_url);
     text = await raw.text();
   }
-  try { return JSON.parse(text).marks || {}; } catch { return {}; }
+  try { return JSON.parse(text) || {}; } catch { return {}; }
 }
 
 async function writeRemote() {
@@ -87,7 +87,8 @@ export async function syncNow() {
   setStatus("busy", "Syncing…");
   try {
     const remote = await readRemote();
-    store.mergeMarks(remote);
+    store.mergeMarks(remote.marks);
+    store.mergeExtras(remote);
     if (!store.remoteCovers(remote)) await writeRemote();
     cfg.lastSync = Date.now();
     saveCfg();
@@ -148,7 +149,11 @@ export function init() {
     setStatus("idle", "Connected");
     syncNow();
   }
-  store.onChange((kind) => { if (kind === "marks") schedule(); });
+  const PROFILE = ["platform", "dlc", "focus"];
+  store.onChange((kind, detail) => {
+    if (running) return;
+    if (kind === "marks" || kind === "counters" || (kind === "settings" && PROFILE.includes(detail))) schedule();
+  });
   document.addEventListener("visibilitychange", () => {
     if (document.visibilityState === "visible" && isConnected() && Date.now() - lastRun > 20000) syncNow();
     if (document.visibilityState === "hidden" && isConnected()) { clearTimeout(timer); syncNow(); }

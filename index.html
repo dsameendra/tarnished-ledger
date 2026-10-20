@@ -39,7 +39,7 @@
   <aside class="rail">
     <div class="top">
       <img src="assets/icons/icon-180.png" alt="" width="44" height="44">
-      <h1>Tarnished's Ledger<small>Elden Ring 100% route</small></h1>
+      <h1>Tarnished's Ledger<small id="rail-sub">Elden Ring 100% route</small></h1>
     </div>
     <div class="pills">
       <span class="pill" id="savePill"><i></i><span>Saved on this device</span></span>
@@ -54,8 +54,10 @@
       </div>
       <div class="minis">
         <div class="mini"><span>Steps</span><span id="sSteps">0/0</span><div class="bar"><i id="bSteps"></i></div></div>
-        <div class="mini"><span id="lblTro">Trophies</span><span id="sTro">0/42</span><div class="bar"><i id="bTro"></i></div></div>
-        <div class="mini"><span>Legendaries</span><span id="sLeg">0/30</span><div class="bar"><i id="bLeg"></i></div></div>
+        <div class="mini" id="mTro"><span id="lblTro">Trophies</span><span id="sTro">0/42</span><div class="bar"><i id="bTro"></i></div></div>
+        <div class="mini" id="mLeg"><span>Legendaries</span><span id="sLeg">0/30</span><div class="bar"><i id="bLeg"></i></div></div>
+        <div class="mini" id="mGoal" hidden><span>DLC goals</span><span id="sGoal">0/0</span><div class="bar"><i id="bGoal"></i></div></div>
+        <div class="mini" id="mBless" hidden><span>Blessings</span><span id="sBless">0/75</span><div class="bar"><i id="bBless"></i></div></div>
       </div>
     </div>
 
@@ -86,6 +88,7 @@
         <button type="button" data-v="done" aria-pressed="false">Done</button>
       </div>
       <div id="troList"></div>
+      <div id="dlcGoals"></div>
     </section>
 
     <section id="v-col" hidden>
@@ -99,6 +102,7 @@
       <p class="note">A schematic of the Lands Between, not to scale. Numbers match the route phases. Tap one to open it.</p>
       <div class="mapcard">
         <div class="maptools">
+          <div class="seg" id="mapWorld" role="group" aria-label="Map" hidden><button type="button" data-v="base" aria-pressed="true">Lands Between</button><button type="button" data-v="dlc" aria-pressed="false">Shadow Realm</button></div>
           <div class="seg" id="mapLayer" role="group" aria-label="Map layer">
             <button type="button" data-v="both" aria-pressed="true">All</button>
             <button type="button" data-v="surface" aria-pressed="false">Surface</button>
@@ -130,6 +134,12 @@
           <button type="button" data-v="silver" aria-label="Ash silver" style="background:#9a9ca4"></button></div></div>
         <div class="set"><span class="lbl">Text size</span><div class="seg" data-set="size" role="group" aria-label="Text size"><button type="button" data-v="s">Small</button><button type="button" data-v="m">Medium</button><button type="button" data-v="l">Large</button></div></div>
         <div class="set"><span class="lbl">Compact steps</span><button type="button" class="switch" role="switch" data-sw="compact" aria-label="Compact steps"></button><span class="hint">Tighter rows without icons or tags.</span></div>
+      </div>
+
+      <div class="group">
+        <h3>Content</h3>
+        <div class="set"><span class="lbl">Shadow of the Erdtree</span><button type="button" class="switch" role="switch" data-sw="dlc" aria-label="Include Shadow of the Erdtree"></button><span class="hint">Adds the DLC route, goals and blessing counters. The DLC has no trophies, so it never changes your trophy list.</span></div>
+        <div class="set" id="focusRow" hidden><span class="lbl">Playing</span><div class="seg" data-set="focus" role="group" aria-label="What you are playing"><button type="button" data-v="both">Main game and DLC</button><button type="button" data-v="dlc">DLC only</button></div><span class="hint">DLC only hides the main game route, trophies and legendaries. Your ticks are kept.</span></div>
       </div>
 
       <div class="group">

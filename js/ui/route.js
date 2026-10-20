@@ -1,14 +1,15 @@
 import * as store from "../lib/store.js";
 import { $, $$, emit, on } from "../lib/dom.js";
-import { PHASES, steps, tickSteps, stepById, currentPhase, phaseCounts, collectibleName, collectibleGroup, trophyName, wikiUrl } from "../lib/model.js";
+import { PHASES, steps, tickSteps, scopedSteps, inScope, phaseLabel, stepById, currentPhase, phaseCounts, collectibleName, collectibleGroup, trophyName, wikiUrl, goalList } from "../lib/model.js";
 import { ico, tickSVG, COLLECTION_ICON } from "../lib/icons.js";
 import { BOSS_TERMS } from "../data/links.js";
-import { AREAS } from "../data/map.js";
+import { AREAS, DLC_AREAS } from "../data/map.js";
 import { trophyWord } from "../lib/labels.js";
 
 let programmatic = false;
 let query = "";
 
+const goalName = Object.fromEntries(goalList.map(([k, n]) => [k, n]));
 const stepIcon = (s) => (s.opts.c ? COLLECTION_ICON[collectibleGroup[s.opts.c]] : s.kind);
 
 function chips(s) {
@@ -20,6 +21,7 @@ function chips(s) {
   if (k === "key") out.push('<span class="chip key">Key item</span>');
   if (k === "warn") out.push("<span class=\"chip miss\">Don't miss</span>");
   if (s.opts.c) out.push(`<span class="chip legend">Legendary · ${collectibleName[s.opts.c]}</span>`);
+  if (s.opts.g) out.push(`<span class="chip trophy">DLC goal · ${goalName[s.opts.g]}</span>`);
   if (s.opts.tr) out.push(`<span class="chip trophy">${trophyWord()} · ${trophyName[s.opts.tr]}</span>`);
   return out.length ? `<div class="chips">${out.join("")}</div>` : "";
 }
@@ -44,15 +46,16 @@ const attr = (t) => t.replace(/<[^>]+>/g, "").replace(/"/g, "&quot;").toLowerCas
 
 function phaseHTML(p, pi, openId) {
   const items = steps.filter((s) => s.pi === pi).map(stepHTML).join("");
-  const area = AREAS[p.id] ? `<div class="ph-links"><a href="${wikiUrl(AREAS[p.id])}" target="_blank" rel="noopener">${AREAS[p.id]} on the wiki ↗</a></div>` : "";
+  const term = AREAS[p.id] || DLC_AREAS[p.id];
+  const area = term ? `<div class="ph-links"><a href="${wikiUrl(term)}" target="_blank" rel="noopener">${term} on the wiki ↗</a></div>` : "";
   const open = store.setting("autoopen") ? pi === openId : !store.get().closed[p.id];
   return `<details class="phase" id="p-${p.id}" data-pid="${p.id}" ${open ? "open" : ""}>
-<summary><span class="num">${pi}</span><span class="ph-title"><h3>${p.n}</h3><small>${p.sub}</small><div class="ph-bar"><i></i></div></span><span class="count"></span></summary>
+<summary><span class="num">${phaseLabel(pi)}</span><span class="ph-title"><h3>${p.n}</h3><small>${p.sub}</small><div class="ph-bar"><i></i></div></span><span class="count"></span></summary>
 ${area}<ol class="steps">${items}</ol></details>`;
 }
 
 export function renderRoute() {
-  $("phases").innerHTML = PHASES.map((p, pi) => phaseHTML(p, pi, currentPhase())).join("");
+  $("phases").innerHTML = PHASES.map((p, pi) => (inScope(pi) ? phaseHTML(p, pi, currentPhase()) : "")).join("");
   applyView();
   updateRoute();
 }
@@ -78,6 +81,7 @@ export function updateRoute() {
   PHASES.forEach((p, pi) => {
     const [d, t] = phaseCounts(pi);
     const el = $("p-" + p.id);
+    if (!el) return;
     el.querySelector(".count").textContent = t ? `${d}/${t}` : "Read";
     el.querySelector(".ph-bar i").style.width = (t ? (d / t) * 100 : 0) + "%";
     el.classList.toggle("done", t > 0 && d === t);
@@ -87,13 +91,13 @@ export function updateRoute() {
 }
 
 function renderNext() {
-  const n = tickSteps.find((s) => !store.isDone(s.id));
+  const n = scopedSteps().find((s) => !store.isDone(s.id));
   const el = $("next");
   if (!n) {
-    el.innerHTML = '<div class="eyebrow">Complete</div><div class="where">Every step is done</div><p>All trophies earned. The Lands Between are yours.</p>';
+    el.innerHTML = '<div class="eyebrow">Complete</div><div class="where">Every step is done</div><p>Everything in this route is done.</p>';
     return;
   }
-  el.innerHTML = `<div class="eyebrow">Up next · Phase ${n.pi}</div><div class="where">${PHASES[n.pi].n}</div><p>${n.text}</p>
+  el.innerHTML = `<div class="eyebrow">Up next · Phase ${phaseLabel(n.pi)}</div><div class="where">${PHASES[n.pi].n}</div><p>${n.text}</p>
 <div class="acts"><button type="button" class="btn primary" id="nextDone">Mark done</button><button type="button" class="btn" id="nextShow">Show in route</button></div>`;
   $("nextDone").onclick = () => toggle(n.id);
   $("nextShow").onclick = () => jump(n.id);
@@ -103,7 +107,8 @@ export function ensureCurrentOpen() {
   const cur = currentPhase();
   if (!store.setting("autoopen") || query || cur < 0) return;
   programmatic = true;
-  $("p-" + PHASES[cur].id).open = true;
+  const el = $("p-" + PHASES[cur].id);
+  if (el) el.open = true;
   programmatic = false;
 }
 
@@ -113,8 +118,10 @@ export function toggle(id) {
   const after = currentPhase();
   if (store.setting("autoopen") && after !== before && after >= 0 && !query) {
     programmatic = true;
-    if (PHASES[before]) $("p-" + PHASES[before].id).open = false;
-    $("p-" + PHASES[after].id).open = true;
+    const b = PHASES[before] && $("p-" + PHASES[before].id);
+    const a = $("p-" + PHASES[after].id);
+    if (b) b.open = false;
+    if (a) a.open = true;
     programmatic = false;
   }
 }
@@ -126,10 +133,12 @@ export function jump(id) {
   if (query) { $("q").value = ""; setQuery(""); }
   if (store.setting("hide") && store.isDone(id)) store.setSetting("hide", false);
   programmatic = true;
-  $("p-" + PHASES[s.pi].id).open = true;
+  const ph = $("p-" + PHASES[s.pi].id);
+  if (ph) ph.open = true;
   programmatic = false;
   requestAnimationFrame(() => {
     const li = $("s-" + id);
+    if (!li) return;
     li.scrollIntoView({ behavior: "smooth", block: "center" });
     li.classList.add("flash");
     setTimeout(() => li.classList.remove("flash"), 1500);
