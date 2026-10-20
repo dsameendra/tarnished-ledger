@@ -106,3 +106,7 @@ Every category has its own icon in `js/data/map-icons.js` (`[glyph, colour]`), a
 - Steps that have markers get a **Show** button. One marker opens its details with a "Back to phase steps" button; several are framed together. The phase's markers are ringed on the map even when their category is switched off.
 - Prev and Next walk the route phase by phase and fly to each pin.
 - A marker's sheet lists the route steps that cover it as tickable rows. On the Route tab, steps with markers have a **Show on map** button.
+
+## Sharp tiles
+
+`assets/map/tiles/` holds a tile pyramid per map. The one-piece `assets/map/*.webp` always loads first, so there is something to look at immediately. When you zoom in, the tile layer fetches only the visible 512px tiles at the level that matches the zoom, and the blurrier picture shows underneath until each tile arrives. Tiles are served cache-first by the service worker (they never change under the same name), so a place you have looked at stays available offline. Surface 3 levels (up to 7544 px wide), underground and the Realm of Shadow 2 levels. To change the images, rebuild with `scripts/calibrate/hires.py` and bump the cache name in `sw.js`.

@@ -2,10 +2,10 @@
 // calls to api.github.com (sync) are never intercepted or cached.
 // Keep SHELL in step with the files in the repo: `npm run check` fails when they drift apart.
 const PREFIX = "tarnished-ledger-";
-const CACHE = PREFIX + "v13";
+const CACHE = PREFIX + "v14";
 const SHELL = [
   "./", "index.html", "manifest.webmanifest", "css/styles.css", "js/app.js",
-  "js/data/route.js", "js/data/trophies.js", "js/data/map.js", "js/data/links.js", "js/data/guide.js", "js/data/dlc-route.js", "js/data/dlc-goals.js", "js/data/map-calib.js", "js/data/map-categories.js", "js/data/map-markers.js", "js/data/map-guide.js", "js/data/map-places.js", "js/data/map-icons.js", "js/data/map-verbs.js", "js/ui/map-progress.js", "js/ui/map-route.js",
+  "js/data/route.js", "js/data/trophies.js", "js/data/map.js", "js/data/links.js", "js/data/guide.js", "js/data/dlc-route.js", "js/data/dlc-goals.js", "js/data/map-calib.js", "js/data/map-categories.js", "js/data/map-markers.js", "js/data/map-guide.js", "js/data/map-places.js", "js/data/map-icons.js", "js/data/map-tiles.js", "js/data/map-verbs.js", "js/ui/map-progress.js", "js/ui/map-route.js",
   "js/lib/store.js", "js/lib/sync.js", "js/lib/icons.js", "js/lib/wake.js", "js/lib/dom.js", "js/lib/labels.js", "js/lib/model.js",
   "js/ui/nav.js", "js/ui/rail.js", "js/ui/route.js", "js/ui/lists.js", "js/ui/map.js", "js/ui/map-canvas.js", "js/ui/map-data.js", "js/ui/map-glyphs.js", "js/ui/map-state.js",
   "vendor/leaflet/leaflet.js", "vendor/leaflet/leaflet.css", "js/ui/guide.js", "js/ui/settings.js",
@@ -37,6 +37,11 @@ self.addEventListener("fetch", (e) => {
   const font = FONT_HOSTS.includes(url.hostname);
   if (url.origin !== location.origin && !font) return;
 
+  // Map tiles never change under the same name and there are hundreds of them: serve from the cache first.
+  if (url.pathname.includes("/assets/map/tiles/")) {
+    e.respondWith(caches.open(CACHE).then((c) => c.match(req).then((hit) => hit || fetch(req).then((res) => { if (res.ok) c.put(req, res.clone()); return res; }))));
+    return;
+  }
   // Network first so a new deploy shows up on the next load. "no-cache" revalidates instead of trusting the
   // HTTP cache (GitHub Pages sends max-age=600). If the network is slow, a cached copy is used after a short wait.
   const network = fetch(req, font ? undefined : { cache: "no-cache" }).then((res) => {

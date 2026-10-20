@@ -7,6 +7,7 @@ import { ico } from "../lib/icons.js";
 import { toggle as toggleStep } from "./route.js";
 import { MAP_LINKS } from "../data/links.js";
 import { PLACES } from "../data/map-places.js";
+import { TILES } from "../data/map-tiles.js";
 import { loadMapData } from "./map-data.js";
 import { createMarkerCanvas } from "./map-canvas.js";
 import { iconURL } from "./map-glyphs.js";
@@ -21,7 +22,7 @@ const LAYER_NAME = { base: "Lands Between", under: "Underground", dlc: "Realm of
 const CONTENT = { base: [20, 8, 1872, 1952], under: [40, 32, 1964, 1916], dlc: [20, 16, 1856, 1932] };
 const SUBS = { ainsel: [36, 705, 716, 1936], siofra: [1118, 566, 1967, 1148], deeproot: [726, 57, 1252, 577] };
 const box = ([x0, y0, x1, y1]) => [[-y1, x0], [-y0, x1]];
-let L, map, D, cv, overlay, bounds, pinLayer, routeLayer, placeLayer;
+let L, map, D, cv, overlay, tiles, bounds, pinLayer, routeLayer, placeLayer;
 let fs = false; // maximized view
 let fitZ = 0;
 let shown = null; // mode on the map: base | under | dlc
@@ -106,6 +107,7 @@ async function start() {
     inertia: !calm, boxZoom: false, bounceAtZoomLimits: false, maxBoundsViscosity: 0.85, keyboardPanDelta: 120,
   });
   routeLayer = L.layerGroup().addTo(map);
+  map.createPane("hires").style.zIndex = 205; // sharp tiles over the one-piece image, under everything else
   map.createPane("places").style.zIndex = 440; // above the marker dots, below the route pins
   map.getPane("places").style.pointerEvents = "none";
   placeLayer = L.layerGroup().addTo(map);
@@ -180,8 +182,19 @@ function setMode(m) {
   bounds = L.latLngBounds(box(CONTENT[m]));
   const load = $("mapLoading");
   load.hidden = false; load.classList.remove("err"); load.textContent = "Loading map…";
-  const mine = L.imageOverlay(c.img, imgBounds, { alt: LAYER_NAME[m] + " map", className: "mapimg" }).addTo(map);
+  if (tiles) map.removeLayer(tiles);
+  tiles = null;
+  // The one-piece image is always there as the first paint and as the fallback. Tiles of the right sharpness are
+  // loaded on top of it as you zoom in, like a satellite map: the blurrier picture shows until the clearer one arrives.
+  const mine = L.imageOverlay(c.img, imgBounds, { alt: LAYER_NAME[m] + " map", className: "mapimg", pane: "tilePane" }).addTo(map);
   overlay = mine;
+  const t = TILES[m];
+  if (t) {
+    tiles = L.tileLayer(`${t.path}/{z}/{x}/{y}.webp`, {
+      pane: "hires", tileSize: t.size, noWrap: true, bounds: imgBounds, minZoom: 0, minNativeZoom: 0, maxNativeZoom: t.zmax, maxZoom: 12,
+      keepBuffer: 3, updateWhenZooming: false, updateInterval: 100, className: "maptile", errorTileUrl: "data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==",
+    }).addTo(map);
+  }
   mine.on("load", () => { if (overlay === mine) load.hidden = true; });
   mine.on("error", () => { if (overlay === mine) imageFailed(); });
   map.setMaxBounds(bounds.pad(0.15));

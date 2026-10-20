@@ -45,3 +45,11 @@ All scripts are run with the venv python from any directory; intermediates go to
 - Residual floor: MapGenie marker coordinates are hand-placed, so roughly 2 px rms noise per axis remains
   even with 100+ inliers; residuals showed no spatial pattern.
 - Normalised Web Mercator: `xm = (lng + 180) / 360`, `ym = (1 - ln(tan(lat) + 1/cos(lat)) / pi) / 2`.
+
+## Full-resolution tiles
+
+The three large map images (about 3.6x, 1.7x and 1.6x the screenshots) are cut into tile pyramids that the viewer loads on demand.
+
+1. `align_hires.py` matches each large image to its screenshot with SIFT features and prints the transform. All three are pure scalings with offsets under 0.2 screenshot pixels (median residual 0.05 to 0.1), so `js/data/map-calib.js` is unchanged.
+2. `hires.py <repo> <hires-dir> <work-dir>` removes the baked-in Site of Grace icons (the masks from `inpaint.py`, scaled up) with LaMa inpainting, cuts the pyramid into `assets/map/tiles/<name>/<z>/<x>/<y>.webp` (level z is the image at width x 2^z, 512px tiles), and writes the single-file `assets/map/<name>.webp` used for the first paint and the overview. Needs `requirements-hires.txt`. `FILL=telea` skips LaMa.
+3. `js/data/map-tiles.js` lists the pyramids; `js/ui/map.js` puts a tile layer over the one-piece image.
