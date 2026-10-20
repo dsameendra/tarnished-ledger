@@ -22,6 +22,7 @@ export function renderRail() {
   const [done, total] = c.steps;
   const frac = total ? done / total : 0;
   $("pct").textContent = Math.round(frac * 100) + "%";
+  $("ring").setAttribute("aria-label", `Overall progress: ${done} of ${total} steps, ${Math.round(frac * 100)}%`);
   $("ringVal").style.strokeDashoffset = 276.46 * (1 - frac);
   $("lblTro").textContent = trophiesWord();
   $("rail-sub").textContent = sc === "dlc" ? "Shadow of the Erdtree route" : sc === "both" ? "Elden Ring and Shadow of the Erdtree" : "Elden Ring 100% route";

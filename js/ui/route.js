@@ -9,6 +9,7 @@ import { trophyWord } from "../lib/labels.js";
 let programmatic = false;
 let query = "";
 
+const smooth = () => (matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth");
 const goalName = Object.fromEntries(goalList.map(([k, n]) => [k, n]));
 const stepIcon = (s) => (s.opts.c ? COLLECTION_ICON[collectibleGroup[s.opts.c]] : s.kind);
 
@@ -37,12 +38,13 @@ function stepHTML(s) {
   if (s.kind === "tip") return `<li class="step tip" data-text="${attr(s.text)}"><span class="tipmark" aria-hidden="true">✦</span><div class="txt"><p>${s.text}</p></div></li>`;
   const done = store.isDone(s.id);
   return `<li class="step ${s.kind === "warn" ? "warn" : ""} ${done ? "checked" : ""}" data-id="${s.id}" id="s-${s.id}" data-text="${attr(s.text)}">
-<button type="button" class="check" aria-label="Mark step done" aria-pressed="${done}">${tickSVG}</button>
+<button type="button" class="check" aria-label="${plain(s.text)}" aria-pressed="${done}">${tickSVG}</button>
 <span class="ico" aria-hidden="true">${ico(stepIcon(s))}</span>
 <div class="txt"><p>${s.text}</p>${chips(s)}${links(s)}</div></li>`;
 }
 
-const attr = (t) => t.replace(/<[^>]+>/g, "").replace(/"/g, "&quot;").toLowerCase();
+const plain = (t) => t.replace(/<[^>]+>/g, "").replace(/"/g, "&quot;");
+const attr = (t) => plain(t).toLowerCase();
 
 function phaseHTML(p, pi, openId) {
   const items = steps.filter((s) => s.pi === pi).map(stepHTML).join("");
@@ -50,7 +52,7 @@ function phaseHTML(p, pi, openId) {
   const area = term ? `<div class="ph-links"><a href="${wikiUrl(term)}" target="_blank" rel="noopener">${term} on the wiki ↗</a></div>` : "";
   const open = store.setting("autoopen") ? pi === openId : !store.get().closed[p.id];
   return `<details class="phase" id="p-${p.id}" data-pid="${p.id}" ${open ? "open" : ""}>
-<summary><span class="num">${phaseLabel(pi)}</span><span class="ph-title"><h3>${p.n}</h3><small>${p.sub}</small><div class="ph-bar"><i></i></div></span><span class="count"></span></summary>
+<summary><span class="num">${phaseLabel(pi)}</span><span class="ph-title"><h3>${p.n}</h3><small>${p.sub}</small><div class="ph-bar"><i></i></div></span><span class="count"></span><svg class="chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 10l5 5 5-5"/></svg></summary>
 ${area}<ol class="steps">${items}</ol></details>`;
 }
 
@@ -58,6 +60,7 @@ export function renderRoute() {
   $("phases").innerHTML = PHASES.map((p, pi) => (inScope(pi) ? phaseHTML(p, pi, currentPhase()) : "")).join("");
   applyView();
   updateRoute();
+  foldLabel();
 }
 
 export function applyView() {
@@ -83,6 +86,7 @@ export function updateRoute() {
     const el = $("p-" + p.id);
     if (!el) return;
     el.querySelector(".count").textContent = t ? `${d}/${t}` : "Read";
+    el.querySelector(".count").setAttribute("aria-label", t ? `${d} of ${t} steps done` : "Read only");
     el.querySelector(".ph-bar i").style.width = (t ? (d / t) * 100 : 0) + "%";
     el.classList.toggle("done", t > 0 && d === t);
     el.classList.toggle("current", pi === cur);
@@ -94,7 +98,7 @@ function renderNext() {
   const n = scopedSteps().find((s) => !store.isDone(s.id));
   const el = $("next");
   if (!n) {
-    el.innerHTML = '<div class="eyebrow">Complete</div><div class="where">Every step is done</div><p>Everything in this route is done.</p>';
+    el.innerHTML = '<div class="eyebrow">Complete</div><div class="where">Every step is done</div><p>Nothing left to do in this route. Untick a step if you need to revisit it.</p>';
     return;
   }
   el.innerHTML = `<div class="eyebrow">Up next · Phase ${phaseLabel(n.pi)}</div><div class="where">${PHASES[n.pi].n}</div><p>${n.text}</p>
@@ -139,7 +143,7 @@ export function jump(id) {
   requestAnimationFrame(() => {
     const li = $("s-" + id);
     if (!li) return;
-    li.scrollIntoView({ behavior: "smooth", block: "center" });
+    li.scrollIntoView({ behavior: smooth(), block: "center" });
     li.classList.add("flash");
     setTimeout(() => li.classList.remove("flash"), 1500);
   });
@@ -152,7 +156,7 @@ function focusPhase(pid) {
   programmatic = true;
   d.open = true;
   programmatic = false;
-  requestAnimationFrame(() => d.scrollIntoView({ behavior: "smooth", block: "start" }));
+  requestAnimationFrame(() => d.scrollIntoView({ behavior: smooth(), block: "start" }));
 }
 
 function setQuery(q) {
@@ -170,6 +174,15 @@ function setQuery(q) {
     if (hits) any = true;
   });
   $("noResults").hidden = any || !query;
+  $("qClear").hidden = !query;
+  const n = $$(".step[data-id]:not(.nomatch)").length;
+  $("qCount").hidden = !query || !any;
+  $("qCount").textContent = `${n} matching ${n === 1 ? "step" : "steps"}`;
+  foldLabel();
+}
+
+function foldLabel() {
+  $("foldBtn").textContent = $$("details.phase").some((d) => d.open) ? "Collapse all" : "Expand all";
 }
 
 export function initRoute() {
@@ -180,19 +193,23 @@ export function initRoute() {
     if (li) toggle(li.dataset.id);
   });
   box.addEventListener("toggle", (e) => {
-    if (programmatic || !e.target.matches("details.phase")) return;
+    if (!e.target.matches("details.phase")) return;
+    foldLabel();
+    if (programmatic) return;
     if (!store.setting("autoopen")) store.setClosed(e.target.dataset.pid, !e.target.open);
   }, true);
   $("q").addEventListener("input", (e) => setQuery(e.target.value));
   $("hideBtn").addEventListener("click", () => store.setSetting("hide", !store.setting("hide")));
-  $("foldBtn").addEventListener("click", (e) => {
+  $("foldBtn").addEventListener("click", () => {
     const ds = $$("details.phase");
     const anyOpen = ds.some((d) => d.open);
     programmatic = true;
     ds.forEach((d) => { d.open = !anyOpen; });
     programmatic = false;
-    e.target.textContent = anyOpen ? "Expand all" : "Collapse all";
+    foldLabel();
   });
+  $("q").addEventListener("keydown", (e) => { if (e.key === "Escape" && $("q").value) { $("q").value = ""; setQuery(""); } });
+  $("qClear").addEventListener("click", () => { $("q").value = ""; setQuery(""); $("q").focus(); });
   on("jump", jump);
   on("phase", focusPhase);
 }
