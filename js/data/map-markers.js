@@ -3,7 +3,7 @@
 //   layer: base | under | dlc.  sub: _ | ainsel | siofra | mohgwyn | deeproot.
 //   note: short plain text, only on guide categories ("" when absent).  wiki: IGN wiki page slug ("" when absent).
 export const MARKER_FILES = {"base":"assets/map/data/base.json","under":"assets/map/data/under.json","dlc":"assets/map/data/dlc.json"};
-export const MARKER_COUNTS = {"base":4880,"under":711,"dlc":1869};
+export const MARKER_COUNTS = {"base":4879,"under":711,"dlc":1869};
 export const F = { id: 0, cat: 1, lat: 2, lng: 3, title: 4, layer: 5, sub: 6, note: 7, wiki: 8 };
 const cache = new Map();
 // Loads one layer ("base", "under" or "dlc") once and returns its rows.

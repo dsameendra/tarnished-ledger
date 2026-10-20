@@ -42,7 +42,7 @@ const NOTE_MAX = 160;
 // Links and bold are stripped; loot lists, utility and tips are left out.
 function note(desc) {
   if (!desc) return "";
-  let t = String(desc).replace(/\[([^\]]*)\]\([^)]*\)/g, "$1").replace(/\*\*|__/g, "");
+  let t = String(desc).replace(/\[((?:[^\[\]]|\[[^\]]*\])*)\]\([^)]*\)/g, "$1").replace(/\*\*|__/g, "");
   const m = t.match(/Location:\s*([^\n]*)/i);
   if (m && m[1].trim()) t = m[1];
   else t = t.split("\n").find((x) => x.trim()) || "";
@@ -75,6 +75,7 @@ function add(l, mapId) {
     // interior tiles that cannot be placed on the overworld. All are general loot.
     stats.dropped.push([l.id, "no region, off map"]); return;
   }
+  if (layer === "base" && +l.latitude > 0.92) { stats.dropped.push([l.id, "off map"]); return; }
   const guideish = k.guide;
   const row = [l.id, cat, r6(l.latitude), r6(l.longitude), title, layer, sub];
   const n = guideish ? note(l.description) : "";

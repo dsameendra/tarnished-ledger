@@ -3,6 +3,9 @@ import { PHASES } from "../js/data/route.js";
 import { DLC_PHASES } from "../js/data/dlc-route.js";
 import { GOALS, COUNTERS } from "../js/data/dlc-goals.js";
 import { TROPHIES, COLLECTIONS } from "../js/data/trophies.js";
+import { readFileSync } from "node:fs";
+import { CATS } from "../js/data/map-categories.js";
+import { STEP_LOCS, PHASE_FOCUS, TROPHY_LOCS, COLLECT_LOCS, GOAL_LOCS } from "../js/data/map-guide.js";
 import { PINS, DLC_PINS, DLC_EDGES, DLC_AREAS, AREAS } from "../js/data/map.js";
 
 const errors = [];
@@ -38,5 +41,30 @@ for (const [a, b] of DLC_EDGES) if (!DLC_PINS[a] || !DLC_PINS[b]) err(`edge ${a}
 for (const c of COUNTERS) if (c.levels.at(-1) !== c.max) err(`counter ${c.id}: last level ${c.levels.at(-1)} != max ${c.max}`);
 for (const id of Object.keys(AREAS)) if (!seenPhase.has(id)) err(`AREAS has unknown phase ${id}`);
 
+
+// Map markers and the guide links. Dangling ids fail; unresolved items are only warned about.
+const warnings = [];
+const markerIds = new Set();
+const catIds = new Set(CATS.map((k) => k.id));
+for (const layer of ["base", "under", "dlc"]) {
+  for (const r of JSON.parse(readFileSync(new URL(`../assets/map/data/${layer}.json`, import.meta.url), "utf8"))) {
+    if (markerIds.has(r[0])) err(`duplicate marker id ${r[0]}`);
+    markerIds.add(r[0]);
+    if (!catIds.has(r[1])) err(`marker ${r[0]}: unknown category ${r[1]}`);
+  }
+}
+const stepIds = new Set([...PHASES, ...DLC_PHASES].flatMap((p) => p.s.map((_, i) => `${p.id}.${i}`)));
+const chk = (what, ids) => { for (const id of ids) if (!markerIds.has(id)) err(`${what}: location ${id} is not in the marker data`); };
+for (const [k, v] of Object.entries(STEP_LOCS)) { if (!stepIds.has(k)) err(`STEP_LOCS: unknown step ${k}`); chk(`STEP_LOCS ${k}`, v); }
+for (const [k, v] of Object.entries(PHASE_FOCUS)) { if (!seenPhase.has(k)) err(`PHASE_FOCUS: unknown phase ${k}`); chk(`PHASE_FOCUS ${k}`, [v]); }
+for (const [k, v] of Object.entries(TROPHY_LOCS)) { if (!trophyKeys.has(k)) err(`TROPHY_LOCS: unknown trophy ${k}`); chk(`TROPHY_LOCS ${k}`, v); }
+for (const [k, v] of Object.entries(COLLECT_LOCS)) { if (!collectibles.has(k)) err(`COLLECT_LOCS: unknown collectible ${k}`); chk(`COLLECT_LOCS ${k}`, [v]); }
+for (const [k, v] of Object.entries(GOAL_LOCS)) { if (!goalKeys.has(k)) err(`GOAL_LOCS: unknown goal ${k}`); chk(`GOAL_LOCS ${k}`, v); }
+for (const id of seenPhase) if (!PHASE_FOCUS[id]) err(`phase ${id} has no PHASE_FOCUS`);
+for (const c of collectibles) if (!COLLECT_LOCS[c]) warnings.push(`collectible ${c} has no map location`);
+for (const k of trophyKeys) if (!TROPHY_LOCS[k]) warnings.push(`trophy ${k} has no map location`);
+for (const k of goalKeys) if (!GOAL_LOCS[k]) warnings.push(`goal ${k} has no map location`);
+if (warnings.length) console.warn("warnings (unresolved map links):\n  " + warnings.join("\n  "));
+
 if (errors.length) { console.error(errors.join("\n")); process.exit(1); }
-console.log(`ok: ${seenPhase.size} phases, ${trophyKeys.size} trophies, ${goalKeys.size} goals`);
+console.log(`ok: ${seenPhase.size} phases, ${trophyKeys.size} trophies, ${goalKeys.size} goals, ${markerIds.size} markers`);
