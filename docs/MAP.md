@@ -11,7 +11,6 @@ The Map tab is a zoomable image map built on Leaflet 1.9.4 (BSD-2, vendored in `
 | `js/ui/map-glyphs.js` | Original vector glyphs per `glyph` key and their colours |
 | `js/ui/map-data.js` | Imports the data modules, projects markers to image pixels, builds lookups |
 | `js/ui/map-state.js` | localStorage: filters, last view per layer, found markers |
-| `js/dev/map-fixture.js` | Stand-in data for development, only used with `?mapdev` in the URL |
 
 ## Coordinates
 
@@ -56,7 +55,7 @@ Add a path in a `[-1, 1]` box to `D` in `js/ui/map-glyphs.js` and a colour in `C
 
 ## Developing without the real data
 
-Open the site with `?mapdev` (for example `http://localhost:8080/?mapdev#map`). `map-data.js` then loads `js/dev/map-fixture.js`, which draws placeholder art and generates about 6000 markers and a guide mapping for every phase. It also exposes `window.__tlMap()` for tests. The fixture is not listed in `sw.js`.
+Open the site with `?mapdebug` to expose `window.__tlMap()` (the Leaflet map, canvas layer and current filter state) for tests.
 
 ## Service worker
 

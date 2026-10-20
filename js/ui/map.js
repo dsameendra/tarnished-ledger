@@ -101,7 +101,7 @@ async function start() {
   wireMap();
   $("mapSearch").disabled = false;
   new ResizeObserver(() => { if (visible()) map.invalidateSize({ animate: false }); }).observe($("map"));
-  if (D.dev) window.__tlMap = () => ({ map, cv, D, mode: shown, enabled, selected });
+  if (/[?&]mapdebug\b/.test(location.search)) window.__tlMap = () => ({ map, cv, D, mode: shown, enabled, selected });
   setMode(mode());
 }
 
