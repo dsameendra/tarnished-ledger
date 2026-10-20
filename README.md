@@ -1,17 +1,17 @@
 # Tarnished's Ledger
 
-A step-by-step checklist for 100% completion of Elden Ring: all 42 trophies and achievements, every legendary item and all three ending trophies. It works as an installable app on iPhone and desktop.
+A step-by-step checklist for 100% completion of Elden Ring: all 42 trophies and achievements, every legendary item and all three ending trophies. Shadow of the Erdtree can be switched on in Settings as a DLC route with goals and blessing counters (the DLC has no trophies). It works as an installable app on iPhone and desktop.
 
 **Live site:** https://dsameendra.github.io/tarnished-ledger/
 
 ## Features
 
-- 25 ordered phases with tick-off steps, a route map and an "Up next" card
+- 25 ordered phases plus 12 optional DLC phases with tick-off steps, a route map and an "Up next" card
 - Trophy list with medals, plus Legendary armaments, ashes, spells and talismans
 - Endings guide covering the save-backup route and the NG / NG+ / NG++ route
 - Progress saves automatically on your device and works offline
 - Settings for theme, accent colour, text size, compact mode and keeping the screen on
-- Copy and paste progress codes to move progress between devices
+- Optional sync through a private GitHub gist, plus file and code backups
 
 ## Install on iPhone
 
@@ -32,16 +32,20 @@ Then open http://localhost:8080. The service worker only registers over HTTPS or
 
 ## Project layout
 
-| File | Purpose |
+| Path | Purpose |
 |---|---|
-| `index.html` | The whole app: markup, styles, route data and script |
-| `manifest.webmanifest` | Install name, colours and icons |
-| `sw.js` | Offline cache |
-| `icon-*.png` | App icons (180 for iOS, 192 and 512 for Android, a maskable 512) |
+| `index.html`, `css/styles.css` | App shell and styles |
+| `js/app.js` | Boot and event wiring |
+| `js/lib/` | Store, sync, derived model, icons, helpers |
+| `js/ui/` | One module per tab |
+| `js/data/` | Route, trophies, map, guide and DLC data |
+| `sw.js`, `manifest.webmanifest` | Offline cache and install metadata |
+| `scripts/check.mjs`, `test/` | Data checks and unit tests (`npm run check`, `npm test`) |
+| `docs/` | Architecture, data format, sync options, deploy notes |
 
 ## Editing the route
 
-Route data lives in the `PHASES` array inside `index.html`. Each step is `[kind, text, options]`, where `kind` is one of `go`, `boss`, `item`, `quest`, `warn`, `map`, `key` or `tip`. Options can link a step to a trophy (`tr`) or a legendary item (`c`). Bump the cache name in `sw.js` after a change so installed copies refresh.
+See [docs/DATA.md](docs/DATA.md). Bump the cache name in `sw.js` after a change so installed copies refresh.
 
 ## Credits and notice
 

@@ -1,0 +1,10 @@
+{
+  "name": "tarnished-ledger",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "check": "node scripts/check.mjs",
+    "test": "node --test test/",
+    "serve": "python3 -m http.server 8080"
+  }
+}
