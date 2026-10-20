@@ -25,8 +25,8 @@ const MOHGWYN_LNG = -0.66;
 // Route items carved out of bigger MapGenie categories: [location id, expected title].
 // The title is asserted so a changed upstream id fails the build instead of shipping the wrong pin.
 const VIRTUAL_IDS = {
-  90001: [[164813, "Grafted Blade Greatsword"], [166764, "Sword of Night and Flame"], [167907, "Ruins Greatsword"], [166820, "Marais Executioner's Sword"], [169162, "Bolt Of Gransax"], [167294, "Eclipse Shotel"], [169002, "Golden Order Greatsword"], [169010, "Devourer's Scepter"], [167891, "Dark Moon Greatsword"]],
-  90002: [[165318, "Lhutel The Headless"], [168255, "Redmane Knight Ogha"], [167634, "Mimic Tear Ashes"], [167674, "Ancient Dragon Knight Kristoff Ashes"], [168059, "Black Knife Tiche"], [167679, "Cleanrot Knight Finlay Ashes"]],
+  90001: [[164813, "Grafted Blade Greatsword"], [166764, "Sword of Night and Flame"], [167907, "Ruins Greatsword"], [166820, "Marais Executioner's Sword"], [169162, "Bolt of Gransax"], [167294, "Eclipse Shotel"], [169002, "Golden Order Greatsword"], [169010, "Devourer's Scepter"], [167891, "Dark Moon Greatsword"]],
+  90002: [[165318, "Lhutel the Headless"], [168255, "Redmane Knight Ogha"], [167634, "Mimic Tear Ashes"], [167674, "Ancient Dragon Knight Kristoff Ashes"], [168059, "Black Knife Tiche"], [167679, "Cleanrot Knight Finlay Ashes"]],
   90003: [[166816, "Flame of the Fell God"], [169246, "Greyoll's Roar"], [167814, "Comet Azur"], [169050, "Stars of Ruin"], [168441, "Elden Stars"], [168058, "Ranni's Dark Moon"], [168642, "Founding Rain of Stars"]],
   90004: [[165702, "Radagon Icon"], [166506, "Radagon's Soreseal"], [167647, "Godfrey Icon"], [168606, "Moon of Nokstella"], [169301, "Marika's Soreseal"], [169295, "Dragoncrest Greatshield Talisman"], [169443, "Old Lord's Talisman"], [168184, "Erdtree's Favor +2"]],
   90005: [[164496, "Dectus Medallion (Left)"], [166653, "Dectus Medallion (Right)"], [167191, "Haligtree Secret Medallion (Right)"], [167291, "Haligtree Secret Medallion (Left)"], [167202, "Rold Medallion"], [165269, "Academy Glintstone Key"], [169305, "Cursemark of Death"], [176421, "Discarded Palace Key"], [177447, "Dark Moon Ring"], [170239, "Fingerslayer Blade"], [169052, "Miniature Ranni"], [180903, "Carian Inverted Statue"], [170409, "Sellian Sealbreaker"], [176810, "Miquella's Needle"],
@@ -38,13 +38,14 @@ for (const [cat, list] of Object.entries(VIRTUAL_IDS)) for (const [id, title] of
 
 const clean = (s) => String(s ?? "").replace(/\s+/g, " ").trim();
 const NOTE_MAX = 160;
-// Plain-text note from MapGenie's markdown: prefer the "Location" line, drop links, bold and loot lists.
+// Plain-text note from MapGenie's markdown: the "Location" line if there is one, else the first line.
+// Links and bold are stripped; loot lists, utility and tips are left out.
 function note(desc) {
   if (!desc) return "";
   let t = String(desc).replace(/\[([^\]]*)\]\([^)]*\)/g, "$1").replace(/\*\*|__/g, "");
-  const m = t.match(/Location:\s*([\s\S]*?)(?:\n\s*\n|\n\s*(?:Loot|Reward|Utility|Effect|Type|Weapon Skill|Note|NB|Tip|Related Tower|Boss|Notable Items|Summonable)[^\n]*:|$)/i);
+  const m = t.match(/Location:\s*([^\n]*)/i);
   if (m && m[1].trim()) t = m[1];
-  else t = t.split(/\n\s*\n/)[0];
+  else t = t.split("\n").find((x) => x.trim()) || "";
   t = clean(t.replace(/^\s*[-*]\s+/gm, "").replace(/\bhttps?:\/\/\S+/g, ""));
   if (t.length > NOTE_MAX) t = t.slice(0, NOTE_MAX - 1).replace(/\s+\S*$/, "") + "…";
   return t;
@@ -60,9 +61,10 @@ function add(l, mapId) {
   const cat = v ? v.cat : l.category_id;
   const k = CAT_BY_ID[cat];
   if (!k) { stats.unknownCat.add(cat); return; }
-  const title = clean(l.title);
+  let title = clean(l.title);
   if (!title) { stats.dropped.push([l.id, "empty title"]); return; }
   if (v && title.toLowerCase() !== v.title.toLowerCase()) throw new Error(`id ${l.id}: expected "${v.title}", found "${title}"`);
+  if (v) title = v.title; // canonical capitalisation
   let layer = "base", sub = "_";
   if (mapId === 638) layer = "dlc";
   else if (UNDER[l.region_id]) {
@@ -76,7 +78,7 @@ function add(l, mapId) {
   const guideish = k.guide;
   const row = [l.id, cat, r6(l.latitude), r6(l.longitude), title, layer, sub];
   const n = guideish ? note(l.description) : "";
-  const w = guideish && l.ign_page_id ? String(l.ign_page_id) : "";
+  const w = guideish && cat !== 5658 && l.ign_page_id ? String(l.ign_page_id) : "";
   if (n || w) row.push(n);
   if (w) row.push(w);
   const key = [cat, title, row[2], row[3], layer].join("|");
