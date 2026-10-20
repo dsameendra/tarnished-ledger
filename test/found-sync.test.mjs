@@ -93,3 +93,15 @@ test("old map keys are folded in even when no other progress was saved yet", asy
   assert.equal(store.isFound(77), true);
   assert.ok(globalThis.localStorage.getItem("tarnished-ledger:v2"), "migrated data is written to the main store");
 });
+
+test("setDoneMany ticks and unticks several steps with one update", async () => {
+  const store = await boot();
+  let n = 0;
+  store.onChange((k) => { if (k === "marks") n++; });
+  store.setDoneMany(["a.1", "a.2", "a.3"], true);
+  assert.equal(n, 1);
+  assert.deepEqual(["a.1", "a.2", "a.3"].map((i) => store.isDone(i)), [true, true, true]);
+  store.setDoneMany(["a.1", "a.2"], false);
+  assert.deepEqual(["a.1", "a.2", "a.3"].map((i) => store.isDone(i)), [false, false, true]);
+  assert.ok(store.get().marks["a.1"][1] > store.get().marks["a.3"][1] - 1, "later change is newer");
+});

@@ -200,6 +200,13 @@ export function setDone(id, value) {
   emit("marks");
 }
 
+// Set several steps at once (a whole phase): one save and one update instead of one per step.
+export function setDoneMany(ids, value) {
+  for (const id of ids) state.marks[id] = [value ? 1 : 0, stamp(state.marks[id])];
+  write();
+  emit("marks");
+}
+
 export function setSetting(key, value) {
   state.settings[key] = value;
   if (PROFILE_KEYS.includes(key)) state.profileT = Date.now();

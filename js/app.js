@@ -10,6 +10,8 @@ import { renderGuide, initGuide } from "./ui/guide.js";
 import { initNav, renderNav } from "./ui/nav.js";
 import { initSettings, paintSettings, paintStorage, paintWake, refreshBackup } from "./ui/settings.js";
 
+const PREP_STEP = "prep.5";
+
 function renderAll() {
   renderRail();
   renderRoute();
@@ -45,6 +47,8 @@ function onSetting(key) {
 
 function boot() {
   store.load();
+  // The setup step in phase 0 is new: anyone who has already started the run has read the setup.
+  if (store.doneIds().length && !store.get().marks[PREP_STEP]) store.setDone(PREP_STEP, true);
   initNav();
   initRoute();
   initLists();

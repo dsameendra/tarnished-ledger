@@ -111,6 +111,7 @@ async function start() {
   placeLayer = L.layerGroup().addTo(map);
   stopLayer = L.layerGroup().addTo(map);
   arrowLayer = L.layerGroup().addTo(map);
+  breakLayer = L.layerGroup().addTo(map);
   pinLayer = L.layerGroup().addTo(map);
   map.createPane("route").style.zIndex = 450;
   cv = createMarkerCanvas(L, map, { isFound: (id) => doneId(id) });
@@ -452,7 +453,8 @@ function wireFs() {
 
 let routeCache = { key: null, route: null };
 let legsShown = [];
-let arrowLayer, stopLayer;
+let arrowLayer, stopLayer, breakLayer;
+let breaksShown = [];
 
 function getRoute() {
   const w = world();
@@ -476,6 +478,21 @@ function phaseAnchor(pid) {
   return st ? stopMarker(st) : D.byId.get(D.focus[pid]);
 }
 
+// Labels where the path leaves or enters this image (underground entrances and the like). They would crowd the
+// whole-map view, so they show for the phase you are on, or once you have zoomed in.
+function drawBreaks() {
+  if (!breakLayer) return;
+  breakLayer.clearLayers();
+  const near = map.getZoom() - fitZ >= 1.8, focus = focusPhases();
+  for (const br of breaksShown) {
+    if (!near && !focus.has(br.from.phase) && !focus.has(br.to.phase)) continue;
+    for (const [s, text] of [[br.from, `To ${LAYER_NAME[br.to.layer]}`], [br.to, `From ${LAYER_NAME[br.from.layer]}`]]) {
+      if (s.layer !== shown) continue;
+      L.marker([-s.y, s.x], { interactive: false, keyboard: false, pane: "route", icon: L.divIcon({ className: "mp-break-wrap", html: `<span class="mp-break">${esc(text)}</span>`, iconSize: [0, 0] }) }).addTo(breakLayer);
+    }
+  }
+}
+
 function drawArrows() {
   if (!arrowLayer) return;
   arrowLayer.clearLayers();
@@ -494,7 +511,7 @@ function refreshPins() {
   routeLayer.clearLayers();
   stopLayer.clearLayers();
   legsShown = [];
-  if (!ms.prefs().route) { arrowLayer.clearLayers(); refreshExtra(); return; }
+  if (!ms.prefs().route) { arrowLayer.clearLayers(); breakLayer.clearLayers(); breaksShown = []; refreshExtra(); return; }
   const route = getRoute();
   const st = stopStates(route, store.isDone);
   const cur = currentPhase();
@@ -530,13 +547,8 @@ function refreshPins() {
     el.setAttribute("role", "button");
     el.setAttribute("aria-label", `Phase ${phaseLabel(pi)}: ${p.n}`);
   });
-  // Where the path leaves or enters this image (underground entrances and the like).
-  for (const br of route.breaks) {
-    for (const [s, text] of [[br.from, `To ${LAYER_NAME[br.to.layer]}`], [br.to, `From ${LAYER_NAME[br.from.layer]}`]]) {
-      if (s.layer !== shown) continue;
-      L.marker([-s.y, s.x], { interactive: false, keyboard: false, pane: "route", icon: L.divIcon({ className: "mp-break-wrap", html: `<span class="mp-break">${esc(text)}</span>`, iconSize: [0, 0] }) }).addTo(pinLayer);
-    }
-  }
+  breaksShown = route.breaks.filter((br) => br.from.layer === shown || br.to.layer === shown);
+  drawBreaks();
   refreshExtra();
 }
 
@@ -903,7 +915,7 @@ function wireMap() {
   });
   wireMini();
   map.on("moveend zoomend", () => { saveView(); zoomState(); });
-  map.on("zoomend", drawArrows);
+  map.on("zoomend", () => { drawArrows(); drawBreaks(); });
   map.on("resize", () => { if (!restoring) { const c = map.getCenter(); limits(); map.setView(c, Math.max(map.getZoom(), map.getMinZoom()), { animate: false }); } });
   const tip = $("mapTip"), el = map.getContainer();
   let raf = 0;

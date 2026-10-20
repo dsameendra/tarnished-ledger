@@ -7,7 +7,8 @@ export const PHASES=[
 ["tip","Pick one weapon to upgrade all game. God-Slaying Armament needs a normal weapon at +25 or a special (somber) weapon at +10."],
 ["tip","Pick up every Stonesword Key you see. You will use them on: Night's Sacred Ground (Mimic Tear Ashes, up to 2), Golden Lineage Evergaol (Godfrey Icon), Sainted Hero's Grave (1 to 2), Cave of the Forlorn (2, for the Golden Order Greatsword) and the Marika's Soreseal gate. That is around 7 to 9 in total."],
 ["tip","Legendary Armaments and Talismans can be handed to you by another player in co-op. Legendary Ashen Remains and Spells cannot. Weapons from Remembrances don't count."],
-["tip","You don't need every weapon, spell or boss. Only the items and bosses in this list count."]]},
+["tip","You don't need every weapon, spell or boss. Only the items and bosses in this list count."],
+["go","Read the setup notes above, choose your route and your weapon, then tick this to start the run."]]},
 {id:"limw",n:"West Limgrave",sub:"Margit and the Roundtable",s:[
 ["go","Leave the tutorial cave and ride north to the Gatefront grace."],
 ["quest","Rest at Gatefront and accept Melina's offer. This unlocks Torrent and levelling up at graces."],

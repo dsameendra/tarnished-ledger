@@ -52,7 +52,7 @@ const attr = (t) => plain(t).toLowerCase();
 function phaseHTML(p, pi, openId) {
   const items = steps.filter((s) => s.pi === pi).map(stepHTML).join("");
   const term = AREAS[p.id] || DLC_AREAS[p.id];
-  const area = `<div class="ph-links">${term ? `<a href="${wikiUrl(term)}" target="_blank" rel="noopener">${term} on the wiki ↗</a>` : ""}<button type="button" class="maplink" data-mapphase="${p.id}">Show phase on map</button></div>`;
+  const area = `<div class="ph-links">${term ? `<a href="${wikiUrl(term)}" target="_blank" rel="noopener">${term} on the wiki ↗</a>` : ""}<button type="button" class="maplink" data-mapphase="${p.id}">Show phase on map</button><button type="button" class="maplink" data-phaseall="${p.id}" aria-pressed="false"></button></div>`;
   const open = store.setting("autoopen") ? pi === openId : !store.get().closed[p.id];
   return `<details class="phase" id="p-${p.id}" data-pid="${p.id}" ${open ? "open" : ""}>
 <summary><span class="num">${phaseLabel(pi)}</span><span class="ph-title"><h3>${p.n}</h3><small>${p.sub}</small><div class="ph-bar"><i></i></div></span><span class="count"></span><svg class="chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 10l5 5 5-5"/></svg></summary>
@@ -92,6 +92,8 @@ export function updateRoute() {
     el.querySelector(".count").setAttribute("aria-label", t ? `${d} of ${t} steps done` : "Read only");
     el.querySelector(".ph-bar i").style.width = (t ? (d / t) * 100 : 0) + "%";
     el.classList.toggle("done", t > 0 && d === t);
+    const all = el.querySelector("[data-phaseall]");
+    if (all) { all.hidden = !t; all.textContent = d === t ? "Mark phase not done" : "Mark phase done"; all.setAttribute("aria-pressed", String(d === t)); }
     el.classList.toggle("current", pi === cur);
   });
   renderNext();
@@ -117,6 +119,24 @@ export function ensureCurrentOpen() {
   const el = $("p-" + PHASES[cur].id);
   if (el) el.open = true;
   programmatic = false;
+}
+
+// Tick or untick every step of a phase. A phase that is fully done is unticked, otherwise it is completed.
+export function togglePhase(pid) {
+  const pi = PHASES.findIndex((p) => p.id === pid);
+  const ids = tickSteps.filter((s) => s.pi === pi).map((s) => s.id);
+  if (!ids.length) return;
+  const before = currentPhase();
+  store.setDoneMany(ids, !ids.every((id) => store.isDone(id)));
+  const after = currentPhase();
+  if (store.setting("autoopen") && after !== before && after >= 0 && !query) {
+    programmatic = true;
+    const b = PHASES[before] && $("p-" + PHASES[before].id);
+    const a = $("p-" + PHASES[after].id);
+    if (b) b.open = false;
+    if (a) a.open = true;
+    programmatic = false;
+  }
 }
 
 export function toggle(id) {
@@ -192,6 +212,8 @@ export function initRoute() {
   const box = $("phases");
   box.addEventListener("click", (e) => {
     if (e.target.closest("a")) return;
+    const pa = e.target.closest("[data-phaseall]");
+    if (pa) { togglePhase(pa.dataset.phaseall); return; }
     const mp = e.target.closest("[data-mapphase]");
     if (mp) { emit("mapphase", mp.dataset.mapphase); return; }
     const loc = e.target.closest("[data-locate]");

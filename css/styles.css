@@ -335,7 +335,7 @@ button.jump::after { content: ""; position: absolute; inset: -12px -6px; }
 .mp-seg { fill: none; stroke-linecap: round; filter: drop-shadow(0 0 2px #000); }
 .mp-seg.walked { stroke: #8fd06a; stroke-width: 4; }
 .mp-seg.next { stroke: #f2c14e; stroke-width: 4; }
-.mp-seg.ahead { stroke: rgb(255 253 246 / .7); stroke-width: 2.5; stroke-dasharray: 3 9; }
+.mp-seg.ahead { stroke: rgb(255 253 246 / .5); stroke-width: 2; stroke-dasharray: 3 9; }
 @media (prefers-reduced-motion: reduce) { .mp-pin.cur::after { animation: none; } }
 .maplegend { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; font-size: .78rem; color: var(--muted); padding: 2px 0 4px; }
 .maplegend i { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 5px; vertical-align: -1px; }
@@ -583,8 +583,8 @@ html.map-fs, html.map-fs body { overflow: hidden; overscroll-behavior: none; }
 .mp-stop.ahead { fill: #fffdf6; }
 .mp-arrow-wrap { width: 0; height: 0; background: none; border: 0; }
 .mp-arrow { position: absolute; left: -7px; top: -7px; width: 14px; height: 14px; stroke: #14130e; stroke-width: 1.2; filter: drop-shadow(0 0 1px #000); }
-.mp-arrow.walked { fill: #8fd06a; } .mp-arrow.next { fill: #f2c14e; } .mp-arrow.ahead { fill: #fffdf6; }
+.mp-arrow.walked { fill: #8fd06a; } .mp-arrow.next { fill: #f2c14e; } .mp-arrow.ahead { fill: #fffdf6; opacity: .6; }
 .mp-break-wrap { width: 0; height: 0; background: none; border: 0; }
 .mp-break { position: absolute; transform: translate(-50%, -165%); white-space: nowrap; background: #14130e; color: #fffdf6; border: 1px solid #f2c14e; border-radius: 999px; padding: 2px 9px; font: 700 11px system-ui, sans-serif; box-shadow: 0 1px 5px rgb(0 0 0 / .6); pointer-events: none; }
-.maplegend .lg-line { display: inline-block; width: 18px; height: 0; border-top: 4px solid; border-radius: 2px; margin-right: 5px; vertical-align: 2px; }
-.maplegend .lg-line.done { border-color: #8fd06a; } .maplegend .lg-line.next { border-color: #f2c14e; } .maplegend .lg-line.ahead { border-top: 3px dashed #fffdf6; }
+.maplegend .lg-line { display: inline-block; width: 18px; height: 0; border: 0; border-top: 4px solid; border-radius: 2px; margin-right: 5px; vertical-align: 2px; background: none; }
+.maplegend .lg-line.lg-done { border-color: #8fd06a; } .maplegend .lg-line.lg-next { border-color: #f2c14e; } .maplegend .lg-line.lg-ahead { border-top: 3px dashed #fffdf6; }
