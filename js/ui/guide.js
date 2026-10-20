@@ -20,7 +20,7 @@ const LEGEND = [
 ];
 
 function dlcGuide() {
-  return `<div class="prose">
+  return `<div class="prose" id="g-dlc">
   <h3>Shadow of the Erdtree</h3>
   <p>The expansion has no trophies or achievements, so this app tracks it as goals and counters. Nothing here changes your trophy list.</p>
   <h3>Getting in</h3>
@@ -31,7 +31,7 @@ function dlcGuide() {
   </ol>
   <h3>Blessings</h3>
   <p>Both blessings are raised at any site of grace and only take effect inside the Realm of Shadow.</p>
-  <table class="keytable"><tbody>
+  <table class="keytable kv"><tbody>
     <tr><th>Scadutree Blessing</th><td>Maximum level 20, using 50 Scadutree Fragments in total. Level 1 costs 1 fragment, levels 2 to 9 cost 2 each, and levels 10 to 20 cost 3 each.</td></tr>
     <tr><th>Revered Spirit Ash Blessing</th><td>Maximum level 10, using 25 Revered Spirit Ashes in total. Levels 1 to 3 cost 1 each, 4 and 5 cost 2, 6 to 8 cost 3, level 9 costs 4 and level 10 costs 5. It boosts summoned spirits and Torrent.</td></tr>
   </tbody></table>
@@ -43,36 +43,38 @@ export function renderGuide() {
   const p = store.setting("platform");
   const t = trophiesWord().toLowerCase();
   const rows = (items) => items.map((i) => `<li>${i}</li>`).join("");
+  const toc = [["g-glance", "At a glance"], ["g-miss", "Missables"], ["g-icons", "Icons"], ["g-keys", "Stonesword Keys"], ["g-up", "Upgrades"], ["g-facts", "Facts"], ["g-end", "Endings"], ...(scope() === "base" ? [] : [["g-dlc", "Shadow of the Erdtree"]]), ["g-save", "Save backup"]];
   $("guide").innerHTML = `
-<div class="prose">
+<nav class="toc" aria-label="Guide sections">${toc.map(([id, t]) => `<button type="button" data-to="${id}">${t}</button>`).join("")}</nav>
+<div class="prose" id="g-glance">
   <h3>At a glance</h3>
   <p>There are 42 ${t} (1 Platinum, 3 Gold, 14 Silver, 24 Bronze), all offline. Expect 60 to 100 hours. You do not need every weapon, spell or boss: only the bosses and legendary items in this route count. The DLC is not required, and it has no trophies of its own.</p>
   <p>You can finish everything in one playthrough if you back up your save before the ending, or in three playthroughs if you cannot.</p>
 </div>
 
-<div class="prose">
+<div class="prose" id="g-miss">
   <h3>Five things you can miss</h3>
-  <table class="keytable"><tbody>${MISSABLES.map(([a, b]) => `<tr><th>${a}</th><td>${b}</td></tr>`).join("")}</tbody></table>
+  <table class="keytable kv"><tbody>${MISSABLES.map(([a, b]) => `<tr><th>${a}</th><td>${b}</td></tr>`).join("")}</tbody></table>
 </div>
 
-<div class="prose">
+<div class="prose" id="g-icons">
   <h3>What the icons mean</h3>
   <ul class="icolist">${LEGEND.map(([k, label]) => `<li><span class="${k === "warn" ? "ico" : "lico"}" ${k === "warn" ? 'style="background:color-mix(in srgb,var(--warn) 18%,transparent);color:var(--warn)"' : ""}>${ico(k)}</span>${label}</li>`).join("")}</ul>
   <p>Gold chips on a step show the ${t.replace(/s$/, "")} it completes or the legendary item it gives. Wiki links open the matching page.</p>
 </div>
 
-<div class="prose">
+<div class="prose" id="g-keys">
   <h3>Stonesword Keys</h3>
   <p>Pick up every key you find. Around 7 to 9 are used on this route.</p>
   <table class="keytable"><thead><tr><th>Where</th><th>You get</th><th>Keys</th></tr></thead><tbody>${STONESWORD.map(([a, b, c]) => `<tr><td>${a}</td><td>${b}</td><td>${c}</td></tr>`).join("")}</tbody></table>
 </div>
 
-<div class="prose">
+<div class="prose" id="g-up">
   <h3>God-Slaying Armament and upgrades</h3>
-  <table class="keytable"><tbody>${UPGRADE.map(([a, b]) => `<tr><th>${a}</th><td>${b}</td></tr>`).join("")}</tbody></table>
+  <table class="keytable kv"><tbody>${UPGRADE.map(([a, b]) => `<tr><th>${a}</th><td>${b}</td></tr>`).join("")}</tbody></table>
 </div>
 
-<div class="prose">
+<div class="prose" id="g-facts">
   <h3>Useful facts</h3>
   <ul>${rows([
     "Greyoll's Roar costs 3 Dragon Hearts and Greyoll must be dead first. Dragon Hearts drop from dragons such as Greyoll, Flying Dragon Agheel and Glintstone Dragon Smarag.",
@@ -83,7 +85,7 @@ export function renderGuide() {
   ])}</ul>
 </div>
 
-<div class="prose">
+<div class="prose" id="g-end">
   <h3>Endings</h3>
   <p>${ENDINGS.intro}</p>
   <h3>Route A: one playthrough with backups</h3>
@@ -96,9 +98,21 @@ export function renderGuide() {
 
 ${scope() === "base" ? "" : dlcGuide()}
 
-<div class="prose">
+<div class="prose" id="g-save">
   <h3>How to back up your save</h3>
   <p>Quit to the title screen first, because the game autosaves constantly.</p>
   ${Object.entries(PLATFORMS).map(([k, v]) => `<details ${k === p ? "open" : ""}><summary>${v.label}</summary>${v.html}</details>`).join("")}
 </div>`;
+}
+
+export function initGuide() {
+  $("guide").addEventListener("click", (e) => {
+    const b = e.target.closest("[data-to]");
+    const sec = b && $(b.dataset.to);
+    if (!sec) return;
+    sec.scrollIntoView({ behavior: "smooth", block: "start" });
+    const h = sec.querySelector("h3");
+    h.tabIndex = -1;
+    h.focus({ preventScroll: true });
+  });
 }

@@ -5,7 +5,7 @@ import { renderRail } from "./ui/rail.js";
 import { renderRoute, applyView, updateRoute, ensureCurrentOpen, initRoute } from "./ui/route.js";
 import { renderTrophies, renderCollect, renderCounters, initLists } from "./ui/lists.js";
 import { renderMap, initMap } from "./ui/map.js";
-import { renderGuide } from "./ui/guide.js";
+import { renderGuide, initGuide } from "./ui/guide.js";
 import { initNav, renderNav } from "./ui/nav.js";
 import { initSettings, paintSettings, paintStorage, paintWake, refreshBackup } from "./ui/settings.js";
 
@@ -47,6 +47,7 @@ function boot() {
   initNav();
   initRoute();
   initLists();
+  initGuide();
   initMap();
   initSettings();
   renderAll();
