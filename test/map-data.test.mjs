@@ -77,3 +77,20 @@ test("transferred size stays small", () => {
   const bytes = all.reduce((n, r) => n + JSON.stringify(r).length, 0);
   assert.ok(bytes < 1_500_000);
 });
+
+test("every map category has its own icon: a known glyph and a unique glyph + colour pair", async () => {
+  const { CATS } = await import("../js/data/map-categories.js");
+  const { ICONS } = await import("../js/data/map-icons.js");
+  const { GLYPHS } = await import("../js/ui/map-glyphs.js");
+  const seen = new Map();
+  for (const c of CATS) {
+    const ic = ICONS[c.id];
+    assert.ok(ic, `category ${c.id} (${c.title}) has no icon`);
+    assert.ok(GLYPHS.includes(ic[0]), `${c.title}: unknown glyph ${ic[0]}`);
+    assert.match(ic[1], /^#[0-9a-f]{6}$/i, `${c.title}: bad colour`);
+    const key = ic.join("|").toLowerCase();
+    assert.ok(!seen.has(key), `${c.title} and ${seen.get(key)} share the same icon`);
+    seen.set(key, c.title);
+  }
+  for (const id of Object.keys(ICONS)) assert.ok(CATS.some((c) => String(c.id) === id), `icon for unknown category ${id}`);
+});

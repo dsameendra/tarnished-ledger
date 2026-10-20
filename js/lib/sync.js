@@ -208,7 +208,7 @@ export function init(options = {}) {
   }
   store.onChange((kind, detail) => {
     if (merging) return;
-    if (kind === "marks" || kind === "counters" || (kind === "settings" && PROFILE.includes(detail))) {
+    if (kind === "marks" || kind === "counters" || kind === "found" || kind === "mapprefs" || (kind === "settings" && PROFILE.includes(detail))) {
       if (running) again = true; else schedule();
     }
   });

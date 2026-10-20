@@ -9,6 +9,7 @@ import { loadMapData } from "./map-data.js";
 import { createMarkerCanvas } from "./map-canvas.js";
 import { iconURL } from "./map-glyphs.js";
 import * as ms from "./map-state.js";
+import * as sync from "../lib/sync.js";
 
 const LAYER_NAME = { base: "Lands Between", under: "Underground", dlc: "Realm of Shadow" };
 // Non-black region of each image [x0, y0, x1, y1] in image pixels, measured from the art, and the underground sub-maps.
@@ -16,7 +17,7 @@ const CONTENT = { base: [20, 8, 1872, 1952], under: [40, 32, 1964, 1916], dlc: [
 const SUBS = { ainsel: [36, 705, 716, 1936], siofra: [1118, 566, 1967, 1148], deeproot: [726, 57, 1252, 577] };
 const box = ([x0, y0, x1, y1]) => [[-y1, x0], [-y0, x1]];
 let L, map, D, cv, overlay, bounds, pinLayer, routeLayer, placeLayer;
-let fs = false; // full screen explore view
+let fs = false; // maximized view
 let fitZ = 0;
 let shown = null; // mode on the map: base | under | dlc
 let boot = null;
@@ -95,7 +96,7 @@ async function start() {
   L = window.L;
   const calm = mq("(prefers-reduced-motion: reduce)");
   map = L.map("map", {
-    crs: L.CRS.Simple, minZoom: -10, maxZoom: 6, zoomSnap: 0, zoomDelta: 0.5, wheelPxPerZoomLevel: 110,
+    crs: L.CRS.Simple, minZoom: -10, maxZoom: 6, zoomSnap: 0, zoomDelta: 0.5, wheelPxPerZoomLevel: 90,
     zoomControl: false, attributionControl: false, zoomAnimation: false, fadeAnimation: false, markerZoomAnimation: false,
     inertia: !calm, boxZoom: false, bounceAtZoomLimits: false, maxBoundsViscosity: 0.85, keyboardPanDelta: 120,
   });
@@ -106,7 +107,7 @@ async function start() {
   pinLayer = L.layerGroup().addTo(map);
   map.createPane("route").style.zIndex = 450;
   cv = createMarkerCanvas(L, map, { isFound: ms.isFound });
-  enabled = new Set(ms.filter.cats ?? essentials());
+  enabled = new Set(ms.prefs().cats ?? essentials());
   buildPanel();
   wireMap();
   $("mapSearch").disabled = false;
@@ -138,7 +139,8 @@ function limits() {
   const fz = map.getBoundsZoom(bounds, false);
   fitZ = fz;
   map.setMinZoom(fz - 0.3);
-  map.setMaxZoom(Math.max(fz + 3, 1.2));
+  // The art is about 1900px wide, so far beyond native size it is soft, but markers stay exact and it helps on small screens.
+  map.setMaxZoom(Math.max(fz + 4.5, 2.5));
   return fz;
 }
 
@@ -196,6 +198,7 @@ function zoomState() {
   const rel = z - fitZ;
   $("map").dataset.zl = rel < 0.9 ? "far" : rel < 2.2 ? "mid" : "near";
   updateMini();
+  $("mapScale").textContent = (2 ** rel).toFixed(rel < 1 ? 1 : 0) + "×";
   $("mapZoom").querySelector('[data-z="in"]').disabled = z >= map.getMaxZoom() - 0.01;
   $("mapZoom").querySelector('[data-z="out"]').disabled = z <= map.getMinZoom() + 0.01;
 }
@@ -203,7 +206,7 @@ function zoomState() {
 // ---- markers ----
 
 function refreshItems() {
-  const f = ms.filter;
+  const f = ms.prefs();
   const list = f.on ? D.byLayer[shown].filter((m) => enabled.has(m.cat) && !(f.hideFound && ms.isFound(m.id))) : [];
   cv.setItems(list);
   const n = {};
@@ -215,8 +218,7 @@ function refreshItems() {
 function setCats(ids) {
   enabled = new Set(ids);
   const def = essentials();
-  ms.filter.cats = ids.length === def.length && def.every((i) => enabled.has(i)) ? null : [...enabled];
-  ms.saveFilter();
+  ms.setPref({ cats: ids.length === def.length && def.every((i) => enabled.has(i)) ? null : [...enabled] });
   syncPanel();
   refreshItems();
 }
@@ -231,13 +233,37 @@ function buildPanel() {
     <label class="mp-row"><input type="checkbox" data-f="hideFound"><span>Hide found</span></label>
     <label class="mp-row"><input type="checkbox" data-f="route"><span>Route phases</span></label>
     ${D.groups.map((g) => `<details data-g="${esc(g.id)}" ${ms.filter.collapsed[g.id] ? "" : "open"}><summary>${esc(g.title)}</summary>${rows(g)}</details>`).join("")}
-    <p class="note">Found markers are remembered on this device only.</p>`;
+    <p class="note" id="mapSaveNote"></p>`;
+  paintSaveNote();
   syncPanel();
   setPanel(ms.filter.panel ?? mq("(min-width: 900px)"), false);
 }
 
+function paintSaveNote() {
+  const n = $("mapSaveNote");
+  if (!n) return;
+  n.innerHTML = sync.isConnected()
+    ? "Found markers and these filters sync with your other devices."
+    : 'Found markers and filters are saved on this device. <button type="button" class="linklike" data-goto-settings>Turn on sync</button> to see them on your other devices.';
+}
+
+// Called when another device changed the filters, or markers were found or cleared elsewhere.
+function applyPrefs() {
+  if (!map || !D) return;
+  enabled = new Set(ms.prefs().cats ?? essentials());
+  syncPanel();
+  refreshItems();
+  refreshPins();
+}
+
+function refreshFound() {
+  if (!map || !D) return;
+  if (ms.prefs().hideFound) refreshItems(); else { refreshItems(); cv.redraw(); }
+  if (selected?.m) { const m = selected.m; const box = $("mapSheet").querySelector("[data-found]"); if (box) box.checked = ms.isFound(m.id); }
+}
+
 function syncPanel() {
-  const p = $("mapPanel"), f = ms.filter;
+  const p = $("mapPanel"), f = ms.prefs();
   p.querySelectorAll("[data-cat]").forEach((i) => { i.checked = enabled.has(i.dataset.cat); });
   p.querySelectorAll("[data-f]").forEach((i) => { i.checked = Boolean(f[i.dataset.f]); });
   const same = (l) => enabled.size === l.length && l.every((i) => enabled.has(i));
@@ -332,7 +358,7 @@ function wireMini() {
   map.on("move", updateMini);
 }
 
-// ---- full screen ----
+// ---- maximized view: the map fills the browser window. Browser full screen is left to the user. ----
 
 const outside = () => [...document.querySelectorAll(".rail, .skip, main > section:not(#v-map), #v-map > :not(#mapCard)")];
 const focusables = () => [...$("mapCard").querySelectorAll("button, select, input, a[href], summary, [tabindex]:not([tabindex='-1'])")].filter((e) => !e.disabled && !e.closest("[hidden]") && e.getClientRects().length);
@@ -348,16 +374,14 @@ function setFs(on, fromHistory = false) {
   $("mapFs").setAttribute("aria-pressed", String(on));
   outside().forEach((e) => { e.inert = on; });
   if (on) {
-    card.setAttribute("role", "dialog"); card.setAttribute("aria-modal", "true"); card.setAttribute("aria-label", "Map, full screen");
+    card.setAttribute("role", "dialog"); card.setAttribute("aria-modal", "true"); card.setAttribute("aria-label", "Map, maximized");
     fsReturn = document.activeElement;
     panelBefore = !$("mapPanel").hidden;
     setPanel(mq("(min-width: 900px)"), false);
     try { history.pushState({ mapfs: 1 }, ""); pushed = true; } catch { pushed = false; }
-    try { card.requestFullscreen?.({ navigationUI: "hide" })?.catch(() => {}); } catch { /* overlay only */ }
     $("mapExit").focus();
   } else {
     card.removeAttribute("role"); card.removeAttribute("aria-modal"); card.removeAttribute("aria-label");
-    if (document.fullscreenElement) document.exitFullscreen?.().catch(() => {});
     setPanel(panelBefore ?? mq("(min-width: 900px)"), false);
     if (pushed && !fromHistory) { pushed = false; try { history.back(); } catch { /* ignore */ } } else pushed = false;
     const back = fsReturn && document.contains(fsReturn) ? fsReturn : $("mapFs");
@@ -381,7 +405,6 @@ function wireFs() {
   $("mapFs").addEventListener("click", () => ensureMap().then(() => { if (map) setFs(true); }));
   $("mapExit").addEventListener("click", () => setFs(false));
   window.addEventListener("popstate", () => { if (fs) setFs(false, true); });
-  document.addEventListener("fullscreenchange", () => { if (fs && !document.fullscreenElement) setFs(false); });
   $("mapCard").addEventListener("keydown", (e) => {
     if (!fs) return;
     if (e.key === "Tab") {
@@ -396,7 +419,7 @@ function wireFs() {
     if (!visible() || e.ctrlKey || e.metaKey || e.altKey) return;
     const typing = /^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement?.tagName || "");
     if (e.key === "Escape" && fs && $("mapSheet").hidden && $("mapResults").hidden) setFs(false);
-    else if (!typing && (e.key === "f" || e.key === "F") && map) setFs(!fs);
+    else if (!typing && (e.key === "m" || e.key === "M") && map) setFs(!fs);
     else if (!typing && e.key === "/" && !$("mapSearch").disabled) { e.preventDefault(); $("mapSearch").focus(); }
   });
 }
@@ -407,7 +430,7 @@ function refreshPins() {
   if (!map) return;
   pinLayer.clearLayers();
   routeLayer.clearLayers();
-  if (!ms.filter.route) return;
+  if (!ms.prefs().route) return;
   const w = world(), cur = currentPhase();
   const all = PHASES.map((p, pi) => [p, pi, D.byId.get(D.focus[p.id])]).filter(([p, , m]) => Boolean(p.dlc) === (w === "dlc") && m);
   all.slice(1).forEach(([, bi, b], i) => {
@@ -581,6 +604,11 @@ function wireMap() {
 export function initMap() {
   $("mapLinks").innerHTML = "More interactive maps: " + MAP_LINKS.map(([n, u]) => `<a href="${u}" target="_blank" rel="noopener">${n} ↗</a>`).join(" · ");
   const open = (id) => emit("phase", id);
+  store.onChange((kind, detail) => {
+    if (kind === "found") refreshFound();
+    else if (kind === "mapprefs" && detail !== "local") applyPrefs();
+  });
+  sync.onStatus(paintSaveNote);
   $("phaseList").addEventListener("click", (e) => {
     const t = e.target.closest("[data-phase]");
     if (t) open(t.dataset.phase);
@@ -632,8 +660,7 @@ export function initMap() {
     const t = e.target;
     if (t.dataset.cat) setCats(t.checked ? [...enabled, t.dataset.cat] : [...enabled].filter((i) => i !== t.dataset.cat));
     else if (t.dataset.f) {
-      ms.filter[t.dataset.f] = t.checked;
-      ms.saveFilter();
+      ms.setPref({ [t.dataset.f]: t.checked });
       refreshItems();
       if (t.dataset.f === "route") refreshPins();
     }
@@ -641,12 +668,13 @@ export function initMap() {
   panel.addEventListener("click", (e) => {
     const b = e.target.closest("button");
     if (!b) return;
+    if (b.dataset.gotoSettings !== undefined) { if (fs) setFs(false); emit("tab", "set"); return; }
     if (b.dataset.close !== undefined) setPanel(false);
     if (b.dataset.preset) {
       if (b.dataset.preset === "essentials") setCats(essentials());
       else if (b.dataset.preset === "guide") setCats(guideCats());
       else setCats(b.dataset.preset === "all" ? D.cats.map((c) => c.id) : []);
-      if (b.dataset.preset !== "none" && !ms.filter.on) { ms.filter.on = true; ms.saveFilter(); syncPanel(); refreshItems(); }
+      if (b.dataset.preset !== "none" && !ms.prefs().on) { ms.setPref({ on: true }); syncPanel(); refreshItems(); }
     }
   });
   panel.addEventListener("toggle", (e) => {
@@ -664,7 +692,7 @@ export function initMap() {
   sheet.addEventListener("change", (e) => {
     if (!e.target.dataset.found) return;
     ms.setFound(e.target.dataset.found, e.target.checked);
-    if (ms.filter.hideFound) refreshItems(); else cv.redraw();
+    if (ms.prefs().hideFound) refreshItems(); else cv.redraw();
   });
 
   const input = $("mapSearch");

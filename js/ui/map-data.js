@@ -1,5 +1,6 @@
 // Loads the map data modules (calibration, categories, markers, guide mapping) and builds lookups.
 import { COLORS } from "./map-glyphs.js";
+import { ICONS } from "../data/map-icons.js";
 
 // Mohgwyn Palace markers are filed under the Siofra region but share its sub-map transform.
 const SUB = { mohgwyn: "siofra" };
@@ -13,7 +14,7 @@ export async function loadMapData() {
   const { GROUPS: groups, CATS: cats } = b;
   const rows = (await Promise.all(Object.keys(c.MARKER_FILES).map((l) => c.loadMarkers(l)))).flat();
   // Ids are numbers in the data files; the DOM hands them back as strings, so everything is keyed by string.
-  const catById = new Map(cats.map((c) => [String(c.id), { ...c, id: String(c.id), color: c.color || COLORS[c.glyph] || COLORS.misc }]));
+  const catById = new Map(cats.map((c) => { const ic = ICONS[c.id]; return [String(c.id), { ...c, id: String(c.id), glyph: ic?.[0] ?? c.glyph, color: ic?.[1] ?? c.color ?? COLORS[c.glyph] ?? COLORS.misc }]; }));
   const list = [];
   const byId = new Map();
   const byLayer = { base: [], under: [], dlc: [] };

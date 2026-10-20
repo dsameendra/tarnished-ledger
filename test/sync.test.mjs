@@ -221,3 +221,32 @@ test("connect rejects an empty token and a bad token leaves nothing saved", asyn
   assert.equal(sync.isConnected(), false);
   assert.equal(globalThis.localStorage.getItem("tarnished-ledger:sync"), null);
 });
+
+test("found markers and map filters reach the gist and come back on another device", async () => {
+  store.setFound(21, true);
+  store.setMapPrefs({ cats: [7], hideFound: true });
+  await sync.connect("tok1");
+  const id = [...gh.gists.keys()][0];
+  assert.equal(gh.content(id).found["21"][0], 1);
+  assert.deepEqual(gh.content(id).mapPrefs.cats, [7]);
+  // a second device: empty local state, same gist
+  sync.disconnect();
+  globalThis.localStorage = makeStorage();
+  store.load();
+  assert.equal(store.isFound(21), false);
+  await sync.connect("tok1");
+  assert.equal(store.isFound(21), true);
+  assert.deepEqual(store.mapPrefs().cats, [7]);
+  assert.equal(store.mapPrefs().hideFound, true);
+});
+
+test("un-finding a marker syncs as a newer record", async () => {
+  store.setFound(5, true);
+  await sync.connect("tok1");
+  const id = [...gh.gists.keys()][0];
+  const t = gh.content(id).found["5"][1];
+  store.setFound(5, false);
+  await sync.syncNow();
+  assert.equal(gh.content(id).found["5"][0], 0);
+  assert.ok(gh.content(id).found["5"][1] >= t);
+});

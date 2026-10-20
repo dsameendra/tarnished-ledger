@@ -1,0 +1,26 @@
+// One glyph and one colour per map category: [glyph, colour]. Glyph names live in js/ui/map-glyphs.js.
+// Characters share the person glyph and differ by colour; everything else has its own shape.
+export const ICONS = {
+  90001: ["weapon", "#ffd24a"], 90002: ["ash", "#ffd24a"], 90003: ["spell", "#ffd24a"], 90004: ["talisman", "#ffd24a"],
+  90005: ["key", "#ff8a3d"], 5674: ["rune", "#ffb347"], 5672: ["map", "#e8d9a8"], 5675: ["stonekey", "#b9c2cc"],
+  5684: ["heart", "#86cf5f"], 5722: ["stone", "#ffd24a"],
+  5658: ["grace", "#f2c14e"], 5656: ["castle", "#a78bda"], 5655: ["dungeon", "#a78bda"], 5660: ["cage", "#7bd3ea"],
+  5664: ["tower", "#c9a0ff"], 5666: ["wing", "#6fbf8f"], 5667: ["padlock", "#f08c2e"], 5657: ["flag", "#b4b4b4"],
+  5668: ["tree", "#f2c14e"], 5671: ["portal", "#4fd1dc"], 5670: ["lift", "#9aa7b4"], 5713: ["wall", "#c49a6c"],
+  5661: ["stele", "#e5534b"], 5659: ["stake", "#ffe08a"], 5669: ["jump", "#6fe3a8"], 5665: ["coffin", "#9d8fb8"], 5662: ["anvil", "#c49a6c"],
+  5710: ["crown", "#ffd24a"], 5711: ["horned", "#e5534b"], 5699: ["boss", "#ff7a6b"], 5700: ["swords", "#d9822b"], 5698: ["claws", "#b4b4b4"],
+  5697: ["npc", "#e5534b"], 5696: ["npc", "#ee82b0"], 5694: ["npc", "#f2c14e"], 6036: ["npc", "#8fb8d9"], 5695: ["npc", "#f08c2e"],
+  5673: ["key", "#e0a458"], 6031: ["gem", "#ff6b81"], 6033: ["bell", "#d9b36b"], 5676: ["book", "#d6b17a"], 5728: ["tome", "#4fa8e8"],
+  5726: ["pouch", "#3fc79a"], 5725: ["orb", "#c9a0ff"], 5683: ["seed", "#f2c14e"], 5678: ["tear", "#7fd0ff"], 5679: ["crescent", "#b48cff"],
+  5721: ["frame", "#e6a15a"], 6032: ["hammer", "#a9b3bd"], 6034: ["whet", "#d5dae0"], 6038: ["pot", "#c49a6c"], 6039: ["ritualpot", "#d08fa0"], 6037: ["bottle", "#ee82b0"],
+  5688: ["weapon", "#d5dae0"], 5690: ["shield", "#9fb6d8"], 5689: ["helm", "#c49a6c"], 5691: ["talisman", "#3fc79a"], 5692: ["staff", "#4fa8e8"],
+  5693: ["seal", "#e8b04a"], 5714: ["flame", "#ff9f43"],
+  5687: ["ash", "#8fb8d9"], 5677: ["crystal", "#4fd1dc"], 5681: ["flask", "#86cf5f"], 5682: ["arrow", "#c8bb3f"], 5712: ["burst", "#ffd24a"],
+  5724: ["arc", "#ff8fa3"], 5717: ["scarab", "#4fa8e8"], 5701: ["scarab", "#e5534b"], 5727: ["root", "#a07a6a"], 5680: ["chain", "#7bd3ea"],
+  5707: ["glove", "#f2a65a"], 5686: ["item", "#a9b3bd"],
+  5685: ["stone", "#aab4be"], 5703: ["herb", "#86cf5f"], 5702: ["mushroom", "#c8bb3f"], 5723: ["mushroom", "#ffd24a"], 6035: ["mushroom", "#8fb8d9"],
+  6028: ["lily", "#fffdf6"], 6027: ["lily", "#6aa7ff"], 5709: ["shard", "#c49a6c"], 6029: ["tulip", "#ee82b0"],
+  5706: ["exclaim", "#f2c14e"], 5719: ["scroll", "#d6b17a"], 5716: ["puzzle", "#b48cff"], 5715: ["sigil", "#4fd1dc"], 5718: ["statue", "#9fb6d8"],
+  5720: ["telescope", "#c49a6c"], 5704: ["misc", "#b4b4b4"],
+  11317: ["sprout", "#ffd24a"], 11316: ["ash", "#c9a0ff"], 11318: ["plus", "#ffe08a"], 6026: ["stone", "#9a7bd6"], 6040: ["cairn", "#aab4be"],
+};

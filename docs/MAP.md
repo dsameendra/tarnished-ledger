@@ -69,12 +69,26 @@ Open the site with `?mapdebug` to expose `window.__tlMap()` (the Leaflet map, ca
 - Default markers ("Essentials"): guide categories in the Route items and Bosses groups plus sites of grace. "Guide" is every `guide: true` category. Markers are dots when zoomed out and glyphs when zoomed in. Ids are strings throughout the viewer.
 - Debug hook: `?mapdebug` exposes `window.__tlMap()`.
 
-## Full screen and navigation
+## Maximized view and navigation
 
-- **Full screen** (button, or `F`): the map card becomes a fixed full-viewport dialog (`#mapCard.fs`). It also requests native fullscreen where the browser allows it (not iOS Safari, which falls back to the overlay). `Esc`, the Close button and the browser Back button all close it. The page behind is `inert`, scroll is locked, Tab is trapped and focus returns to the button.
+- **Maximize** (button, or `M`): the map card becomes a fixed dialog that fills the browser window (`#mapCard.fs`). It does not use the browser Fullscreen API, so users can still put the browser itself in full screen. `Esc`, the Restore button and the browser Back button all close it. The page behind is `inert`, scroll is locked, Tab is trapped and focus returns to the button.
 - **Phones**: the toolbar wraps into rows, zoom controls move to the bottom right, and the marker filters and details open as bottom sheets. The overview hides while a sheet is open. Safe-area insets are respected.
 - **Tablets and laptops**: a single toolbar row, the marker filters dock as a 340px column, the details card sits top left and the legend floats at the bottom.
 - **Overview**: a small canvas copy of the art with a box for the current view. Tap or drag it to move the map. The map-controls button hides it. It never takes more than 30% of the stage height.
 - **Place names**: `js/data/map-places.js` lists `[label, x, y, tier]` per layer in image pixels. Tier 1 names show over the whole map, tier 2 appear when zoomed in. They are drawn in their own pane above the marker dots and below the route pins.
 - **Go to**: a native select built from the same list, plus "Whole map".
-- **Keys**: `F` full screen, `/` search, `Esc` close, plus and minus zoom, arrows pan.
+- **Keys**: `M` maximize, `/` search, `Esc` close, plus and minus zoom, arrows pan.
+
+## What is saved and synced
+
+Found markers and the marker filter choices (show markers, selected categories, hide found, route phases) live in the main store (`js/lib/store.js`), not in the map module, so they follow the same rules as ticks:
+
+- Each found marker is `[0|1, timestamp]`, merged newest-wins per marker. Un-finding a marker is a newer record, so it also syncs.
+- The filter choices are one record with a timestamp; the newest device wins.
+- Both are in the gist snapshot (`found`, `mapPrefs`), in file backups, and are cleared by Reset progress.
+- Layout choices (filter panel open, collapsed groups, last view, overview on or off) stay on each device.
+- Older installs that kept `tarnished-ledger:map-found` and the filter in `tarnished-ledger:map-filter` are migrated once with timestamp 1, so anything another device already decided wins.
+
+## Marker icons
+
+Every category has its own icon in `js/data/map-icons.js` (`[glyph, colour]`), and the shapes are original vector paths in `js/ui/map-glyphs.js`. Characters (person, merchant, ghost, trainer, invasion) share the person shape and differ by colour; everything else has its own shape, such as a padlock for imp seal statues, a bell for bell bearings, a castle for legacy dungeons or a heart for dragon hearts. A test checks that no two categories share the same glyph and colour. To add a shape, add a path to `D` in `map-glyphs.js` and point a category at it.

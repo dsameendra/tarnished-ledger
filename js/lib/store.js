@@ -1,7 +1,9 @@
 // Progress and settings store.
 // Progress is a map of step id -> [done(0|1), timestamp]. Keeping a timestamp per step lets two
 // devices merge without a cleared tick on one device being undone by an older tick on the other.
-// Settings are per device and never synced.
+// Found map markers use the same [flag, timestamp] shape, so they merge the same way.
+// Display settings (theme, text size, ...) are per device. The profile, counters, ticks, found markers and
+// the map filter choices sync.
 
 const KEY = "tarnished-ledger:v2";
 const LEGACY_KEY = "er100-v1";
@@ -25,7 +27,8 @@ export const COUNTER_MAX = { sf: 50, rsa: 25 };
 // Allowed values for the settings that are synced as the shared profile.
 const PROFILE_VALUES = { platform: ["ps", "xbox", "steam"], dlc: [true, false], focus: ["both", "dlc"] };
 
-const fresh = () => ({ v: 3, marks: {}, counters: {}, profileT: 0, settings: { ...DEFAULTS }, closed: {}, lastBackup: 0 });
+const MAP_DEFAULTS = { on: true, hideFound: false, route: true, cats: null };
+const fresh = () => ({ v: 4, marks: {}, counters: {}, found: {}, mapPrefs: { ...MAP_DEFAULTS }, mapT: 0, profileT: 0, settings: { ...DEFAULTS }, closed: {}, lastBackup: 0 });
 let state = fresh();
 const listeners = new Set();
 let storageOK = true;
@@ -34,6 +37,8 @@ export const get = () => state;
 export const isDone = (id) => state.marks[id]?.[0] === 1;
 export const setting = (k) => state.settings[k];
 export const counter = (id) => state.counters[id]?.[0] || 0;
+export const isFound = (id) => state.found[String(id)]?.[0] === 1;
+export const mapPrefs = () => state.mapPrefs;
 export const isStorageOK = () => storageOK;
 export function onChange(fn) { listeners.add(fn); return () => listeners.delete(fn); }
 function emit(kind, detail) { listeners.forEach((fn) => fn(kind, detail)); }
@@ -41,6 +46,9 @@ function emit(kind, detail) { listeners.forEach((fn) => fn(kind, detail)); }
 const hasOwn = (o, k) => Object.prototype.hasOwnProperty.call(o, k);
 const isObj = (o) => Boolean(o) && typeof o === "object" && !Array.isArray(o);
 const isId = (id) => typeof id === "string" && id !== "__proto__";
+
+// A new change must always be strictly newer than the record it replaces, even inside one millisecond.
+const stamp = (prev) => Math.max(Date.now(), (prev?.[1] ?? 0) + 1);
 
 function write() {
   try {
@@ -81,6 +89,15 @@ function clampCounter(id, value) {
   return Number.isFinite(n) ? Math.max(0, Math.min(COUNTER_MAX[id] ?? 0, n)) : 0;
 }
 
+// Map filter choices: booleans plus an optional list of category ids (null means the default set).
+export function cleanMapPrefs(raw) {
+  const out = { ...MAP_DEFAULTS };
+  if (!isObj(raw)) return out;
+  for (const k of ["on", "hideFound", "route"]) if (typeof raw[k] === "boolean") out[k] = raw[k];
+  if (Array.isArray(raw.cats)) out.cats = raw.cats.filter((c) => typeof c === "string" || Number.isFinite(c)).slice(0, 400);
+  return out;
+}
+
 // Accept only known settings of the right type, so a hand-edited or old save cannot inject odd values.
 function cleanSettings(raw) {
   const out = { ...DEFAULTS };
@@ -116,11 +133,15 @@ export function load() {
       ...state,
       marks: cleanMarks(s.marks),
       counters: cleanCounters(s.counters),
+      found: cleanMarks(s.found),
+      mapPrefs: cleanMapPrefs(s.mapPrefs),
+      mapT: Number(s.mapT) || 0,
       settings: cleanSettings(s.settings),
       closed: isObj(s.closed) ? s.closed : {},
       profileT: Number(s.profileT) || 0,
       lastBackup: Number(s.lastBackup) || 0,
     };
+    adoptLegacyMap();
     return;
   }
   if (old) {
@@ -134,10 +155,47 @@ export function load() {
       write();
     } catch { /* legacy data unreadable: start fresh */ }
   }
+  adoptLegacyMap();
+}
+
+// Before found markers and map filters synced, the map kept them under its own keys. Fold them in once.
+// They get timestamp 1, so anything another device already decided wins over them.
+const OLD_FOUND = "tarnished-ledger:map-found";
+const OLD_FILTER = "tarnished-ledger:map-filter";
+function adoptLegacyMap() {
+  let changed = false;
+  try {
+    const ids = JSON.parse(localStorage.getItem(OLD_FOUND) || "null");
+    if (Array.isArray(ids)) {
+      for (const id of ids) if ((typeof id === "string" || Number.isFinite(id)) && !state.found[String(id)]) state.found[String(id)] = [1, 1];
+      localStorage.removeItem(OLD_FOUND);
+      changed = true;
+    }
+    const f = JSON.parse(localStorage.getItem(OLD_FILTER) || "null");
+    if (isObj(f) && state.mapT === 0 && ["on", "hideFound", "route", "cats"].some((k) => k in f)) {
+      state.mapPrefs = cleanMapPrefs(f);
+      state.mapT = 1;
+      changed = true;
+    }
+  } catch { /* old data unreadable: ignore it */ }
+  if (changed) write();
+}
+
+export function setFound(id, on) {
+  state.found[String(id)] = [on ? 1 : 0, stamp(state.found[String(id)])];
+  write();
+  emit("found");
+}
+
+export function setMapPrefs(patch) {
+  state.mapPrefs = cleanMapPrefs({ ...state.mapPrefs, ...patch });
+  state.mapT = Date.now();
+  write();
+  emit("mapprefs", "local");
 }
 
 export function setDone(id, value) {
-  state.marks[id] = [value ? 1 : 0, Date.now()];
+  state.marks[id] = [value ? 1 : 0, stamp(state.marks[id])];
   write();
   emit("marks");
 }
@@ -166,15 +224,17 @@ export function markBackup() {
   write();
 }
 
-// Clears every tick and counter. Passing the list of valid step ids also stamps steps this device has
+// Clears every tick, counter and found marker. Passing the list of valid step ids also stamps steps this device has
 // never seen, so an older remote tick for them cannot come back through the next sync.
 export function resetProgress(ids = []) {
   const now = Date.now();
   for (const id of [...Object.keys(state.marks), ...ids]) state.marks[id] = [0, now];
   for (const id of Object.keys(COUNTER_MAX)) state.counters[id] = [0, now];
+  for (const id of Object.keys(state.found)) state.found[id] = [0, now];
   write();
   emit("marks");
   emit("counters");
+  emit("found");
 }
 
 export function doneIds() {
@@ -204,6 +264,18 @@ export function mergeExtras(remote) {
     const l = state.counters[id];
     if (!l || r[1] > l[1]) { state.counters[id] = r; counters = true; }
   }
+  let found = false;
+  for (const [id, r] of Object.entries(cleanMarks(remote?.found))) {
+    const l = state.found[id];
+    if (!l || r[1] > l[1] || (r[1] === l[1] && r[0] > l[0])) { state.found[id] = r; found = true; }
+  }
+  let prefs = false;
+  const rp = remote?.mapPrefs;
+  if (isObj(rp) && Number(rp.t) > state.mapT) {
+    state.mapPrefs = cleanMapPrefs(rp);
+    state.mapT = Number(rp.t);
+    prefs = true;
+  }
   const prof = remote?.profile;
   const changed = [];
   if (isObj(prof) && Number(prof.t) > state.profileT) {
@@ -212,10 +284,12 @@ export function mergeExtras(remote) {
     }
     state.profileT = Number(prof.t);
   }
-  if (counters || changed.length) write();
+  if (counters || found || prefs || changed.length) write();
   if (counters) emit("counters");
+  if (found) emit("found");
+  if (prefs) emit("mapprefs", "remote");
   changed.forEach((k) => emit("settings", k));
-  return counters || changed.length > 0;
+  return counters || found || prefs || changed.length > 0;
 }
 
 // True when remote already holds everything local knows.
@@ -227,19 +301,28 @@ export function remoteCovers(remote) {
   });
   const counters = cleanCounters(remote?.counters);
   const okCounters = Object.entries(state.counters).every(([id, l]) => (counters[id]?.[1] ?? -1) >= l[1]);
-  return okMarks && okCounters && (Number(remote?.profile?.t) || 0) >= state.profileT;
+  const found = cleanMarks(remote?.found);
+  const okFound = Object.entries(state.found).every(([id, l]) => {
+    const r = found[id];
+    return r && (r[1] > l[1] || (r[1] === l[1] && r[0] >= l[0]));
+  });
+  const okMap = (Number(remote?.mapPrefs?.t) || 0) >= state.mapT;
+  return okMarks && okCounters && okFound && okMap && (Number(remote?.profile?.t) || 0) >= state.profileT;
 }
 
 export function snapshot() {
   const profile = { t: state.profileT };
   PROFILE_KEYS.forEach((k) => { profile[k] = state.settings[k]; });
-  return { app: "tarnished-ledger", v: 3, savedAt: Date.now(), marks: structuredClone(state.marks), counters: structuredClone(state.counters), profile };
+  return {
+    app: "tarnished-ledger", v: 4, savedAt: Date.now(), marks: structuredClone(state.marks), counters: structuredClone(state.counters),
+    found: structuredClone(state.found), mapPrefs: { ...structuredClone(state.mapPrefs), t: state.mapT }, profile,
+  };
 }
 
-// Accepts a v2/v3 snapshot, a legacy "ER1:" code, or a v1 backup. Returns the number of done steps.
+// Accepts a v2/v3/v4 snapshot, a legacy "ER1:" code, or a v1 backup. Returns the number of done steps.
 // Throws before touching any state when the input is not recognised.
 export function importData(input, validIds) {
-  let marks = null, counters = null;
+  let marks = null, counters = null, found = null, mapPrefs = null;
   if (typeof input === "string") {
     const text = input.trim();
     if (text.startsWith("ER1:")) {
@@ -254,6 +337,8 @@ export function importData(input, validIds) {
     if (isObj(input.marks)) marks = input.marks;
     else if (isObj(input.done)) marks = Object.fromEntries(Object.keys(input.done).map((id) => [id, [1, 0]]));
     if (isObj(input.counters)) counters = input.counters;
+    if (isObj(input.found)) found = cleanMarks(input.found);
+    if (isObj(input.mapPrefs)) mapPrefs = cleanMapPrefs(input.mapPrefs);
   }
   if (!marks) throw new Error("Unrecognised backup");
   const now = Date.now();
@@ -270,8 +355,15 @@ export function importData(input, validIds) {
       if (hasOwn(COUNTER_MAX, id) && Array.isArray(c)) state.counters[id] = [clampCounter(id, c[0]), now + 1];
     }
   }
+  if (found) {
+    Object.keys(state.found).forEach((id) => { state.found[id] = [0, now]; });
+    for (const [id, m] of Object.entries(found)) state.found[id] = [m[0], now + 1];
+  }
+  if (mapPrefs) { state.mapPrefs = mapPrefs; state.mapT = now + 1; }
   write();
   if (counters) emit("counters");
+  if (found) emit("found");
+  if (mapPrefs) emit("mapprefs", "remote");
   emit("marks");
   return n;
 }
