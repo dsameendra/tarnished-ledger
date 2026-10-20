@@ -142,7 +142,7 @@ export const PHASES=[
 ["go","Warp to Astel's arena and take the lift north up to the Moonlight Altar."],
 ["quest","Cathedral of Manus Celes: go underground, find Ranni and give her the Dark Moon Ring. Pick up the Dark Moon Greatsword after she leaves.",{c:"arm9"}],
 ["boss","Ringleader's Evergaol: beat Alecto for Black Knife Tiche.",{c:"ash5"}],
-["go","Chelona's Rise: the tower is sealed. Kill the three Giant Ghostly Turtles (the "great wise beasts") spread across the plateau and the seal lifts. Do not fast travel or rest at a grace while hunting them, or the ones left will despawn."],
+["go","Chelona's Rise: the tower is sealed. Kill the three Giant Ghostly Turtles (the great wise beasts) spread across the plateau and the seal lifts. Do not fast travel or rest at a grace while hunting them, or the ones left will despawn."],
 ["boss","Kill the three turtles: one to the right of the tower on the cliff wall, one on a cliff north-east of the tower and one north-west, reached with a wind gust. If they don't appear, wait for night."],
 ["item","Climb Chelona's Rise and take Ranni's Dark Moon from the top.",{c:"sp6"}]]},
 {id:"mtn",n:"Forbidden Lands & Mountaintops",sub:"Castle Sol, Fire Giant",s:[
