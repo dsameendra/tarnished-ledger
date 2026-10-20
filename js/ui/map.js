@@ -4,6 +4,7 @@ import * as store from "../lib/store.js";
 import { $, emit, on } from "../lib/dom.js";
 import { PHASES, tickSteps, currentPhase, phaseLabel, phaseCounts, scope, stepById, wikiUrl } from "../lib/model.js";
 import { MAP_LINKS } from "../data/links.js";
+import { PLACES } from "../data/map-places.js";
 import { loadMapData } from "./map-data.js";
 import { createMarkerCanvas } from "./map-canvas.js";
 import { iconURL } from "./map-glyphs.js";
@@ -14,7 +15,9 @@ const LAYER_NAME = { base: "Lands Between", under: "Underground", dlc: "Realm of
 const CONTENT = { base: [20, 8, 1872, 1952], under: [40, 32, 1964, 1916], dlc: [20, 16, 1856, 1932] };
 const SUBS = { ainsel: [36, 705, 716, 1936], siofra: [1118, 566, 1967, 1148], deeproot: [726, 57, 1252, 577] };
 const box = ([x0, y0, x1, y1]) => [[-y1, x0], [-y0, x1]];
-let L, map, D, cv, overlay, bounds, pinLayer, routeLayer;
+let L, map, D, cv, overlay, bounds, pinLayer, routeLayer, placeLayer;
+let fs = false; // full screen explore view
+let fitZ = 0;
 let shown = null; // mode on the map: base | under | dlc
 let boot = null;
 let picked = ms.filter.world || null;
@@ -97,6 +100,9 @@ async function start() {
     inertia: !calm, boxZoom: false, bounceAtZoomLimits: false, maxBoundsViscosity: 0.85, keyboardPanDelta: 120,
   });
   routeLayer = L.layerGroup().addTo(map);
+  map.createPane("places").style.zIndex = 440; // above the marker dots, below the route pins
+  map.getPane("places").style.pointerEvents = "none";
+  placeLayer = L.layerGroup().addTo(map);
   pinLayer = L.layerGroup().addTo(map);
   map.createPane("route").style.zIndex = 450;
   cv = createMarkerCanvas(L, map, { isFound: ms.isFound });
@@ -104,6 +110,7 @@ async function start() {
   buildPanel();
   wireMap();
   $("mapSearch").disabled = false;
+  $("mapGo").disabled = false;
   new ResizeObserver(() => { if (visible()) map.invalidateSize({ animate: false }); }).observe($("map"));
   if (/[?&]mapdebug\b/.test(location.search)) window.__tlMap = () => ({ map, cv, D, mode: shown, enabled, selected });
   setMode(mode());
@@ -115,6 +122,7 @@ const guideCats = () => D.cats.filter((c) => c.guide).map((c) => c.id);
 
 // The stage follows the art's shape so there is no empty band, but never more than the screen allows.
 function sizeStage() {
+  if (fs) { $("mapWrap").style.removeProperty("--mh"); return; }
   const [x0, y0, x1, y1] = CONTENT[shown];
   const w = $("map").clientWidth;
   if (!w) return;
@@ -128,6 +136,7 @@ function limits() {
   if (!bounds || !sz.x || !sz.y) return null;
   map.setMinZoom(-10);
   const fz = map.getBoundsZoom(bounds, false);
+  fitZ = fz;
   map.setMinZoom(fz - 0.3);
   map.setMaxZoom(Math.max(fz + 3, 1.2));
   return fz;
@@ -167,6 +176,8 @@ function setMode(m) {
   closeSheet();
   refreshItems();
   refreshPins();
+  buildPlaces();
+  drawMini();
   zoomState();
 }
 
@@ -181,6 +192,10 @@ function zoomState() {
   // Phase pins: small over the whole map, larger when zoomed in.
   const d = Math.max(17, Math.min(30, 17 + (z - map.getMinZoom()) * 3));
   $("map").style.setProperty("--pin", d.toFixed(1) + "px");
+  // far: whole map in view, mid: a region, near: close up. Place names fade with this.
+  const rel = z - fitZ;
+  $("map").dataset.zl = rel < 0.9 ? "far" : rel < 2.2 ? "mid" : "near";
+  updateMini();
   $("mapZoom").querySelector('[data-z="in"]').disabled = z >= map.getMaxZoom() - 0.01;
   $("mapZoom").querySelector('[data-z="out"]').disabled = z <= map.getMinZoom() + 0.01;
 }
@@ -236,6 +251,154 @@ function setPanel(open, save = true) {
   $("mapFilterBtn").setAttribute("aria-expanded", String(open));
   if (save) { ms.filter.panel = open; ms.saveFilter(); }
   if (map) requestAnimationFrame(() => map.invalidateSize({ animate: false }));
+}
+
+// ---- place names, "Go to" and the overview ----
+
+function buildPlaces() {
+  placeLayer.clearLayers();
+  const list = PLACES[shown] || [];
+  for (const [name, x, y, tier] of list) {
+    L.marker([-y, x], { pane: "places", interactive: false, keyboard: false, icon: L.divIcon({ className: "mp-place-wrap", html: `<span class="mp-place t${tier}">${esc(name)}</span>`, iconSize: [0, 0] }) }).addTo(placeLayer);
+  }
+  $("mapGo").innerHTML = `<option value="">Go to&hellip;</option><option value="all">Whole map</option>` + list.map(([n], i) => `<option value="${i}">${esc(n)}</option>`).join("");
+}
+
+function goPlace(v) {
+  if (!map || v === "") return;
+  if (v === "all") { fitAll(); return; }
+  const p = (PLACES[shown] || [])[Number(v)];
+  if (!p) return;
+  const z = Math.min(map.getMaxZoom(), fitZ + 1.9);
+  if (mq("(prefers-reduced-motion: reduce)")) map.setView([-p[2], p[1]], z, { animate: false });
+  else map.flyTo([-p[2], p[1]], z, { duration: 0.8 });
+}
+
+// The overview is a small copy of the art with a box showing what the main map displays.
+const mm = { img: null, drag: false };
+const miniWanted = () => ms.filter.mini !== false && Boolean(shown) && (fs || $("map").clientWidth >= 700);
+
+function drawMini() {
+  const cv2 = $("mmCanvas");
+  const [x0, y0, x1, y1] = CONTENT[shown];
+  const cw = x1 - x0, ch = y1 - y0;
+  let w = fs && mq("(min-width: 700px)") ? 220 : fs ? 124 : 170;
+  const room = $("map").clientHeight * 0.3; // never more than a third of the stage, so short screens keep the map
+  if (room && (w * ch) / cw > room) w = Math.max(64, Math.floor((room * cw) / ch));
+  const h = Math.round((w * ch) / cw);
+  const dpr = Math.min(2, devicePixelRatio || 1);
+  cv2.width = Math.round(w * dpr); cv2.height = Math.round(h * dpr);
+  cv2.style.width = w + "px"; cv2.style.height = h + "px";
+  const src = D.calib[shown].img, mode = shown;
+  const paint = (img) => { if (shown !== mode) return; const c = cv2.getContext("2d"); c.drawImage(img, x0, y0, x1 - x0, y1 - y0, 0, 0, cv2.width, cv2.height); };
+  if (mm.img && mm.img.dataset.src === src && mm.img.complete) paint(mm.img);
+  else {
+    const img = new Image();
+    img.dataset.src = src;
+    img.onload = () => { mm.img = img; paint(img); };
+    img.src = src;
+  }
+  updateMini();
+}
+
+function updateMini() {
+  const box = $("mapMini");
+  if (!map || !shown) return;
+  const on = miniWanted();
+  box.hidden = !on;
+  $("mapMiniBtn").setAttribute("aria-pressed", String(ms.filter.mini !== false));
+  if (!on) return;
+  const [x0, y0, x1, y1] = CONTENT[shown];
+  const b = map.getBounds();
+  const l = Math.max(x0, b.getWest()), r = Math.min(x1, b.getEast()), t = Math.max(y0, -b.getNorth()), d = Math.min(y1, -b.getSouth());
+  const v = $("mmView").style;
+  v.left = ((l - x0) / (x1 - x0)) * 100 + "%"; v.top = ((t - y0) / (y1 - y0)) * 100 + "%";
+  v.width = Math.max(0, ((r - l) / (x1 - x0)) * 100) + "%"; v.height = Math.max(0, ((d - t) / (y1 - y0)) * 100) + "%";
+}
+
+function wireMini() {
+  const box = $("mapMini");
+  const move = (e) => {
+    const r = $("mmCanvas").getBoundingClientRect();
+    const [x0, y0, x1, y1] = CONTENT[shown];
+    const fx = Math.max(0, Math.min(1, (e.clientX - r.left) / r.width)), fy = Math.max(0, Math.min(1, (e.clientY - r.top) / r.height));
+    map.panTo([-(y0 + fy * (y1 - y0)), x0 + fx * (x1 - x0)], { animate: false });
+  };
+  box.addEventListener("pointerdown", (e) => { e.preventDefault(); mm.drag = true; box.setPointerCapture(e.pointerId); move(e); });
+  box.addEventListener("pointermove", (e) => { if (mm.drag) move(e); });
+  const end = () => { mm.drag = false; };
+  box.addEventListener("pointerup", end);
+  box.addEventListener("pointercancel", end);
+  map.on("move", updateMini);
+}
+
+// ---- full screen ----
+
+const outside = () => [...document.querySelectorAll(".rail, .skip, main > section:not(#v-map), #v-map > :not(#mapCard)")];
+const focusables = () => [...$("mapCard").querySelectorAll("button, select, input, a[href], summary, [tabindex]:not([tabindex='-1'])")].filter((e) => !e.disabled && !e.closest("[hidden]") && e.getClientRects().length);
+let fsReturn = null, panelBefore = null, pushed = false;
+
+function setFs(on, fromHistory = false) {
+  if (on === fs || (on && !map)) return;
+  fs = on;
+  const card = $("mapCard");
+  document.documentElement.classList.toggle("map-fs", on);
+  card.classList.toggle("fs", on);
+  $("mapExit").hidden = !on;
+  $("mapFs").setAttribute("aria-pressed", String(on));
+  outside().forEach((e) => { e.inert = on; });
+  if (on) {
+    card.setAttribute("role", "dialog"); card.setAttribute("aria-modal", "true"); card.setAttribute("aria-label", "Map, full screen");
+    fsReturn = document.activeElement;
+    panelBefore = !$("mapPanel").hidden;
+    setPanel(mq("(min-width: 900px)"), false);
+    try { history.pushState({ mapfs: 1 }, ""); pushed = true; } catch { pushed = false; }
+    try { card.requestFullscreen?.({ navigationUI: "hide" })?.catch(() => {}); } catch { /* overlay only */ }
+    $("mapExit").focus();
+  } else {
+    card.removeAttribute("role"); card.removeAttribute("aria-modal"); card.removeAttribute("aria-label");
+    if (document.fullscreenElement) document.exitFullscreen?.().catch(() => {});
+    setPanel(panelBefore ?? mq("(min-width: 900px)"), false);
+    if (pushed && !fromHistory) { pushed = false; try { history.back(); } catch { /* ignore */ } } else pushed = false;
+    const back = fsReturn && document.contains(fsReturn) ? fsReturn : $("mapFs");
+    back.focus?.({ preventScroll: true });
+    requestAnimationFrame(() => back.focus?.({ preventScroll: true }));
+  }
+  if (map) {
+    const c = map.getCenter(), z = map.getZoom() - fitZ;
+    sizeStage();
+    requestAnimationFrame(() => {
+      map.invalidateSize({ animate: false });
+      limits();
+      map.setView(c, Math.max(map.getMinZoom(), Math.min(map.getMaxZoom(), fitZ + z)), { animate: false });
+      drawMini();
+      zoomState();
+    });
+  }
+}
+
+function wireFs() {
+  $("mapFs").addEventListener("click", () => ensureMap().then(() => { if (map) setFs(true); }));
+  $("mapExit").addEventListener("click", () => setFs(false));
+  window.addEventListener("popstate", () => { if (fs) setFs(false, true); });
+  document.addEventListener("fullscreenchange", () => { if (fs && !document.fullscreenElement) setFs(false); });
+  $("mapCard").addEventListener("keydown", (e) => {
+    if (!fs) return;
+    if (e.key === "Tab") {
+      const f = focusables();
+      if (!f.length) return;
+      const first = f[0], last = f[f.length - 1];
+      if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+      else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+    }
+  });
+  document.addEventListener("keydown", (e) => {
+    if (!visible() || e.ctrlKey || e.metaKey || e.altKey) return;
+    const typing = /^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement?.tagName || "");
+    if (e.key === "Escape" && fs && $("mapSheet").hidden && $("mapResults").hidden) setFs(false);
+    else if (!typing && (e.key === "f" || e.key === "F") && map) setFs(!fs);
+    else if (!typing && e.key === "/" && !$("mapSearch").disabled) { e.preventDefault(); $("mapSearch").focus(); }
+  });
 }
 
 // ---- route phase pins ----
@@ -395,6 +558,7 @@ function wireMap() {
     const m = cv.hit(e.containerPoint, cv.tol());
     if (m) selectMarker(m); else closeSheet();
   });
+  wireMini();
   map.on("moveend zoomend", () => { saveView(); zoomState(); });
   map.on("resize", () => { if (!restoring) { const c = map.getCenter(); limits(); map.setView(c, Math.max(map.getZoom(), map.getMinZoom()), { animate: false }); } });
   const tip = $("mapTip"), el = map.getContainer();
@@ -424,9 +588,12 @@ export function initMap() {
   $("mapZoom").addEventListener("click", (e) => {
     const b = e.target.closest("button");
     if (!b || !map) return;
-    if (b.dataset.z === "fit") fitAll(); else map.setZoom(map.getZoom() + (b.dataset.z === "in" ? 1 : -1));
+    if (b.dataset.z === "mini") { ms.filter.mini = ms.filter.mini === false; ms.saveFilter(); updateMini(); }
+    else if (b.dataset.z === "fit") fitAll(); else map.setZoom(map.getZoom() + (b.dataset.z === "in" ? 1 : -1));
   });
   $("mapHere").addEventListener("click", findMe);
+  $("mapGo").addEventListener("change", (e) => { goPlace(e.target.value); e.target.value = ""; });
+  wireFs();
   $("mapFilterBtn").addEventListener("click", () => ensureMap().then(() => { if (D) setPanel($("mapPanel").hidden); }));
   $("mapWorld").addEventListener("click", (e) => {
     const b = e.target.closest("button");
@@ -539,7 +706,7 @@ export function initMap() {
       dirty = false;
     });
   };
-  on("shown", (id) => { if (id === "map") shown_(); });
+  on("shown", (id) => { if (id === "map") shown_(); else if (fs) setFs(false); });
   // Route steps can emit("locate", stepId) to open the map at the step's first location.
   on("locate", async (stepId) => {
     emit("tab", "map");

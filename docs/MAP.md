@@ -68,3 +68,13 @@ Open the site with `?mapdebug` to expose `window.__tlMap()` (the Leaflet map, ca
 - Markers that project outside the image are dropped when loading, so they never render and never get a route pin.
 - Default markers ("Essentials"): guide categories in the Route items and Bosses groups plus sites of grace. "Guide" is every `guide: true` category. Markers are dots when zoomed out and glyphs when zoomed in. Ids are strings throughout the viewer.
 - Debug hook: `?mapdebug` exposes `window.__tlMap()`.
+
+## Full screen and navigation
+
+- **Full screen** (button, or `F`): the map card becomes a fixed full-viewport dialog (`#mapCard.fs`). It also requests native fullscreen where the browser allows it (not iOS Safari, which falls back to the overlay). `Esc`, the Close button and the browser Back button all close it. The page behind is `inert`, scroll is locked, Tab is trapped and focus returns to the button.
+- **Phones**: the toolbar wraps into rows, zoom controls move to the bottom right, and the marker filters and details open as bottom sheets. The overview hides while a sheet is open. Safe-area insets are respected.
+- **Tablets and laptops**: a single toolbar row, the marker filters dock as a 340px column, the details card sits top left and the legend floats at the bottom.
+- **Overview**: a small canvas copy of the art with a box for the current view. Tap or drag it to move the map. The map-controls button hides it. It never takes more than 30% of the stage height.
+- **Place names**: `js/data/map-places.js` lists `[label, x, y, tier]` per layer in image pixels. Tier 1 names show over the whole map, tier 2 appear when zoomed in. They are drawn in their own pane above the marker dots and below the route pins.
+- **Go to**: a native select built from the same list, plus "Whole map".
+- **Keys**: `F` full screen, `/` search, `Esc` close, plus and minus zoom, arrows pan.

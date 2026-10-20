@@ -438,3 +438,58 @@ button:focus-visible, .phaselist button:focus-visible, .swatches button:focus-vi
   .rail { position: static; max-height: none; }
   .step, .group, details.phase { break-inside: avoid; }
 }
+
+/* map: navigation aids, place names and the full screen view */
+.mapgo select { min-height: 44px; max-width: 11rem; font: inherit; font-size: .9rem; padding: 0 30px 0 12px; border-radius: 9px; border: 1px solid var(--edge); background: var(--raised); color: var(--fg); cursor: pointer; }
+.mapgo select:disabled { opacity: .55; cursor: default; }
+.mapfs { display: inline-flex; align-items: center; gap: 8px; }
+.mapexit { font-weight: 700; }
+.mapexit span { font-size: 1.5rem; line-height: 1; margin-top: -2px; }
+.minimap { position: absolute; z-index: 1000; left: 10px; bottom: 10px; touch-action: none; cursor: crosshair; border: 2px solid var(--edge); border-radius: 9px; overflow: hidden; background: #0b0a08; box-shadow: 0 2px 10px rgb(0 0 0 / .5); }
+.minimap[hidden] { display: none; }
+.minimap canvas { display: block; }
+.mm-view { position: absolute; box-sizing: border-box; min-width: 6px; min-height: 6px; border: 2px solid var(--accent); background: color-mix(in srgb, var(--accent) 22%, transparent); pointer-events: none; }
+.mapctl button[aria-pressed="false"] { opacity: .65; }
+.mp-place-wrap { width: 0; height: 0; background: none; border: 0; }
+.mp-place { position: absolute; transform: translate(-50%, -50%); white-space: nowrap; pointer-events: none; opacity: 0; transition: opacity .25s; font: 700 13px/1 var(--display); letter-spacing: .08em; text-transform: uppercase; color: #fffdf6; text-shadow: 0 0 3px #000, 0 0 6px #000, 0 1px 2px #000; }
+[data-zl="far"] .mp-place.t1, [data-zl="mid"] .mp-place.t1, [data-zl="mid"] .mp-place.t2, [data-zl="near"] .mp-place.t2 { opacity: .95; }
+[data-zl="mid"] .mp-place.t1 { font-size: 15px; }
+[data-zl="near"] .mp-place { font-size: 17px; }
+@media (prefers-reduced-motion: reduce) { .mp-place { transition: none; } }
+
+html.map-fs, html.map-fs body { overflow: hidden; overscroll-behavior: none; }
+.mapcard.fs { position: fixed; inset: 0; z-index: 2000; margin: 0; padding: 0; border: 0; border-radius: 0; background: var(--bg); display: flex; flex-direction: column; }
+.mapcard.fs .maptools { flex: none; flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; gap: 8px; padding: calc(8px + env(safe-area-inset-top, 0px)) calc(10px + env(safe-area-inset-right, 0px)) 8px calc(10px + env(safe-area-inset-left, 0px)); background: var(--surface); border-bottom: 1px solid var(--line); }
+.mapcard.fs .maptools::-webkit-scrollbar { display: none; }
+.mapcard.fs .maptools > * { flex: none; }
+.mapcard.fs .mapfs { display: none; }
+.mapcard.fs .mapwrap { flex: 1 1 auto; min-height: 0; grid-template-rows: minmax(0, 1fr); gap: 0; }
+.mapcard.fs .mapstage { height: auto; min-height: 0; border: 0; border-radius: 0; }
+.mapcard.fs .mapctl { top: 10px; right: calc(10px + env(safe-area-inset-right, 0px)); }
+.mapcard.fs .mapsearch { left: calc(10px + env(safe-area-inset-left, 0px)); right: calc(64px + env(safe-area-inset-right, 0px)); }
+.mapcard.fs .minimap { left: calc(10px + env(safe-area-inset-left, 0px)); bottom: calc(10px + env(safe-area-inset-bottom, 0px)); }
+.mapcard.fs .mapsheet { left: calc(8px + env(safe-area-inset-left, 0px)); right: calc(8px + env(safe-area-inset-right, 0px)); bottom: calc(8px + env(safe-area-inset-bottom, 0px)); }
+.mapcard.fs .mappanel { padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px)); }
+.mapcard.fs .mapstatus { position: absolute; z-index: 1300; top: calc(64px + env(safe-area-inset-top, 0px)); left: 50%; transform: translateX(-50%); max-width: calc(100% - 24px); padding: 6px 12px; border-radius: 999px; background: var(--raised); border: 1px solid var(--line); box-shadow: 0 2px 10px rgb(0 0 0 / .4); }
+.mapcard.fs .mapstatus:empty { display: none; }
+.mapcard.fs .maplegend { display: none; }
+/* phones: the sheet and the filters take the bottom, so the overview steps aside */
+@media (max-width: 699.98px) {
+  .mapcard.fs .maptools { flex-wrap: wrap; overflow: visible; row-gap: 6px; }
+  .mapcard.fs .maptools > * { flex: 0 1 auto; }
+  .mapcard.fs .mapgo select { max-width: 9.5rem; }
+  .mapcard.fs .mapstage:has(.mapsheet:not([hidden])) .minimap, .mapcard.fs .mapwrap.panel-open .minimap { display: none; }
+  .mapcard.fs .mapctl button { width: 48px; height: 48px; }
+  .mapcard.fs .mapstage .mapctl { top: auto; bottom: calc(10px + env(safe-area-inset-bottom, 0px)); }
+  .mapcard.fs .mapstage:has(.mapsheet:not([hidden])) .mapctl, .mapcard.fs .mapwrap.panel-open .mapctl { display: none; }
+  .mapcard.fs .mapsearch { right: calc(10px + env(safe-area-inset-right, 0px)); max-width: none; }
+}
+/* tablets and laptops: a wide toolbar, a docked filter column and the legend over the map */
+@media (min-width: 900px) {
+  .mapcard.fs .mapwrap.panel-open { grid-template-columns: minmax(0, 1fr) 340px; }
+  .mapcard.fs .mappanel { position: static; height: 100%; max-height: none; border: 0; border-left: 1px solid var(--line); border-radius: 0; box-shadow: none; }
+  .mapcard.fs .mapsheet { top: 66px; bottom: auto; right: auto; left: 10px; width: 360px; max-height: calc(100% - 200px); }
+  .mapcard.fs .maplegend { display: flex; position: absolute; z-index: 1000; left: 50%; bottom: 12px; transform: translateX(-50%); padding: 6px 14px; border-radius: 999px; background: color-mix(in srgb, var(--surface) 88%, transparent); border: 1px solid var(--line); }
+}
+@media (min-width: 900px) and (max-height: 640px) { .mapcard.fs .mapsheet { max-height: calc(100% - 90px); } }
+/* in the inline view on desktop the legend stays under the map */
