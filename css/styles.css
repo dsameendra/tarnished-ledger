@@ -95,6 +95,7 @@ section[hidden] { display: none; }
 .top h1 small { display: block; font-family: var(--body); font-weight: 400; font-size: .8rem; letter-spacing: 0; color: var(--muted); margin-top: 3px; }
 .pills { display: flex; flex-wrap: wrap; gap: 6px; margin: 12px 0 0; }
 .pill { display: inline-flex; align-items: center; gap: 6px; font-size: .78rem; padding: 3px 10px; border-radius: 999px; border: 1px solid var(--line); color: var(--muted); background: var(--surface); }
+.pill[hidden] { display: none; }
 .pill i { width: 7px; height: 7px; border-radius: 50%; background: var(--muted); }
 .pill.on i { background: var(--ok); }
 .pill.busy i { background: var(--accent); }

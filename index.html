@@ -1,797 +1,195 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Tarnished's Ledger</title>
+<meta name="description" content="Step-by-step checklist for every Elden Ring trophy and achievement, with a route map and cross-device progress sync. Unofficial fan project.">
+<meta name="theme-color" content="#13120d">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Ledger">
-<meta name="theme-color" content="#14130e">
-<meta name="description" content="Step-by-step checklist for every Elden Ring trophy and achievement. Unofficial fan project.">
+<meta property="og:title" content="Tarnished's Ledger">
+<meta property="og:description" content="Elden Ring 100% route: every trophy, legendary item and ending, step by step.">
+<meta property="og:image" content="https://dsameendra.github.io/tarnished-ledger/assets/icons/icon-512.png">
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="apple-touch-icon" href="icon-180.png">
-<link rel="icon" type="image/png" href="icon-64.png">
+<link rel="icon" type="image/png" href="assets/icons/icon-64.png">
+<link rel="apple-touch-icon" href="assets/icons/icon-180.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Alegreya+Sans:ital,wght@0,400;0,500;0,700;1,400&display=swap">
-<style>
-/* Layout: app shell — header + progress medallion, single reading column, fixed bottom tab bar clearing the home indicator */
-:root{
-  --bg:#ece8de;--surface:#f8f6f0;--raised:#fffdf8;--fg:#221f18;--muted:#6a6352;--line:#d6cfbf;
-  --accent:var(--acc-l);--accent-soft:color-mix(in srgb,var(--accent) 16%,var(--surface));
-  --warn:#a3392a;--warn-soft:#f4ddd5;--ok:#4a6b3a;--ok-soft:#dfe8d4;--onaccent:#fffdf6;
-  --acc-l:#86661c;--acc-d:#d6b159;
-  --display:"Cinzel","Trajan Pro",Georgia,serif;
-  --body:"Alegreya Sans","Segoe UI",system-ui,sans-serif;
-  --fs:17px;
-  font-size:var(--fs);
-}
-:root[data-accent="crimson"]{--acc-l:#9b2f3a;--acc-d:#e0727c}
-:root[data-accent="frost"]{--acc-l:#2f6487;--acc-d:#86b9dc}
-:root[data-accent="silver"]{--acc-l:#5d5f66;--acc-d:#c3c6ce}
-:root[data-size="s"]{--fs:15px}:root[data-size="l"]{--fs:19.5px}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]):not([data-mode="light"]){
-  --bg:#13120d;--surface:#1c1a14;--raised:#24211a;--fg:#ede6d5;--muted:#a39a84;--line:#35312a;
-  --accent:var(--acc-d);--warn:#e57e66;--warn-soft:#3b211b;--ok:#97b481;--ok-soft:#222b1c;--onaccent:#14130e;color-scheme:dark}}
-:root[data-theme="dark"]:not([data-mode="light"]),:root[data-mode="dark"]{
-  --bg:#13120d;--surface:#1c1a14;--raised:#24211a;--fg:#ede6d5;--muted:#a39a84;--line:#35312a;
-  --accent:var(--acc-d);--warn:#e57e66;--warn-soft:#3b211b;--ok:#97b481;--ok-soft:#222b1c;--onaccent:#14130e;color-scheme:dark}
-:root[data-mode="light"]{color-scheme:light}
-
-*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{background:var(--bg)}
-body{color:var(--fg);font-family:var(--body);font-size:1rem;line-height:1.5}
-body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:30;background:var(--bg)}
-.wrap{max-width:760px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:14px calc(96px + env(safe-area-inset-bottom,0px))}
-button{font:inherit;color:inherit}
-.btn:focus-visible,.nav button:focus-visible,summary:focus-visible,.check:focus-visible,.seg button:focus-visible,.switch:focus-visible,.jump:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-
-/* header */
-.top{display:flex;align-items:center;gap:12px}
-.top img{width:44px;height:44px;border-radius:11px;flex:none}
-.top h1{font-family:var(--display);font-weight:700;font-size:1.3rem;line-height:1.1;margin:0;letter-spacing:.04em;min-width:0}
-.top h1 small{display:block;font-family:var(--body);font-weight:400;font-size:.8rem;letter-spacing:0;color:var(--muted);margin-top:3px}
-.pills{display:flex;flex-wrap:wrap;gap:6px;margin:12px 0 0}
-.pill{display:inline-flex;align-items:center;gap:6px;font-size:.78rem;padding:3px 10px;border-radius:999px;border:1px solid var(--line);color:var(--muted);background:var(--surface)}
-.pill i{width:7px;height:7px;border-radius:50%;background:var(--muted)}
-.pill.on i{background:var(--ok)}
-.pill.busy i{background:var(--accent)}
-
-/* medallion */
-.hero{display:grid;grid-template-columns:auto 1fr;gap:18px;align-items:center;margin:16px 0 4px;padding:16px;background:var(--surface);border:1px solid var(--line);border-radius:14px}
-.ring{position:relative;width:104px;height:104px}
-.ring svg{width:100%;height:100%;transform:rotate(-90deg)}
-.ring .trk{stroke:var(--line);fill:none;stroke-width:7}
-.ring .val{stroke:var(--accent);fill:none;stroke-width:7;stroke-linecap:round;transition:stroke-dashoffset .5s ease}
-.ring .inner{stroke:var(--accent);opacity:.35;fill:none;stroke-width:1}
-.ring b{position:absolute;inset:0;display:grid;place-items:center;font-family:var(--display);font-size:1.45rem;font-weight:700;font-variant-numeric:tabular-nums}
-.ring b span{font-size:.7rem;font-family:var(--body);color:var(--muted);font-weight:400;display:block;text-align:center;margin-top:-4px;letter-spacing:.08em;text-transform:uppercase}
-.minis{display:flex;flex-direction:column;gap:10px;min-width:0}
-.mini{display:grid;grid-template-columns:1fr auto;gap:2px 10px;font-size:.88rem}
-.mini span:last-child{font-variant-numeric:tabular-nums;color:var(--muted)}
-.mini .bar{grid-column:1/-1;height:5px;border-radius:3px;background:var(--line);overflow:hidden}
-.mini .bar i{display:block;height:100%;width:0;background:var(--accent);transition:width .4s}
-
-/* up next */
-.next{margin:12px 0 18px;padding:14px 16px;border-radius:14px;background:var(--accent-soft);border:1px solid color-mix(in srgb,var(--accent) 30%,transparent)}
-.next .eyebrow{font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);font-weight:700}
-.next .where{font-family:var(--display);font-size:1rem;margin:2px 0 6px}
-.next p{margin:0 0 12px}
-.next .acts{display:flex;gap:8px;flex-wrap:wrap}
-.btn{font-size:.92rem;font-weight:700;background:var(--raised);border:1px solid var(--line);padding:9px 16px;border-radius:9px;cursor:pointer;min-height:42px}
-.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--onaccent)}
-.btn.danger{color:var(--warn);border-color:color-mix(in srgb,var(--warn) 45%,transparent)}
-
-/* phases */
-.view-h{font-family:var(--display);font-weight:700;font-size:1.15rem;letter-spacing:.04em;margin:18px 0 8px}
-details.phase{margin-bottom:10px;background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow:hidden}
-details.phase.current{border-color:color-mix(in srgb,var(--accent) 55%,var(--line))}
-details.phase>summary{list-style:none;cursor:pointer;display:grid;grid-template-columns:2.4rem 1fr auto;gap:10px;align-items:center;padding:12px 14px}
-details.phase>summary::-webkit-details-marker{display:none}
-.num{width:2.2rem;height:2.2rem;border-radius:50%;border:1.5px solid var(--accent);color:var(--accent);display:grid;place-items:center;font-family:var(--display);font-weight:700;font-size:.95rem;font-variant-numeric:tabular-nums}
-.phase.done .num{background:var(--ok);border-color:var(--ok);color:var(--surface)}
-.ph-title{min-width:0}
-.ph-title h3{font-family:var(--display);font-weight:500;font-size:1.02rem;margin:0;line-height:1.25;text-wrap:balance}
-.ph-title small{color:var(--muted);font-size:.84rem}
-.ph-bar{height:3px;background:var(--line);border-radius:2px;margin-top:6px;overflow:hidden}
-.ph-bar i{display:block;height:100%;background:var(--accent);width:0;transition:width .3s}
-.phase.done .ph-bar i{background:var(--ok)}
-.count{font-size:.82rem;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
-.chev{transition:transform .2s;color:var(--muted)}
-details[open] .chev{transform:rotate(180deg)}
-ol.steps{list-style:none;margin:0;padding:0 10px 10px;display:flex;flex-direction:column;gap:6px}
-.step{display:grid;grid-template-columns:auto 1fr;gap:12px;align-items:start;background:var(--raised);border:1px solid var(--line);border-radius:10px;padding:11px 12px;cursor:pointer;transition:background .25s,opacity .25s}
-.compact .step{padding:7px 10px;gap:10px}
-.compact .chips{display:none}
-.step.warn{background:var(--warn-soft);border-color:color-mix(in srgb,var(--warn) 35%,transparent)}
-.step.tip{background:transparent;border-style:dashed;cursor:default}
-.step.flash{background:var(--accent-soft)}
-.step.checked{opacity:.62}
-.step.checked .txt p{text-decoration:line-through;text-decoration-color:color-mix(in srgb,var(--muted) 55%,transparent)}
-.check{width:28px;height:28px;border:2px solid var(--muted);border-radius:7px;display:grid;place-items:center;background:transparent;padding:0;cursor:pointer;flex:none}
-.step.checked .check,.row.checked .check{background:var(--ok);border-color:var(--ok)}
-.check svg{width:17px;height:17px;stroke:var(--surface);stroke-width:3;fill:none;opacity:0}
-.step.checked .check svg,.row.checked .check svg{opacity:1}
-.tipmark{width:28px;height:28px;display:grid;place-items:center;color:var(--accent);font-family:var(--display);font-weight:700}
-.txt{min-width:0}.txt p{margin:0}
-.chips{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}
-.chip{font-size:.68rem;letter-spacing:.07em;text-transform:uppercase;padding:2px 7px;border-radius:4px;border:1px solid var(--line);color:var(--muted);font-weight:700}
-.chip.trophy{background:var(--accent-soft);border-color:transparent;color:var(--accent)}
-.chip.legend{background:var(--accent);border-color:var(--accent);color:var(--onaccent)}
-.chip.miss{background:var(--warn);border-color:var(--warn);color:var(--surface)}
-.chip.key{border-color:var(--accent);color:var(--accent)}
-.hide-done .step.checked{display:none}
-.no-tips .step.tip{display:none}
-
-/* lists */
-.note{color:var(--muted);font-size:.92rem;margin:0 0 10px;max-width:62ch}
-.group{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:4px 14px 6px;margin-bottom:12px}
-.group h3{font-family:var(--display);font-weight:500;font-size:1.02rem;margin:10px 0 4px;display:flex;justify-content:space-between;align-items:center;gap:8px}
-.group h3 span.c{font-family:var(--body);font-size:.88rem;color:var(--muted);font-variant-numeric:tabular-nums}
-.row{display:grid;grid-template-columns:auto 1fr;gap:12px;align-items:start;padding:10px 0;border-top:1px solid var(--line)}
-.row[data-tog]{cursor:pointer}
-.row.checked .row-name{color:var(--muted);text-decoration:line-through}
-.row .check{width:24px;height:24px;border-radius:6px}
-.row-name{font-weight:700}
-.row-where{color:var(--muted);font-size:.88rem}
-.grade{display:inline-block;width:.65em;height:.65em;border-radius:50%;margin-right:8px}
-.g-p{background:#7fa8c4}.g-g{background:#d2a637}.g-s{background:#a7a7ad}.g-b{background:#ae7646}
-.jump{color:var(--accent);text-decoration:underline;background:none;border:0;padding:0;font-size:.86rem;cursor:pointer}
-
-/* endings prose */
-.prose{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:6px 16px 14px;margin-bottom:12px}
-.prose h3{font-family:var(--display);font-weight:500;font-size:1.05rem;margin:14px 0 6px}
-.prose p,.prose li{max-width:64ch}
-.prose ol{padding-left:1.3rem;margin:0}.prose li{margin-bottom:6px}
-.callout{background:var(--warn-soft);border-left:3px solid var(--warn);padding:10px 14px;border-radius:0 8px 8px 0;margin:10px 0}
-.callout.acc{background:var(--accent-soft);border-left-color:var(--accent)}
-code{font-size:.85em;background:var(--raised);border:1px solid var(--line);padding:1px 5px;border-radius:4px;word-break:break-all}
-
-
-
-/* settings */
-.set{display:grid;grid-template-columns:1fr auto;gap:4px 14px;align-items:center;padding:13px 0;border-top:1px solid var(--line)}
-.set:first-of-type{border-top:0}
-.set .lbl{font-weight:700}
-.set .hint{grid-column:1/-1;color:var(--muted);font-size:.86rem}
-.set.stack{grid-template-columns:1fr}
-.seg{display:inline-flex;border:1px solid var(--line);border-radius:9px;overflow:hidden;background:var(--raised);flex-wrap:wrap}
-.seg button{border:0;background:none;padding:7px 12px;font-size:.88rem;cursor:pointer;color:var(--muted);min-height:38px}
-.seg button[aria-pressed="true"]{background:var(--accent);color:var(--onaccent);font-weight:700}
-.swatches{display:flex;gap:10px}
-.swatches button{width:34px;height:34px;border-radius:50%;border:2px solid var(--line);cursor:pointer;padding:0}
-.swatches button[aria-pressed="true"]{outline:2px solid var(--fg);outline-offset:2px}
-.switch{width:52px;height:30px;border-radius:999px;border:1px solid var(--line);background:var(--line);position:relative;cursor:pointer;padding:0;flex:none}
-.switch::after{content:"";position:absolute;top:2px;left:2px;width:24px;height:24px;border-radius:50%;background:var(--raised);box-shadow:0 1px 2px rgba(0,0,0,.25);transition:transform .2s}
-.switch[aria-checked="true"]{background:var(--accent);border-color:var(--accent)}
-.switch[aria-checked="true"]::after{transform:translateX(22px)}
-textarea{width:100%;min-height:76px;font:inherit;font-size:.82rem;background:var(--raised);color:var(--fg);border:1px solid var(--line);border-radius:9px;padding:8px 10px;resize:vertical}
-.acts{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
-.msg{font-size:.86rem;color:var(--ok);min-height:1.2em;margin-top:6px}
-.msg.err{color:var(--warn)}
-
-/* bottom nav */
-.nav{position:fixed;left:0;right:0;bottom:0;z-index:20;background:color-mix(in srgb,var(--surface) 92%,transparent);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom,0px);padding-left:max(8px,env(safe-area-inset-left,0px));padding-right:max(8px,env(safe-area-inset-right,0px))}
-.nav div{max-width:760px;margin:0 auto;display:grid;grid-template-columns:repeat(5,1fr)}
-.nav button{background:none;border:0;padding:8px 2px 7px;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:.68rem;letter-spacing:.03em;color:var(--muted);cursor:pointer;min-height:54px}
-.nav svg{width:23px;height:23px;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
-.nav button[aria-selected="true"]{color:var(--accent);font-weight:700}
-section[hidden]{display:none}
-
-/* icons */
-.step{grid-template-columns:auto auto 1fr}
-.step.tip{grid-template-columns:auto 1fr}
-.ico{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:var(--accent-soft);color:var(--accent);flex:none}
-.ico svg,.lico svg{width:19px;height:19px;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
-.step.warn .ico{background:color-mix(in srgb,var(--warn) 18%,transparent);color:var(--warn)}
-.compact .ico{display:none}.compact .step{grid-template-columns:auto 1fr}
-.links{display:flex;flex-wrap:wrap;gap:10px;margin-top:6px}
-.links a{font-size:.82rem;color:var(--accent);text-decoration:none;border-bottom:1px solid color-mix(in srgb,var(--accent) 40%,transparent)}
-.compact .links{display:none}
-.row{grid-template-columns:auto auto 1fr}
-.lico{width:30px;height:30px;border-radius:8px;display:grid;place-items:center;background:var(--accent-soft);color:var(--accent)}
-.badge{width:40px;height:40px;flex:none}
-.row.tr{grid-template-columns:auto auto 1fr;align-items:center}
-.row.checked .badge{filter:none}.row:not(.checked) .badge{opacity:.45;filter:grayscale(.7)}
-.ph-links{display:flex;gap:12px;padding:0 14px 10px;flex-wrap:wrap}
-.ph-links a{font-size:.84rem;color:var(--accent)}
-/* map */
-.mapcard{background:var(--surface);border:1px solid var(--line);border-radius:14px;margin-bottom:14px;overflow:hidden}
-.mapcard summary{list-style:none;cursor:pointer;display:flex;justify-content:space-between;align-items:center;padding:12px 16px;font-family:var(--display);font-weight:500}
-.mapcard summary::-webkit-details-marker{display:none}
-.mapwrap{padding:0 10px 10px}
-.mapwrap svg{width:100%;height:auto;display:block;max-width:560px;margin:0 auto}
-.rg{fill:color-mix(in srgb,var(--accent) 9%,var(--raised));stroke:color-mix(in srgb,var(--accent) 35%,var(--line));stroke-width:1}
-.rg.under{fill:none;stroke-dasharray:4 3}
-.rl{font-family:var(--display);font-size:8.5px;fill:var(--muted);letter-spacing:.06em;text-anchor:middle;pointer-events:none}
-.rpath{fill:none;stroke:var(--accent);stroke-width:1.2;stroke-dasharray:2 3;opacity:.55}
-.pin circle{stroke:var(--surface);stroke-width:1.5;fill:var(--line);cursor:pointer}
-.pin text{font-size:6.5px;font-weight:700;text-anchor:middle;fill:var(--fg);pointer-events:none}
-.pin.done circle{fill:var(--ok)}.pin.done text{fill:var(--surface)}
-.pin.cur circle{fill:var(--accent)}.pin.cur text{fill:var(--onaccent)}
-.pin.cur .halo{fill:none;stroke:var(--accent);stroke-width:1;opacity:.5;animation:pulse 2s infinite}
-@keyframes pulse{0%{r:7}100%{r:13;opacity:0}}
-.legend{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;font-size:.78rem;color:var(--muted);padding:2px 0 4px}
-.legend i{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px;vertical-align:-1px}
-.mapnote{font-size:.8rem;color:var(--muted);text-align:center;margin:4px 0 0}
-.mapnote a{color:var(--accent)}
-
-@media (prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
-@media (max-width:380px){.hero{grid-template-columns:1fr;justify-items:center}.minis{width:100%}}
-</style>
-
-</head><body>
-<div class="wrap" id="app">
-  <div class="top">
-    <img src="icon-180.png" alt="" width="44" height="44">
-    <h1>Tarnished's Ledger<small>Elden Ring 100% route · 42 trophies · 3 endings</small></h1>
-  </div>
-  <div class="pills">
-    <span class="pill" id="savePill"><i></i><span>Saved on this device</span></span>
-    <span class="pill" id="wakePill" hidden><i></i><span>Screen stays on</span></span>
-  </div>
-
-  <div class="hero">
-    <div class="ring" aria-label="Overall progress">
-      <svg viewBox="0 0 100 100"><circle class="trk" cx="50" cy="50" r="44"/><circle class="val" id="ringVal" cx="50" cy="50" r="44" stroke-dasharray="276.46" stroke-dashoffset="276.46"/><circle class="inner" cx="50" cy="50" r="36"/></svg>
-      <b><div><div id="pct">0%</div><span>done</span></div></b>
-    </div>
-    <div class="minis">
-      <div class="mini"><span>Steps</span><span id="sSteps">0/0</span><div class="bar"><i id="bSteps"></i></div></div>
-      <div class="mini"><span>Trophies</span><span id="sTro">0/42</span><div class="bar"><i id="bTro"></i></div></div>
-      <div class="mini"><span>Legendaries</span><span id="sLeg">0/30</span><div class="bar"><i id="bLeg"></i></div></div>
-    </div>
-  </div>
-
-  <section id="v-route">
-    <div class="next" id="next"></div>
-    <details class="mapcard" id="mapcard" open><summary>Route map <span class="count" id="mapCount"></span></summary>
-      <div class="mapwrap"><div id="map"></div>
-      <div class="legend"><span><i style="background:var(--ok)"></i>Done</span><span><i style="background:var(--accent)"></i>You are here</span><span><i style="background:var(--line)"></i>Ahead</span><span>Dashed = underground</span></div>
-      <p class="mapnote">Simplified sketch, not to scale. Tap a number to open that phase. For exact spots use the <a href="https://mapgenie.io/elden-ring/maps/the-lands-between" target="_blank" rel="noopener">interactive map</a>.</p></div>
-    </details>
-    <div id="phases"></div>
-  </section>
-
-  <section id="v-tro" hidden>
-    <h2 class="view-h">Trophies</h2>
-    <p class="note">Each trophy ticks itself when you finish its step. Tap a trophy to tick it, or "Show step" to jump there.</p>
-    <div id="troList"></div>
-  </section>
-
-  <section id="v-col" hidden>
-    <h2 class="view-h">Legendaries</h2>
-    <p class="note">The four Legendary trophies. You need every item in a group; nothing else in the game has to be collected.</p>
-    <div id="colList"></div>
-  </section>
-
-  <section id="v-end" hidden>
-    <h2 class="view-h">Endings &amp; Saves</h2>
-    <div class="prose">
-      <h3>How it works</h3>
-      <p>Three ending trophies are needed: <b>Age of the Stars</b>, <b>Elden Lord</b> and <b>Lord of Frenzied Flame</b>. You get one ending per playthrough, so either back up your save or play three times.</p>
-      <h3>Route A · one playthrough with backups</h3>
-      <ol>
-        <li>Follow the route to the end of phase 24 with Ranni's quest done and Mohg, the Omen dead. Don't inherit the Frenzied Flame.</li>
-        <li>After Godfrey / Hoarah Loux, rest at the <b>Elden Throne</b> grace, quit to the title screen, and back up your save.</li>
-        <li>Beat the final boss and use Ranni's blue summon sign → <b>Age of the Stars</b>.</li>
-        <li>Restore the backup. Beat the final boss and mend the Elden Ring without Ranni's sign → <b>Elden Lord</b>.</li>
-        <li>Restore again. Warp to Cathedral of the Forsaken, hit the wall behind the altar, drop to the bottom, remove all armour and inherit the Frenzied Flame from the Three Fingers. Beat the final boss → <b>Lord of Frenzied Flame</b>.</li>
-      </ol>
-      <div class="callout acc"><b>Backing up.</b> Quit to the title screen first; the game autosaves constantly.<br>
-      PC / Steam: close the game and copy <code>%APPDATA%\EldenRing</code> somewhere safe. Copy it back to restore.<br>
-      PS4 / PS5: Settings → Saved Data → upload to cloud (PS Plus) or copy to USB.<br>
-      Xbox: manual backups aren't possible, so use Route B.</div>
-    </div>
-    <div class="prose">
-      <h3>Route B · NG, NG+, NG++</h3>
-      <p>Start NG+ from the giant round table in the Roundtable Hold after the credits. Each extra run only needs the shortest path:</p>
-      <ol>
-        <li>Get two Great Runes (Godrick and Rennala are easiest).</li>
-        <li>Reach Leyndell via the Grand Lift of Dectus (both medallion halves) or the Ruin-Strewn Precipice. Or: kill Radahn, go Nokron → Siofra Aqueduct → Deeproot Depths, beat Fia's Champions and use the teleporter.</li>
-        <li>Beat Godfrey's shade and Morgott.</li>
-        <li>Beat the Fire Giant and burn the Erdtree.</li>
-        <li>Beat the Godskin Duo and Maliketh in Farum Azula.</li>
-        <li>Beat Gideon, Hoarah Loux and Radagon / Elden Beast, picking the ending you still need.</li>
-      </ol>
-      <p>Keep the Frenzied Flame for its own run. Once inherited it overrides every other ending.</p>
-    </div>
-    <div class="prose">
-      <h3>Things that can lock you out</h3>
-      <div class="callout"><b>Fia:</b> don't kill her before you've fought Lichdragon Fortissax.</div>
-      <div class="callout"><b>Ranni:</b> never give her Seluvis's Amber Draught. It ends her quest, the Dark Moon Greatsword and Age of the Stars.</div>
-      <div class="callout"><b>Bolt of Gransax:</b> pick it up in the Royal Capital before burning the Erdtree.</div>
-      <div class="callout"><b>Miquella's Needle:</b> after inheriting the Frenzied Flame, using it in Placidusax's arena permanently removes the Frenzied Flame ending.</div>
-    </div>
-  </section>
-
-  <section id="v-set" hidden>
-    <h2 class="view-h">Settings</h2>
-    <div class="group">
-      <h3>Appearance</h3>
-      <div class="set"><span class="lbl">Theme</span><div class="seg" data-set="mode"><button data-v="system">System</button><button data-v="light">Light</button><button data-v="dark">Dark</button></div></div>
-      <div class="set"><span class="lbl">Accent</span><div class="swatches" data-set="accent">
-        <button data-v="gold" aria-label="Erdtree gold" style="background:#c39a3f"></button>
-        <button data-v="crimson" aria-label="Scarlet rot" style="background:#b8434e"></button>
-        <button data-v="frost" aria-label="Moonlight blue" style="background:#5f94bb"></button>
-        <button data-v="silver" aria-label="Ash silver" style="background:#9a9ca4"></button></div></div>
-      <div class="set"><span class="lbl">Text size</span><div class="seg" data-set="size"><button data-v="s">Small</button><button data-v="m">Medium</button><button data-v="l">Large</button></div></div>
-      <div class="set"><span class="lbl">Compact steps</span><button class="switch" role="switch" data-sw="compact" aria-label="Compact steps"></button><span class="hint">Tighter rows and no tags.</span></div>
-    </div>
-    <div class="group">
-      <h3>Route</h3>
-      <div class="set"><span class="lbl">Hide completed steps</span><button class="switch" role="switch" data-sw="hide" aria-label="Hide completed steps"></button></div>
-      <div class="set"><span class="lbl">Show tips</span><button class="switch" role="switch" data-sw="tips" aria-label="Show tips"></button><span class="hint">Dashed advice notes between steps.</span></div>
-      <div class="set"><span class="lbl">Auto-open current phase</span><button class="switch" role="switch" data-sw="autoopen" aria-label="Auto-open current phase"></button><span class="hint">Collapse finished phases and open the one you're on.</span></div>
-    </div>
-    <div class="group">
-      <h3>Device</h3>
-      <div class="set"><span class="lbl">Keep screen on</span><button class="switch" role="switch" data-sw="awake" aria-label="Keep screen on"></button><span class="hint" id="wakeHint">Stops the screen dimming while this page is open.</span></div>
-    </div>
-    <div class="group">
-      <h3>Progress</h3>
-      <div class="set stack"><span class="lbl">Saving</span><span class="hint" id="saveHint">Every tick saves instantly on this device.</span></div>
-      <div class="set stack"><span class="lbl">Move progress to another device</span><span class="hint">Copy this code, then paste it into Import on the other device.</span>
-        <textarea id="exportBox" readonly aria-label="Progress code"></textarea>
-        <div class="acts"><button class="btn" id="copyBtn">Copy code</button></div>
-        <textarea id="importBox" placeholder="Paste a progress code here" aria-label="Import code"></textarea>
-        <div class="acts"><button class="btn" id="importBtn">Import</button></div>
-        <div class="msg" id="ioMsg"></div>
-      </div>
-      <div class="set stack"><span class="lbl">Reset</span><span class="hint">Clears every tick. Settings stay.</span>
-        <div class="acts"><button class="btn danger" id="resetBtn">Reset progress…</button><span id="resetConfirm" hidden><button class="btn danger" id="resetYes">Yes, clear all</button> <button class="btn" id="resetNo">Cancel</button></span></div>
-      </div>
-    </div>
-  </section>
-</div>
-
-<nav class="nav" aria-label="Sections"><div role="tablist">
-  <button role="tab" data-tab="route" aria-selected="true"><svg viewBox="0 0 24 24"><path d="M4 19c4-1 3-7 8-8s4-6 8-7"/><circle cx="4" cy="19" r="1.6"/><circle cx="20" cy="4" r="1.6"/></svg>Route</button>
-  <button role="tab" data-tab="tro" aria-selected="false"><svg viewBox="0 0 24 24"><path d="M7 4h10v5a5 5 0 0 1-10 0z"/><path d="M7 6H4a3 3 0 0 0 3 4M17 6h3a3 3 0 0 1-3 4M12 14v4M8 20h8"/></svg>Trophies</button>
-  <button role="tab" data-tab="col" aria-selected="false"><svg viewBox="0 0 24 24"><path d="M12 3l2.6 5.6 6 .7-4.5 4.1 1.2 6L12 16.5 6.7 19.4l1.2-6L3.4 9.3l6-.7z"/></svg>Legendary</button>
-  <button role="tab" data-tab="end" aria-selected="false"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 4v16M4 12h16"/></svg>Endings</button>
-  <button role="tab" data-tab="set" aria-selected="false"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1"/></svg>Settings</button>
-</div></nav>
-
+<link rel="stylesheet" href="css/styles.css">
 <script>
-
-const TROPHIES=[
-["platinum","Elden Ring","Obtained all trophies","p"],
-["eldenlord","Elden Lord","Achieved the Elden Lord ending","g"],
-["stars","Age of the Stars","Achieved the Age of the Stars ending","g"],
-["frenzy","Lord of Frenzied Flame","Achieved the Lord of Frenzied Flame ending","g"],
-["godrick","Shardbearer Godrick","Defeated Godrick the Grafted","s"],
-["radahn","Shardbearer Radahn","Defeated Starscourge Radahn","s"],
-["morgott","Shardbearer Morgott","Defeated Morgott, the Omen King","s"],
-["rykard","Shardbearer Rykard","Defeated Rykard, Lord of Blasphemy","s"],
-["malenia","Shardbearer Malenia","Defeated Malenia, Blade of Miquella","s"],
-["mohg","Shardbearer Mohg","Defeated Mohg, Lord of Blood","s"],
-["maliketh","Maliketh the Black Blade","Defeated Maliketh","s"],
-["hoarah","Hoarah Loux, Warrior","Defeated Godfrey / Hoarah Loux","s"],
-["placidusax","Dragonlord Placidusax","Defeated Dragonlord Placidusax","s"],
-["godslaying","God-Slaying Armament","Upgraded any armament to its highest stage","s"],
-["armaments","Legendary Armaments","Acquired all 9 legendary armaments","s"],
-["ashes","Legendary Ashen Remains","Acquired all 6 legendary ashen remains","s"],
-["spells","Legendary Sorceries and Incantations","Acquired all 7 legendary spells","s"],
-["talismans","Legendary Talismans","Acquired all 8 legendary talismans","s"],
-["rennala","Rennala, Queen of the Full Moon","Defeated Rennala","b"],
-["fortissax","Lichdragon Fortissax","Defeated Lichdragon Fortissax","b"],
-["gduo","Godskin Duo","Defeated the Godskin Duo","b"],
-["firegiant","Fire Giant","Defeated the Fire Giant","b"],
-["dragonkin","Dragonkin Soldier of Nokstella","Defeated the Dragonkin Soldier","b"],
-["regal","Regal Ancestor Spirit","Defeated the Regal Ancestor Spirit","b"],
-["gargoyle","Valiant Gargoyle","Defeated the Valiant Gargoyles","b"],
-["margit","Margit, the Fell Omen","Defeated Margit","b"],
-["redwolf","Red Wolf of Radagon","Defeated the Red Wolf of Radagon","b"],
-["gnoble","Godskin Noble","Defeated the Godskin Noble","b"],
-["makar","Magma Wyrm Makar","Defeated Magma Wyrm Makar","b"],
-["godfrey","Godfrey, First Elden Lord","Defeated Godfrey's golden shade","b"],
-["mohgomen","Mohg, the Omen","Defeated Mohg, the Omen","b"],
-["mimic","Mimic Tear","Defeated the Mimic Tear","b"],
-["hloretta","Loretta, Knight of the Haligtree","Defeated Loretta in the Haligtree","b"],
-["astel","Astel, Naturalborn of the Void","Defeated Astel","b"],
-["leonine","Leonine Misbegotten","Defeated the Leonine Misbegotten","b"],
-["rloretta","Royal Knight Loretta","Defeated Royal Knight Loretta","b"],
-["elemer","Elemer of the Briar","Defeated Elemer of the Briar","b"],
-["ancestor","Ancestor Spirit","Defeated the Ancestor Spirit","b"],
-["niall","Commander Niall","Defeated Commander Niall","b"],
-["roundtable","Roundtable Hold","Arrived at Roundtable Hold","b"],
-["greatrune","Great Rune","Restored the power of a Great Rune","b"],
-["erdtree","Erdtree Aflame","Used kindling to set the Erdtree aflame","b"]
-];
-const COLL={
-armaments:["Legendary Armaments",[["arm1","Grafted Blade Greatsword"],["arm2","Sword of Night and Flame"],["arm3","Ruins Greatsword"],["arm4","Marais Executioner's Sword"],["arm5","Bolt of Gransax"],["arm6","Eclipse Shotel"],["arm7","Golden Order Greatsword"],["arm8","Devourer's Scepter"],["arm9","Dark Moon Greatsword"]]],
-ashes:["Legendary Ashen Remains",[["ash1","Lhutel the Headless"],["ash2","Redmane Knight Ogha"],["ash3","Mimic Tear Ashes"],["ash4","Ancient Dragon Knight Kristoff"],["ash5","Black Knife Tiche"],["ash6","Cleanrot Knight Finlay"]]],
-spells:["Legendary Sorceries & Incantations",[["sp1","Flame of the Fell God"],["sp2","Greyoll's Roar"],["sp3","Comet Azur"],["sp4","Stars of Ruin"],["sp5","Elden Stars"],["sp6","Ranni's Dark Moon"],["sp7","Founding Rain of Stars"]]],
-talismans:["Legendary Talismans",[["tal1","Radagon Icon"],["tal2","Radagon's Soreseal"],["tal3","Godfrey Icon"],["tal4","Moon of Nokstella"],["tal5","Marika's Soreseal"],["tal6","Dragoncrest Greatshield Talisman"],["tal7","Old Lord's Talisman"],["tal8","Erdtree's Favor +2"]]]
-};
-/* kinds: go, boss, item, quest, warn, map, key, tip */
-const PHASES=[
-{id:"prep",n:"Before You Start",sub:"Setup for the whole run",s:[
-["tip","Choose a route now: one playthrough with save backups (Route A) or three playthroughs (Route B). Read the Endings & Saves tab."],
-["tip","Pick one weapon to upgrade all game. God-Slaying Armament needs a normal weapon at +25 or a special (somber) weapon at +10."],
-["tip","Buy and keep Stonesword Keys. Imp seals block the Mimic Tear Ashes, the Golden Lineage Evergaol and Marika's Soreseal."],
-["tip","You don't need every weapon, spell or boss. Only the items and bosses in this list count."]]},
-{id:"limw",n:"West Limgrave",sub:"Margit and the Roundtable",s:[
-["go","Leave the tutorial cave and ride north to the Gatefront grace."],
-["quest","Rest at Gatefront and accept Melina's offer. This unlocks Torrent and levelling up at graces."],
-["map","Map Fragment: Limgrave, West. On the stele at Gatefront Ruins, just east of the grace."],
-["go","Ride west into Stormhill and follow the north road as it curves left toward Stormveil Castle."],
-["boss","Defeat Margit, the Fell Omen at Castleward Tunnel.",{tr:"margit"}],
-["go","Rest at the Stormveil Main Gate grace. Melina takes you to the Roundtable Hold.",{tr:"roundtable"}],
-["warn","At the Roundtable, talk to Fia and accept her blessing. Never attack or kill her: she's needed later for Lichdragon Fortissax."]]},
-{id:"storm",n:"Stormveil Castle",sub:"First Great Rune",s:[
-["tip","Take Gatekeeper Gostoc's offer to go through the main gate (quick), or use the cliffside route (safer, much longer)."],
-["boss","Defeat Godrick the Grafted.",{tr:"godrick"}],
-["go","From the grace before Godrick, head back toward the main gate side and take the path east guarded by a Lion Guardian. Cross the long bridge to the Divine Tower of Limgrave."],
-["item","Climb the Divine Tower of Limgrave and restore Godrick's Great Rune at the top.",{tr:"greatrune"}]]},
-{id:"lime",n:"East Limgrave",sub:"Sellen and the first medallion",s:[
-["go","From Gatefront, ride east along the road and over the bridge. Take the south fork to Waypoint Ruins."],
-["boss","Go down the stairs inside the ruins and beat Mad Pumpkin Head."],
-["quest","Talk to Sellen in the cellar. Exhaust her dialogue and agree to become her apprentice."],
-["map","Map Fragment: Limgrave, East. Head east into Mistwood near the Minor Erdtree."],
-["key","Fort Haight (south-east of the Minor Erdtree): Dectus Medallion (Left) in the chest at the top of the tallest tower."],
-["go","Ride south to the Bridge of Sacrifice."]]},
-{id:"weep",n:"Weeping Peninsula",sub:"Castle Morne",s:[
-["map","Map Fragment: Weeping Peninsula. Follow the southern road toward Castle Morne; it's on the west side of the road where a golem archer fires at you."],
-["boss","Clear Castle Morne and defeat the Leonine Misbegotten. It drops the Grafted Blade Greatsword.",{tr:"leonine",c:"arm1"}],
-["boss","Tombsward Catacombs (just north of the peninsula's Minor Erdtree): beat the Cemetery Shade for Lhutel the Headless.",{c:"ash1"}]]},
-{id:"liu1",n:"Liurnia, Part 1",sub:"Getting into the Academy",s:[
-["go","Go through Stormveil past Godrick's arena and rest at the Lake-Facing Cliffs grace."],
-["map","Map Fragment: Liurnia, East. Near the cliffs where you enter the lake."],
-["go","Head north and touch the Laskar Ruins grace, then reach and touch the South Raya Lucaria Gate grace."],
-["go","Head north-west and rest at the Scenic Isle grace as a checkpoint."],
-["boss","Malefactor's Evergaol: beat Adan, Thief of Fire for Flame of the Fell God.",{c:"sp1"}],
-["key","Village of the Albinaurics (west, under the large plateau): before the big bridge, hit the pot that is really Albus and talk to him. He gives the Haligtree Secret Medallion (Right)."],
-["map","Map Fragment: Liurnia, North."],
-["key","North-west: grab the Academy Glintstone Key on the ledge guarded by Glintstone Dragon Smarag. You can sneak it without fighting."],
-["go","Return to the South Raya Lucaria Gate, open it with the key, and rest at Main Academy Gate."]]},
-{id:"acad",n:"Raya Lucaria Academy",sub:"Second Great Rune",s:[
-["go","Take the lift and stairs into the Church of the Cuckoo. The grace is through the doorway on the left."],
-["go","Follow the path to the giant water wheel lift, ride it up, and rest at Schoolhouse Classroom."],
-["boss","Follow the hallway and stairs up. Defeat the Red Wolf of Radagon.",{tr:"redwolf"}],
-["item","Radagon Icon: take the north exit after the fight, go right, drop from the balcony to a ladder, and climb to a chest above the Red Wolf arena.",{c:"tal1"}],
-["go","Back in the courtyard, take the staircase on the right with the rolling ball trap, then the elevator up."],
-["boss","Defeat Rennala, Queen of the Full Moon. Her Great Rune counts as your second.",{tr:"rennala"}]]},
-{id:"liu2",n:"Liurnia, Part 2",sub:"Caria Manor, Ranni, Makar",s:[
-["map","Map Fragment: Liurnia, West."],
-["go","Go to Caria Manor in north-west Liurnia. Follow the courtyard path and rest at Manor Lower Level."],
-["item","Sword of Night and Flame: on the upper walkways, go left at the fork and drop down onto the building to the north. It's in the chest inside.",{c:"arm2"}],
-["go","Back at the fork, go straight and rest at Manor Upper Level."],
-["boss","Defeat Royal Knight Loretta.",{tr:"rloretta"}],
-["quest","Climb to Ranni's Rise and talk to Ranni. Agree to serve her. Also talk to Blaidd, Iji and Seluvis at the Three Sisters."],
-["warn","Never give Seluvis's Amber Draught to Ranni. It ends her questline and locks Age of the Stars and the Dark Moon Greatsword."],
-["boss","Ruin-Strewn Precipice (ravine in north Liurnia): defeat Magma Wyrm Makar.",{tr:"makar"}],
-["go","Take the lift past Makar and rest at the first Altus Plateau grace. This starts Radahn's Festival."]]},
-{id:"cael",n:"Caelid",sub:"Fort Faroth, Greyoll, Radahn",s:[
-["go","Travel east into Caelid and north into Dragonbarrow to Fort Faroth."],
-["key","Fort Faroth: Dectus Medallion (Right) at the top of the eastern tower."],
-["item","Radagon's Soreseal: from the roof, drop into the central opening and follow the wooden walkways to the corpse.",{c:"tal2"}],
-["boss","Kill Greyoll, the huge dragon lying in western Dragonbarrow. Collect 3 Dragon Hearts in total (Greyoll gives one; other dragons give the rest)."],
-["item","Cathedral of Dragon Communion (south Caelid): trade Dragon Hearts for Greyoll's Roar.",{c:"sp2"}],
-["boss","Redmane Castle during the festival: defeat Starscourge Radahn. Use the NPC summon signs.",{tr:"radahn"}],
-["boss","War-Dead Catacombs (north end of Radahn's battlefield): beat the boss for Redmane Knight Ogha.",{c:"ash2"}],
-["boss","Back in Redmane Castle once the festival is over: beat the Misbegotten Warrior and Crucible Knight in the plaza for the Ruins Greatsword.",{c:"arm3"}]]},
-{id:"nok",n:"Siofra River & Nokron",sub:"Underground cities",s:[
-["go","Enter Siofra River Well in Limgrave, below the Minor Erdtree area."],
-["go","Light all the Hallowhorn braziers around Siofra River to open the boss arena."],
-["boss","Defeat the Ancestor Spirit.",{tr:"ancestor"}],
-["go","After Radahn, a meteor crater appears south-west of the Minor Erdtree in Mistwood. Climb down the rocks into Nokron, Eternal City."],
-["boss","Defeat the Mimic Tear.",{tr:"mimic"}],
-["item","Night's Sacred Ground: open the imp seal (Stonesword Key) and take the Mimic Tear Ashes from the chest.",{c:"ash3"}],
-["quest","Night's Sacred Ground: take the Fingerslayer Blade from its chest for Ranni."],
-["boss","Light the 6 Hallowhorn braziers in Nokron and defeat the Regal Ancestor Spirit.",{tr:"regal"}],
-["boss","Siofra Aqueduct: defeat the Valiant Gargoyles.",{tr:"gargoyle"}],
-["go","Lie in the coffin past the Gargoyles to reach Deeproot Depths. Touch the grace; you'll come back later."]]},
-{id:"alt",n:"Altus Plateau",sub:"Evergaol, Sainted Hero, Shaded Castle",s:[
-["boss","Golden Lineage Evergaol (behind an imp seal gate): beat Godefroy the Grafted for the Godfrey Icon.",{c:"tal3"}],
-["go","Use the waygate to cross the broken bridge."],
-["map","Map Fragment: Altus Plateau."],
-["boss","Sainted Hero's Grave: beat the boss for Ancient Dragon Knight Kristoff.",{c:"ash4"}],
-["boss","The Shaded Castle: defeat Elemer of the Briar. It drops the Marais Executioner's Sword.",{tr:"elemer",c:"arm4"}],
-["tip","With two Great Runes, the Draconic Tree Sentinel's route into Leyndell is open. Hold off until after Volcano Manor."]]},
-{id:"gel",n:"Mt. Gelmir & Volcano Manor",sub:"Rykard",s:[
-["item","Hermit Village, Mt. Gelmir: talk to Primeval Sorcerer Azur for Comet Azur.",{c:"sp3"}],
-["go","Climb Mt. Gelmir: take the ladder near the second pair of Abductor Virgins, cross the rock bridge north, climb the ladders, and rest at Ninth Mt. Gelmir Campsite."],
-["go","Use the spirit spring jump, then head west and south to Volcano Manor."],
-["quest","Talk to Tanith and join Volcano Manor to get the Drawing-Room Key."],
-["go","In the first room on the right, hit the back-right corner (illusory wall). Follow the path to the Prison Town Church grace."],
-["go","Cross the rooftops and bridge, go through the building on the left and rest at Guest Hall at the bottom."],
-["go","Go outside, head east, take the staircase on the right and the cage elevator up. Pull the switch to lower the bridge."],
-["boss","Defeat the Godskin Noble.",{tr:"gnoble"}],
-["go","Take the lift by the grace, leave the building and drop off the balcony. Follow the narrow path to the tower with the Abductor Virgin, climb through the building and take the waygate."],
-["boss","Defeat Rykard, Lord of Blasphemy. Pick up the Serpent-Hunter spear at the start of the fight.",{tr:"rykard"}],
-["warn","Back at Volcano Manor, find Bernahl (left-side doors near Tanith's dining room) and exhaust his dialogue. He'll invade in Farum Azula and drop the Devourer's Scepter."]]},
-{id:"sel",n:"Sellen's Quest",sub:"Stars of Ruin",s:[
-["quest","Show Comet Azur to Sellen at Waypoint Ruins. She gives you the Sellian Sealbreaker."],
-["go","From Fort Faroth, head west to a spirit spring and drop down. Go back east to a fake wall behind a giant gravestone: Sellia Hideaway."],
-["item","Use the Sealbreaker and free Master Lusat for Stars of Ruin.",{c:"sp4"}]]},
-{id:"ley",n:"Leyndell, Royal Capital",sub:"Godfrey shade and Morgott",s:[
-["go","From Capital Rampart, follow the path to East Capital Rampart."],
-["go","Go through the battlement, ride the elevator down, and follow the main road to Avenue Balcony."],
-["go","Head north-west, cross the dragon's wing onto a walled path heading south, and climb the tree branches to a golden fog gate."],
-["boss","Defeat Godfrey, First Elden Lord (golden shade).",{tr:"godfrey"}],
-["warn","Bolt of Gransax: from Erdtree Sanctuary go west, down the stairs and take the elevator. Go down more stairs; a giant spear sticks out of the wall on your left. Drop onto it and pick up the item. MISSABLE once the Erdtree burns.",{c:"arm5"}],
-["boss","Defeat Morgott, the Omen King.",{tr:"morgott"}],
-["go","Walk up to the Erdtree trunk, inspect the thorn seal, then rest at the grace."]]},
-{id:"ran2",n:"Ranni's Quest, Part 2",sub:"Cursemark of Death",s:[
-["quest","Give Ranni the Fingerslayer Blade. She gives you the Carian Inverted Statue."],
-["go","Carian Study Hall (east Liurnia): place the statue on the altar near the entrance to flip the tower, then climb it to the Divine Tower of Liurnia."],
-["key","Take the Cursemark of Death at the top. You need it for Fortissax and Ranni."]]},
-{id:"ain",n:"Ainsel River & Lake of Rot",sub:"Nokstella, Dragonkin, Astel",s:[
-["quest","Go to Renna's Rise at the Three Sisters, take the waygate to Ainsel River Main, and pick up the Miniature Ranni."],
-["quest","Rest at a grace and talk to the doll repeatedly until Ranni answers. She asks you to hunt the Baleful Shadow."],
-["go","Follow the river to the Nokstella, Eternal City grace."],
-["item","Moon of Nokstella: follow the upper path from the grace to a room with a chest.",{c:"tal4"}],
-["map","Map Fragment: Ainsel River. Backtrack from the Nokstella grace and take the other fork."],
-["boss","Defeat the Dragonkin Soldier of Nokstella.",{tr:"dragonkin"}],
-["quest","From Nokstella, head west, take the lower path to the elevator, and beat the Baleful Shadow at the Lake of Rot entrance for the Discarded Palace Key."],
-["map","Map Fragment: Lake of Rot."],
-["go","Press the switches to raise the walkways (or tank the rot with Preserving Boluses) and rest at Grand Cloister."],
-["go","Follow the path down on the right along the river to a coffin and lie in it."],
-["boss","Defeat Astel, Naturalborn of the Void.",{tr:"astel"}]]},
-{id:"deep",n:"Deeproot Depths",sub:"Fia and Fortissax",s:[
-["item","Elden Stars: go through the cave full of giant ants. It's on a body at the end of the tunnel.",{c:"sp5"}],
-["map","Map Fragment: Deeproot Depths."],
-["boss","Climb the tree roots to the grace on the left and defeat Fia's Champions."],
-["quest","Find Fia at the Prince of Death's Throne. With the Cursemark of Death in your inventory, talk to her until she rests, then interact with her to enter the Deathbed Dream."],
-["boss","Defeat Lichdragon Fortissax.",{tr:"fortissax"}]]},
-{id:"moon",n:"Moonlight Altar",sub:"Ranni finale and two legendaries",s:[
-["quest","Warp to Rennala's arena and open the locked chest beside her with the Discarded Palace Key: Dark Moon Ring."],
-["go","Warp to Astel's arena and take the lift north up to the Moonlight Altar."],
-["quest","Cathedral of Manus Celes: go underground, find Ranni and give her the Dark Moon Ring. Pick up the Dark Moon Greatsword after she leaves.",{c:"arm9"}],
-["boss","Ringleader's Evergaol: beat Alecto for Black Knife Tiche.",{c:"ash5"}],
-["boss","Chelona's Rise: kill the three Wise Beasts that break the seal (one flies near the spirit spring, one sits on a cliff ledge, one on a plateau between the cliffs)."],
-["item","Climb Chelona's Rise and take Ranni's Dark Moon from the top.",{c:"sp6"}]]},
-{id:"mtn",n:"Forbidden Lands & Mountaintops",sub:"Castle Sol, Fire Giant",s:[
-["go","From Avenue Balcony, take the main road east and the stairs to the giant lift. Cross the bridges and ride down into the Forbidden Lands."],
-["go","Ride to the Grand Lift of Rold (a Black Blade Kindred guards it) and take it up."],
-["go","Follow the narrow path to the frozen river, head east, and climb the cliffs to the north to Castle Sol."],
-["item","Eclipse Shotel: on the altar of the Church of the Eclipse in Castle Sol.",{c:"arm6"}],
-["boss","Defeat Commander Niall. He gives the Haligtree Secret Medallion (Left).",{tr:"niall"}],
-["item","Heretical Rise: from the broken bridge, follow the invisible path (look for frost on it) to the tower balcony. Take Founding Rain of Stars at the top.",{c:"sp7"}],
-["warn","Check your inventory for the Bolt of Gransax before going further."],
-["boss","Head south, cross the chain, and defeat the Fire Giant.",{tr:"firegiant"}],
-["go","Go up to the Forge of the Giants, cross the limb to the grace and talk to Melina. You'll wake up in Crumbling Farum Azula; graces elsewhere still work.",{tr:"erdtree"}]]},
-{id:"snow",n:"Consecrated Snowfield",sub:"Hidden late-game area",s:[
-["go","Warp to the Grand Lift of Rold and hold up the joined Haligtree Secret Medallion to reach the Consecrated Snowfield."],
-["boss","Cave of the Forlorn: beat the boss at the end for the Golden Order Greatsword.",{c:"arm7"}],
-["go","Ordina, Liturgical Town: enter the Evergaol, light the 4 statue torches to break the seal, and take the waygate to the Haligtree. Touch the first grace."],
-["go","Back in the Snowfield, take the portal to Mohgwyn Palace and touch the first grace."]]},
-{id:"mohg",n:"Mohgwyn Palace",sub:"Mohg, Lord of Blood",s:[
-["map","Map Fragment: Mohgwyn Palace. Go down from the Palace Approach Ledge-Road grace hugging the right wall."],
-["go","Go up the path into the dark cave and rest at Dynasty Mausoleum Midpoint."],
-["boss","Defeat Mohg, Lord of Blood. A Purifying Crystal Tear in your flask helps in phase 2.",{tr:"mohg"}]]},
-{id:"hal",n:"Elphael, Brace of the Haligtree",sub:"Malenia",s:[
-["go","Go down the main branch under the large envoy, take the ladder and rest at Haligtree Town."],
-["go","Continue north-east, make the U-turn left and rest at Haligtree Town Plaza."],
-["boss","Defeat Loretta, Knight of the Haligtree.",{tr:"hloretta"}],
-["go","Take the elevator down in the tower and cross the bridge to the Prayer Room grace."],
-["item","Cleanrot Knight Finlay: from Prayer Room go north to a gazebo platform with a crimson scarab. The chest is in the room next to it.",{c:"ash6"}],
-["item","Marika's Soreseal: in the imp seal room near the patrolling Putrid Avatar and Royal Revenants (Stonesword Keys).",{c:"tal5"}],
-["go","Go north past the Putrid Avatar and the ballistas to Haligtree Roots, then down the hallway through the rot pools to Drainage Channel."],
-["item","Dragoncrest Greatshield Talisman: from Drainage Channel follow the branch to the building to the north, climb onto its roof, drop through the square hole into the rafters and open the chest.",{c:"tal6"}],
-["boss","Go to the bottom floor, take the elevator down and defeat Malenia, Blade of Miquella.",{tr:"malenia"}]]},
-{id:"far",n:"Crumbling Farum Azula",sub:"Do everything here before Maliketh",s:[
-["go","Drop down and head west through the graces: Crumbling Beast Grave, Crumbling Beast Grave Depths, Tempest-Facing Balcony, Dragon Temple."],
-["boss","Defeat the Godskin Duo.",{tr:"gduo"}],
-["go","Go north down the stairs, through the ruins and the small doorway on the right. Pass the Crucible Knight and drop off the ledge to Dragon Temple Rooftop."],
-["go","Cross the rooftops past the dragon, use the fallen gazebo as a bridge, and take the elevator up to Beside the Great Bridge."],
-["item","Go up the stairs to the broken end of the bridge, down the steps and ladder. Bernahl invades here: kill him for the Devourer's Scepter. (If you missed him, he's at the Warmaster's Shack in Limgrave.)",{c:"arm8"}],
-["item","Old Lord's Talisman: in the chest inside the tower across that bridge.",{c:"tal7"}],
-["go","From Beside the Great Bridge take the elevator down, go to the west end of the platform and drop off the south side. Follow it to the bottom and lie down in the flat circle where a statue stood."],
-["boss","Defeat Dragonlord Placidusax.",{tr:"placidusax"}],
-["warn","If you have inherited the Frenzied Flame, do not use Miquella's Needle in this arena unless you are giving up that ending."],
-["boss","Defeat the Beast Clergyman / Maliketh, the Black Blade. Leyndell becomes the Ashen Capital.",{tr:"maliketh"}]]},
-{id:"ash1",n:"Ashen Capital & Shunning-Grounds",sub:"Talisman and Mohg, the Omen",s:[
-["item","Erdtree's Favor +2: on the way down into the Ashen Capital, past the main elevator, the Ulcerated Tree Spirits roam a pit. Hug the left wall down the stairs to avoid them; the talisman is in the pit on the far left.",{c:"tal8"}],
-["go","Drop into the sewer hole in the Ashen Capital to reach the Subterranean Shunning-Grounds. Rest at Underground Roadside."],
-["go","Follow the sewers down to the Forsaken Depths grace. Following the rat through the pipes leads the right way."],
-["boss","Defeat Mohg, the Omen at the Cathedral of the Forsaken.",{tr:"mohgomen"}],
-["warn","Behind the altar is an illusory wall leading to the Three Fingers. Do not inherit the Frenzied Flame yet. Save it for your last ending."]]},
-{id:"fin",n:"Ashen Capital Finale",sub:"Last stretch",s:[
-["tip","Before going further: check the Legendaries tab is 9/9, 6/6, 7/7, 8/8 and make sure your weapon is fully upgraded."],
-["item","Upgrade any weapon to +25 (Smithing Stones) or +10 (Somber Smithing Stones).",{tr:"godslaying"}],
-["go","From the grace you arrive at after Maliketh, head south to Erdtree Sanctuary, where you fought Godfrey's shade."],
-["boss","Defeat Sir Gideon Ofnir, the All-Knowing."],
-["boss","Defeat Godfrey, First Elden Lord / Hoarah Loux.",{tr:"hoarah"}],
-["warn","Rest at the Elden Throne grace. Quit to the title screen and back up your save now (Route A)."]]},
-{id:"endg",n:"Endings",sub:"See the Endings & Saves tab",s:[
-["boss","Defeat Radagon of the Golden Order and the Elden Beast, then use Ranni's blue summon sign.",{tr:"stars"}],
-["boss","Restore your backup (or start NG+). Beat the final boss again and mend the Elden Ring without using Ranni's sign.",{tr:"eldenlord"}],
-["boss","Restore your backup (or start NG++). At the Cathedral of the Forsaken, break the wall behind the altar, drop to the bottom, remove all armour, open the door and inherit the Frenzied Flame. Beat the final boss.",{tr:"frenzy"}]]}
-];
-
-
-const KEY="er100-v1";
-const DEF={mode:"system",accent:"gold",size:"m",compact:false,hide:false,tips:true,autoopen:true,awake:true};
-let st={done:{},closed:{},hide:false,set:{},t:0};
-try{const r=localStorage.getItem(KEY);if(r)st=Object.assign(st,JSON.parse(r))}catch(e){}
-st.set=Object.assign({},DEF,st.set||{});
-if(st.hide)st.set.hide=true;
-
-let cloud=null,saveTimer=null;
-function save(){st.t=Date.now();try{localStorage.setItem(KEY,JSON.stringify(st))}catch(e){}
-  if(cloud){clearTimeout(saveTimer);pill("busy","Saving…");saveTimer=setTimeout(pushCloud,700)}else pill("on",localOK()?"Saved on this device":"Saving unavailable here")}
-function localOK(){try{localStorage.setItem("_t","1");localStorage.removeItem("_t");return true}catch(e){return false}}
-async function pushCloud(){saveTimer=null;try{await cloud.set({done:st.done,set:st.set,t:st.t});pill("on","Saved & synced")}catch(e){pill("","Saved on this device (sync paused)")}}
-function pill(cls,text){const p=document.getElementById("savePill");p.className="pill "+cls;p.lastElementChild.textContent=text}
-async function initCloud(){
-  if(!(window.claude&&window.claude.use))return;
-  try{const db=await claude.use("db");const user=await claude.use("user");if(!db||!user)return;const id=await user.id();if(!id)return;
-    const ref=db.collection("data/users/"+id).doc("er100");const snap=await ref.get();cloud=ref;
-    const r=snap.exists?snap.data():null;
-    if(r&&(r.t||0)>(st.t||0)){st.done=Object.assign({},r.done||{});st.set=Object.assign({},DEF,r.set||{});st.t=r.t;try{localStorage.setItem(KEY,JSON.stringify(st))}catch(e){};applySettings();refresh();pill("on","Saved & synced")}
-    else if(Object.keys(st.done).length||!r){await pushCloud()}else pill("on","Saved & synced");
-    document.getElementById("saveHint").textContent="Every tick saves instantly and syncs to your Claude account, so this link shows the same progress on your phone and laptop.";
-  }catch(e){}
-}
-document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden"&&saveTimer){clearTimeout(saveTimer);pushCloud()}});
-
-const steps=[];const byTr={};const byC={};
-PHASES.forEach((p,pi)=>p.s.forEach((s,si)=>{const o={id:p.id+"."+si,k:s[0],t:s[1],x:s[2]||{},pi};steps.push(o);if(o.x.tr)byTr[o.x.tr]=o;if(o.x.c)byC[o.x.c]=o}));
-const tickSteps=steps.filter(s=>s.k!=="tip");
-const isDone=id=>!!st.done[id];
-const tickSVG='<svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7"/></svg>';
-const chev='<svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>';
-const trName=Object.fromEntries(TROPHIES.map(t=>[t[0],t[1]]));
-const cName={};Object.values(COLL).forEach(g=>g[1].forEach(([k,n])=>cName[k]=n));
-const $=id=>document.getElementById(id);
-
-function chips(s){let h="";
-  if(s.k==="boss")h+='<span class="chip">Boss</span>';
-  if(s.k==="quest")h+='<span class="chip">Quest</span>';
-  if(s.k==="map")h+='<span class="chip">Map fragment</span>';
-  if(s.k==="key")h+='<span class="chip key">Key item</span>';
-  if(s.k==="warn")h+='<span class="chip miss">Don\'t miss</span>';
-  if(s.x.c)h+='<span class="chip legend">Legendary · '+cName[s.x.c]+'</span>';
-  if(s.x.tr)h+='<span class="chip trophy">Trophy · '+trName[s.x.tr]+'</span>';
-  return h?'<div class="chips">'+h+'</div>':""}
-function currentPhase(){const n=tickSteps.find(s=>!isDone(s.id));return n?n.pi:-1}
-function renderPhases(){
-  const cur=currentPhase();
-  $("phases").innerHTML=PHASES.map((p,pi)=>{
-    const items=steps.filter(s=>s.pi===pi).map(s=>s.k==="tip"
-      ?`<li class="step tip"><span class="tipmark">✦</span><div class="txt"><p>${s.t}</p></div></li>`
-      :`<li class="step ${s.k==="warn"?"warn":""} ${isDone(s.id)?"checked":""}" data-id="${s.id}" id="s-${s.id}"><button class="check" aria-label="Mark done" aria-pressed="${isDone(s.id)}">${tickSVG}</button><span class="ico" aria-hidden="true">${ico(stepIcon(s))}</span><div class="txt"><p>${s.t}</p>${chips(s)}${stepLinks(s)}</div></li>`).join("");
-    const open=st.set.autoopen?pi===cur:!st.closed[p.id];
-    return `<details class="phase" id="p-${p.id}" data-pid="${p.id}" ${open?"open":""}><summary><span class="num">${pi}</span><span class="ph-title"><h3>${p.n}</h3><small>${p.sub}</small><div class="ph-bar"><i></i></div></span><span class="count"></span></summary>${AREA[p.id]?`<div class="ph-links"><a href="${wk(AREA[p.id])}" target="_blank" rel="noopener">Area guide: ${AREA[p.id]} ↗</a></div>`:""}<ol class="steps">${items}</ol></details>`;
-  }).join("");
-  document.querySelectorAll("details.phase").forEach(d=>d.addEventListener("toggle",()=>{st.closed[d.dataset.pid]=!d.open;try{localStorage.setItem(KEY,JSON.stringify(st))}catch(e){}}));
-  document.querySelectorAll(".step[data-id]").forEach(li=>li.addEventListener("click",e=>{if(e.target.closest("a"))return;toggle(li.dataset.id)}));
-}
-function toggle(id){const was=currentPhase();if(st.done[id])delete st.done[id];else st.done[id]=1;save();refresh();
-  const now=currentPhase();if(st.set.autoopen&&now!==was&&now>=0){const prev=PHASES[was]&&$("p-"+PHASES[was].id);if(prev)prev.open=false;$("p-"+PHASES[now].id).open=true}}
-function trDone(k){if(k==="platinum")return TROPHIES.slice(1).every(t=>trDone(t[0]));if(COLL[k])return COLL[k][1].every(([c])=>byC[c]&&isDone(byC[c].id));const s=byTr[k];return s?isDone(s.id):false}
-function bar(a,b,n,t){$(a).textContent=n+"/"+t;$(b).style.width=(t?n/t*100:0)+"%"}
-function refresh(){
-  const cur=currentPhase();
-  steps.forEach(s=>{if(s.k==="tip")return;const li=$("s-"+s.id);if(!li)return;li.classList.toggle("checked",isDone(s.id));li.querySelector(".check").setAttribute("aria-pressed",isDone(s.id))});
-  PHASES.forEach((p,pi)=>{const l=tickSteps.filter(s=>s.pi===pi);const d=l.filter(s=>isDone(s.id)).length;const el=$("p-"+p.id);el.querySelector(".count").textContent=l.length?d+"/"+l.length:"Read";el.querySelector(".ph-bar i").style.width=(l.length?d/l.length*100:0)+"%";el.classList.toggle("done",l.length>0&&d===l.length);el.classList.toggle("current",pi===cur)});
-  const sd=tickSteps.filter(s=>isDone(s.id)).length;const td=TROPHIES.filter(t=>trDone(t[0])).length;
-  const allC=Object.keys(cName);const cd=allC.filter(c=>byC[c]&&isDone(byC[c].id)).length;
-  bar("sSteps","bSteps",sd,tickSteps.length);bar("sTro","bTro",td,TROPHIES.length);bar("sLeg","bLeg",cd,allC.length);
-  const pc=Math.round(sd/tickSteps.length*100);$("pct").textContent=pc+"%";$("ringVal").style.strokeDashoffset=276.46*(1-sd/tickSteps.length);
-  renderNext();renderMap();renderTro();renderCol();$("exportBox").value=exportCode();
-}
-function renderNext(){
-  const n=tickSteps.find(s=>!isDone(s.id));const el=$("next");
-  if(!n){el.innerHTML='<div class="eyebrow">Complete</div><div class="where">Every step is done</div><p>All trophies earned. The Lands Between are yours.</p>';return}
-  el.innerHTML=`<div class="eyebrow">Up next · Phase ${n.pi}</div><div class="where">${PHASES[n.pi].n}</div><p>${n.t}</p><div class="acts"><button class="btn primary" id="nextDone">Mark done</button><button class="btn" id="nextShow">Show in route</button></div>`;
-  $("nextDone").onclick=()=>toggle(n.id);$("nextShow").onclick=()=>jump(n.id);
-}
-function row(done,name,sub,stepId,tog,icon,extra){return `<div class="row ${extra||""} ${done?"checked":""}" ${tog&&stepId?`data-tog="${stepId}"`:""}><span class="check" aria-hidden="true">${tickSVG}</span>${icon||""}<div style="min-width:0"><div class="row-name">${name}</div><div class="row-where">${sub}${stepId?` · <button class="jump" data-jump="${stepId}">Show step</button>`:""}</div></div></div>`}
-function renderTro(){const g={p:"Platinum",g:"Gold",s:"Silver",b:"Bronze"};
-  $("troList").innerHTML=["p","g","s","b"].map(gr=>{const l=TROPHIES.filter(t=>t[3]===gr);const d=l.filter(t=>trDone(t[0])).length;
-    return `<div class="group"><h3><span><i class="grade g-${gr}"></i>${g[gr]}</span><span class="c">${d}/${l.length}</span></h3>`+l.map(t=>{const s=byTr[t[0]];const where=COLL[t[0]]?"Collect every item in Legendary":(s?PHASES[s.pi].n:"Unlocks when all others are done");return row(trDone(t[0]),t[1],t[2]+" · "+where,s&&s.id,!!s,badge(t),"tr")}).join("")+`</div>`}).join("")}
-function renderCol(){$("colList").innerHTML=Object.values(COLL).map(([title,items])=>{const d=items.filter(([c])=>isDone(byC[c].id)).length;
-  const ck=Object.keys(COLL).find(k=>COLL[k][0]===title);
-  return `<div class="group"><h3>${title}<span class="c">${d}/${items.length}</span></h3>`+items.map(([c,n])=>{const s=byC[c];return row(isDone(s.id),n,`${PHASES[s.pi].n} · <a class="jump" href="${wk(n)}" target="_blank" rel="noopener">Wiki ↗</a>`,s.id,true,`<span class="lico">${ico(COLLICO[ck])}</span>`)}).join("")+`</div>`}).join("")}
-
-const TABS=["route","tro","col","end","set"];
-function showTab(t){document.querySelectorAll(".nav button").forEach(b=>b.setAttribute("aria-selected",b.dataset.tab===t));TABS.forEach(x=>$("v-"+x).hidden=x!==t);window.scrollTo(0,0)}
-function jump(id){showTab("route");const s=steps.find(x=>x.id===id);$("p-"+PHASES[s.pi].id).open=true;const li=$("s-"+id);
-  if(st.set.hide&&isDone(id)){st.set.hide=false;applySettings();save()}
-  requestAnimationFrame(()=>{li.scrollIntoView({behavior:"smooth",block:"center"});li.classList.add("flash");setTimeout(()=>li.classList.remove("flash"),1500)})}
-document.querySelectorAll(".nav button").forEach(b=>b.addEventListener("click",()=>showTab(b.dataset.tab)));
-document.addEventListener("click",e=>{if(e.target.closest("a"))return;const j=e.target.closest("[data-jump]");if(j){e.stopPropagation();jump(j.dataset.jump);return}const r=e.target.closest("[data-tog]");if(r)toggle(r.dataset.tog)});
-
-/* icons */
-const P={
-go:'<circle cx="12" cy="12" r="9"/><path d="M15.5 8.5l-2 5-5 2 2-5z"/>',
-boss:'<path d="M6 9c0-3 2.7-5 6-5s6 2 6 5v4c0 3.5-2.7 6-6 6s-6-2.5-6-6z"/><path d="M6 9L3 5M18 9l3-4M9 12h2M13 12h2M12 15v4"/>',
-item:'<path d="M4 10h16v9H4zM4 10l2-4h12l2 4M10 14h4"/>',
-quest:'<path d="M4 5h16v11H10l-5 4v-4H4z"/><path d="M8 9h8M8 12h5"/>',
-warn:'<path d="M12 3l10 18H2z"/><path d="M12 10v5M12 18v.4"/>',
-map:'<path d="M4 6l5-2 6 2 5-2v14l-5 2-6-2-5 2z"/><path d="M9 4v14M15 6v14"/>',
-key:'<circle cx="8" cy="12" r="4"/><path d="M12 12h9M18 12v3M21 12v3"/>',
-arm:'<path d="M14 4l6-1-1 6-9 9-3-3z"/><path d="M7 14l-3 3 3 3 3-3M4.5 19.5L2.5 21.5"/>',
-ash:'<path d="M12 3c3 4 5 6.5 5 10a5 5 0 0 1-10 0c0-2 .8-3.4 2-4.5 0 2 1 3.2 2 3.2 0-3 .2-6 1-8.7z"/>',
-sp:'<path d="M12 3l2.6 5.6 6 .7-4.5 4.1 1.2 6L12 16.5 6.7 19.4l1.2-6L3.4 9.3l6-.7z"/>',
-tal:'<path d="M8 3l4 6 4-6"/><circle cx="12" cy="14" r="5"/><path d="M12 11.5v5"/>',
-crown:'<path d="M4 17l-1-10 5 4 4-7 4 7 5-4-1 10z"/><path d="M4 20h16"/>',
-sun:'<circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M5 19l2-2M17 7l2-2"/>',
-moon:'<path d="M20 14A8 8 0 1 1 10 4a6.5 6.5 0 0 0 10 10z"/>',
-flame:'<path d="M12 21c-4 0-7-2.7-7-6.5C5 10 9 8 9 3c3 2 4 4 4 6 1-1 1.5-2 1.5-3.5C17 7.5 19 10.5 19 14.5 19 18.3 16 21 12 21z"/>',
-table:'<ellipse cx="12" cy="10" rx="8" ry="3.5"/><path d="M6 12v7M18 12v7M12 13.5V19"/>',
-rune:'<circle cx="12" cy="12" r="8"/><path d="M12 5v14M8 9l4 3 4-3M9 16l3-2 3 2"/>',
-tree:'<path d="M12 21V6M12 15l-5-4M12 15l5-4M12 10l-4-3.5M12 10l4-3.5M9 21h6"/><circle cx="12" cy="4.5" r="1.5"/>',
-hammer:'<path d="M14 4l6 6-3 3-6-6zM11 7L3 15l3 3 8-8"/>'
-};
-const ico=n=>`<svg viewBox="0 0 24 24">${P[n]||P.go}</svg>`;
-const catOf=c=>c?c.replace(/\d+$/,"").replace("arm","arm").replace("ash","ash").replace("sp","sp").replace("tal","tal"):null;
-const COLLICO={armaments:"arm",ashes:"ash",spells:"sp",talismans:"tal"};
-const GCOL={p:"#8fb6cf",g:"#d8ad3f",s:"#b7b8bf",b:"#b77c4b"};
-const TRICO={platinum:"crown",eldenlord:"sun",stars:"moon",frenzy:"flame",roundtable:"table",greatrune:"rune",erdtree:"tree",godslaying:"hammer",armaments:"arm",ashes:"ash",spells:"sp",talismans:"tal"};
-function badge(t){const c=GCOL[t[3]];return `<svg class="badge" viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="18.5" fill="${c}"/><circle cx="20" cy="20" r="15" fill="none" stroke="#fff" stroke-opacity=".55" stroke-width="1"/><circle cx="20" cy="20" r="18.5" fill="none" stroke="#000" stroke-opacity=".18"/><g transform="translate(9 9) scale(.92)" fill="none" stroke="#1d1a13" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">${P[TRICO[t[0]]||"boss"]}</g></svg>`}
-const WIKI="https://eldenring.wiki.fextralife.com/";
-const wk=n=>WIKI+encodeURIComponent(n.replace(/,/g,"")).replace(/%20/g,"+");
-const BOSSWIKI={godrick:"Godrick the Grafted",radahn:"Starscourge Radahn",morgott:"Morgott the Omen King",rykard:"Rykard Lord of Blasphemy",malenia:"Malenia Blade of Miquella",mohg:"Mohg Lord of Blood",maliketh:"Maliketh the Black Blade",hoarah:"Hoarah Loux",godfrey:"Godfrey First Elden Lord (Golden Shade)",gargoyle:"Valiant Gargoyle",gduo:"Godskin Duo"};
-const NOWIKI=new Set(["roundtable","greatrune","erdtree","godslaying","eldenlord","stars","frenzy","platinum"]);
-const AREA={limw:"Limgrave",storm:"Stormveil Castle",lime:"Limgrave",weep:"Weeping Peninsula",liu1:"Liurnia of the Lakes",acad:"Academy of Raya Lucaria",liu2:"Caria Manor",cael:"Caelid",nok:"Nokron Eternal City",alt:"Altus Plateau",gel:"Volcano Manor",sel:"Sorceress Sellen",ley:"Leyndell Royal Capital",ran2:"Ranni the Witch",ain:"Ainsel River",deep:"Deeproot Depths",moon:"Moonlight Altar",mtn:"Mountaintops of the Giants",snow:"Consecrated Snowfield",mohg:"Mohgwyn Palace",hal:"Elphael Brace of the Haligtree",far:"Crumbling Farum Azula",ash1:"Subterranean Shunning-Grounds",fin:"Leyndell Ashen Capital",endg:"Endings"};
-function stepIcon(s){return s.x.c?COLLICO[Object.keys(COLL).find(k=>COLL[k][1].some(([c])=>c===s.x.c))]:(s.k==="boss"?"boss":s.k)}
-function stepLinks(s){const l=[];if(s.x.c)l.push([cName[s.x.c]+" ↗",wk(cName[s.x.c])]);if(s.x.tr&&!NOWIKI.has(s.x.tr))l.push([(BOSSWIKI[s.x.tr]||trName[s.x.tr])+" ↗",wk(BOSSWIKI[s.x.tr]||trName[s.x.tr])]);
-  return l.length?'<div class="links">'+l.map(([n,u])=>`<a href="${u}" target="_blank" rel="noopener">${n}</a>`).join("")+"</div>":""}
-
-/* map */
-const REG=[["Limgrave",150,215,45,30],["Weeping Peninsula",165,270,26,18],["Liurnia",80,145,48,44],["Caelid",245,220,45,30],["Dragonbarrow",255,168,32,17],["Altus Plateau",145,122,40,26],["Mt. Gelmir",100,80,32,17],["Mountaintops",240,85,48,28],["Snowfield",190,46,32,14],["Haligtree",178,15,24,9],["Farum Azula",288,30,24,12],["Leyndell",178,100,15,11]];
-const UND=[["Siofra / Nokron",150,246,32,10],["Ainsel / Rot",76,206,30,10],["Deeproot",128,160,24,9],["Mohgwyn",118,35,24,9],["Shunning Grounds",205,114,18,7]];
-const PIN0={limw:[133,215],storm:[118,196],lime:[172,222],weep:[166,267],liu1:[96,172],acad:[72,140],liu2:[56,112],cael:[238,214],nok:[150,246],alt:[140,128],gel:[100,80],sel:[272,165],ley:[176,100],ran2:[108,150],ain:[78,206],deep:[128,160],moon:[42,188],mtn:[240,86],snow:[192,46],mohg:[118,35],hal:[178,15],far:[288,30],ash1:[206,114],fin:[166,88],endg:[188,88]};
-const PIN=PIN0;function renderMap(){const cur=currentPhase();let pts=[];
-  let h='<svg viewBox="0 0 320 290" role="img" aria-label="Sketch map of the route">';
-  REG.forEach(([n,x,y,rx,ry])=>{h+=`<ellipse class="rg" cx="${x}" cy="${y}" rx="${rx}" ry="${ry}"/>`});
-  UND.forEach(([n,x,y,rx,ry])=>{h+=`<ellipse class="rg under" cx="${x}" cy="${y}" rx="${rx}" ry="${ry}"/>`});
-  REG.forEach(([n,x,y,rx,ry])=>{h+=`<text class="rl" x="${x}" y="${y-ry+9}">${n.toUpperCase()}</text>`});
-  UND.forEach(([n,x,y,rx,ry])=>{h+=`<text class="rl" x="${x}" y="${y+ry+8}" style="font-size:6.5px">${n}</text>`});
-  PHASES.forEach(p=>{if(PIN[p.id])pts.push(PIN[p.id])});
-  h+=`<polyline class="rpath" points="${pts.map(p=>p.join(",")).join(" ")}"/>`;
-  PHASES.forEach((p,pi)=>{const q=PIN[p.id];if(!q)return;const l=tickSteps.filter(s=>s.pi===pi);const done=l.every(s=>isDone(s.id));
-    const cls=pi===cur?"cur":(done?"done":"");
-    h+=`<g class="pin ${cls}" data-phase="${p.id}" tabindex="0" role="button" aria-label="Phase ${pi}: ${p.n}">${pi===cur?`<circle class="halo" cx="${q[0]}" cy="${q[1]}" r="7"/>`:""}<circle cx="${q[0]}" cy="${q[1]}" r="6.5"/><text x="${q[0]}" y="${q[1]+2.3}">${pi}</text></g>`});
-  h+="</svg>";$("map").innerHTML=h;
-  const real=PHASES.filter((p,pi)=>tickSteps.some(s=>s.pi===pi));const dn=real.filter(p=>tickSteps.filter(s=>s.pi===PHASES.indexOf(p)).every(s=>isDone(s.id))).length;$("mapCount").textContent=dn+"/"+real.length+" phases";
-  $("map").querySelectorAll(".pin").forEach(g=>{const go=()=>{const d=$("p-"+g.dataset.phase);d.open=true;d.scrollIntoView({behavior:"smooth",block:"start"})};g.addEventListener("click",go);g.addEventListener("keydown",e=>{if(e.key==="Enter")go()})});
-}
-
-/* settings */
-function applySettings(){const s=st.set,root=document.documentElement;
-  if(s.mode==="system")root.removeAttribute("data-mode");else root.setAttribute("data-mode",s.mode);
-  root.setAttribute("data-accent",s.accent);root.setAttribute("data-size",s.size);
-  const ph=$("phases");ph.classList.toggle("hide-done",s.hide);ph.classList.toggle("no-tips",!s.tips);ph.classList.toggle("compact",s.compact);
-  document.querySelectorAll("[data-set]").forEach(g=>g.querySelectorAll("button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.v===s[g.dataset.set])));
-  document.querySelectorAll("[data-sw]").forEach(b=>b.setAttribute("aria-checked",!!s[b.dataset.sw]));
-  const dark=s.mode==="dark"||(s.mode==="system"&&matchMedia("(prefers-color-scheme: dark)").matches);
-  document.querySelector('meta[name="theme-color"]').content=dark?"#13120d":"#ece8de";
-  wake();
-}
-document.querySelectorAll("[data-set]").forEach(g=>g.addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;st.set[g.dataset.set]=b.dataset.v;applySettings();save()}));
-document.querySelectorAll("[data-sw]").forEach(b=>b.addEventListener("click",()=>{const k=b.dataset.sw;st.set[k]=!st.set[k];applySettings();save();if(k==="autoopen")renderPhases(),refresh()}));
-
-/* keep screen on */
-let lock=null;
-async function wake(){const want=st.set.awake&&document.visibilityState==="visible";const p=$("wakePill");
-  if(!want){if(lock){try{await lock.release()}catch(e){}lock=null}p.hidden=true;return}
-  if(lock&&!lock.released){p.hidden=false;return}
-  if(!("wakeLock" in navigator)){p.hidden=true;$("wakeHint").textContent="This browser can't keep the screen on. On iPhone it works in Safari and home-screen apps on iOS 16.4 or later.";return}
-  try{lock=await navigator.wakeLock.request("screen");p.hidden=false;p.className="pill on";lock.addEventListener("release",()=>{p.hidden=true})}catch(e){p.hidden=true}
-}
-document.addEventListener("visibilitychange",wake);
-document.addEventListener("click",()=>{if(st.set.awake&&(!lock||lock.released))wake()},{passive:true});
-
-/* export / import */
-function exportCode(){try{return "ER1:"+btoa(Object.keys(st.done).sort().join(","))}catch(e){return ""}}
-$("copyBtn").onclick=()=>{const v=$("exportBox").value;const ok=()=>{$("ioMsg").className="msg";$("ioMsg").textContent="Code copied."};
-  if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(v).then(ok,()=>{$("exportBox").select();$("ioMsg").textContent="Code selected. Copy it from the box."});else{$("exportBox").select();$("ioMsg").textContent="Code selected. Copy it from the box."}};
-$("importBtn").onclick=()=>{const v=$("importBox").value.trim();const m=$("ioMsg");
-  try{if(!v.startsWith("ER1:"))throw 0;const ids=atob(v.slice(4)).split(",").filter(Boolean);const valid=new Set(tickSteps.map(s=>s.id));const keep=ids.filter(i=>valid.has(i));
-    st.done={};keep.forEach(i=>st.done[i]=1);save();renderPhases();applySettings();refresh();$("importBox").value="";m.className="msg";m.textContent="Imported "+keep.length+" completed steps."}
-  catch(e){m.className="msg err";m.textContent="That code isn't valid. Copy it again from the other device's Settings."}};
-$("resetBtn").onclick=()=>$("resetConfirm").hidden=false;
-$("resetNo").onclick=()=>$("resetConfirm").hidden=true;
-$("resetYes").onclick=()=>{st.done={};save();$("resetConfirm").hidden=true;renderPhases();applySettings();refresh()};
-
-renderPhases();applySettings();refresh();pill("on",localOK()?"Saved on this device":"Saving unavailable here");
-const h=(location.hash||"").slice(1);if(TABS.includes(h))showTab(h);
-initCloud();
-try{if("serviceWorker" in navigator&&window.self===window.top&&location.protocol==="https:")navigator.serviceWorker.register("sw.js").catch(()=>{})}catch(e){}
+  // Apply saved appearance before first paint to avoid a flash.
+  try {
+    var s = (JSON.parse(localStorage.getItem("tarnished-ledger:v2") || "{}").settings) || {};
+    var r = document.documentElement;
+    if (s.mode && s.mode !== "system") r.dataset.mode = s.mode;
+    if (s.accent) r.dataset.accent = s.accent;
+    if (s.size) r.dataset.size = s.size;
+  } catch (e) {}
 </script>
+<script type="module" src="js/app.js"></script>
+</head>
+<body>
+<noscript><p style="padding:24px">Tarnished's Ledger needs JavaScript to run.</p></noscript>
+<div class="shell">
 
-</body></html>
+  <aside class="rail">
+    <div class="top">
+      <img src="assets/icons/icon-180.png" alt="" width="44" height="44">
+      <h1>Tarnished's Ledger<small>Elden Ring 100% route</small></h1>
+    </div>
+    <div class="pills">
+      <span class="pill" id="savePill"><i></i><span>Saved on this device</span></span>
+      <span class="pill" id="syncPill" hidden><i></i><span></span></span>
+      <span class="pill" id="wakePill" hidden><i></i><span>Screen stays on</span></span>
+    </div>
+
+    <div class="hero">
+      <div class="ring" role="img" aria-label="Overall progress">
+        <svg viewBox="0 0 100 100" aria-hidden="true"><circle class="trk" cx="50" cy="50" r="44"/><circle class="val" id="ringVal" cx="50" cy="50" r="44" stroke-dasharray="276.46" stroke-dashoffset="276.46"/><circle class="inner" cx="50" cy="50" r="36"/></svg>
+        <b><div><div id="pct">0%</div><span>done</span></div></b>
+      </div>
+      <div class="minis">
+        <div class="mini"><span>Steps</span><span id="sSteps">0/0</span><div class="bar"><i id="bSteps"></i></div></div>
+        <div class="mini"><span id="lblTro">Trophies</span><span id="sTro">0/42</span><div class="bar"><i id="bTro"></i></div></div>
+        <div class="mini"><span>Legendaries</span><span id="sLeg">0/30</span><div class="bar"><i id="bLeg"></i></div></div>
+      </div>
+    </div>
+
+    <nav class="nav" aria-label="Sections"><div role="tablist" id="tabs"></div></nav>
+  </aside>
+
+  <main>
+    <section id="v-route" aria-labelledby="t-route">
+      <div class="next" id="next"></div>
+      <div class="toolbar">
+        <label class="search"><span class="sr">Search the route</span>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>
+          <input id="q" type="search" placeholder="Search steps, bosses, items" autocomplete="off" enterkeyhint="search">
+        </label>
+        <button class="btn" id="hideBtn" type="button" aria-pressed="false">Hide done</button>
+        <button class="btn" id="foldBtn" type="button">Collapse all</button>
+      </div>
+      <div id="phases"></div>
+      <p class="empty" id="noResults" hidden>No steps match that search.</p>
+    </section>
+
+    <section id="v-tro" hidden>
+      <h2 class="view-h" id="troTitle">Trophies</h2>
+      <p class="note">Each one ticks itself when you finish its step in the route. You can also tick them here, or jump to the step.</p>
+      <div class="seg seg-filter" id="troFilter" role="group" aria-label="Filter">
+        <button type="button" data-v="all" aria-pressed="true">All</button>
+        <button type="button" data-v="todo" aria-pressed="false">To do</button>
+        <button type="button" data-v="done" aria-pressed="false">Done</button>
+      </div>
+      <div id="troList"></div>
+    </section>
+
+    <section id="v-col" hidden>
+      <h2 class="view-h">Legendaries</h2>
+      <p class="note">Four trophies need a full set: Legendary Armaments (9), Ashen Remains (6), Sorceries and Incantations (7) and Talismans (8). Nothing else in the game has to be collected.</p>
+      <div id="colList"></div>
+    </section>
+
+    <section id="v-map" hidden>
+      <h2 class="view-h">Route map</h2>
+      <p class="note">A schematic of the Lands Between, not to scale. Numbers match the route phases. Tap one to open it.</p>
+      <div class="mapcard">
+        <div class="maptools">
+          <div class="seg" id="mapLayer" role="group" aria-label="Map layer">
+            <button type="button" data-v="both" aria-pressed="true">All</button>
+            <button type="button" data-v="surface" aria-pressed="false">Surface</button>
+            <button type="button" data-v="under" aria-pressed="false">Underground</button>
+          </div>
+        </div>
+        <div id="map"></div>
+        <div class="legend"><span><i style="background:var(--ok)"></i>Done</span><span><i style="background:var(--accent)"></i>You are here</span><span><i style="background:var(--line)"></i>Ahead</span><span>Dashed outline = underground</span></div>
+      </div>
+      <ul class="phaselist" id="phaseList"></ul>
+      <p class="note" id="mapLinks" style="margin-top:14px"></p>
+    </section>
+
+    <section id="v-guide" hidden>
+      <h2 class="view-h">Guide</h2>
+      <div id="guide"></div>
+    </section>
+
+    <section id="v-set" hidden>
+      <h2 class="view-h">Settings</h2>
+
+      <div class="group">
+        <h3>Appearance</h3>
+        <div class="set"><span class="lbl">Theme</span><div class="seg" data-set="mode" role="group" aria-label="Theme"><button type="button" data-v="system">System</button><button type="button" data-v="light">Light</button><button type="button" data-v="dark">Dark</button></div></div>
+        <div class="set"><span class="lbl">Accent</span><div class="swatches" data-set="accent" role="group" aria-label="Accent colour">
+          <button type="button" data-v="gold" aria-label="Erdtree gold" style="background:#c39a3f"></button>
+          <button type="button" data-v="crimson" aria-label="Scarlet rot" style="background:#b8434e"></button>
+          <button type="button" data-v="frost" aria-label="Moonlight blue" style="background:#5f94bb"></button>
+          <button type="button" data-v="silver" aria-label="Ash silver" style="background:#9a9ca4"></button></div></div>
+        <div class="set"><span class="lbl">Text size</span><div class="seg" data-set="size" role="group" aria-label="Text size"><button type="button" data-v="s">Small</button><button type="button" data-v="m">Medium</button><button type="button" data-v="l">Large</button></div></div>
+        <div class="set"><span class="lbl">Compact steps</span><button type="button" class="switch" role="switch" data-sw="compact" aria-label="Compact steps"></button><span class="hint">Tighter rows without icons or tags.</span></div>
+      </div>
+
+      <div class="group">
+        <h3>Route</h3>
+        <div class="set"><span class="lbl">Platform</span><div class="seg" data-set="platform" role="group" aria-label="Platform"><button type="button" data-v="ps">PlayStation</button><button type="button" data-v="xbox">Xbox</button><button type="button" data-v="steam">PC</button></div><span class="hint">PlayStation shows Bronze, Silver, Gold and Platinum trophies. Xbox and PC call them achievements.</span></div>
+        <div class="set"><span class="lbl">Hide completed steps</span><button type="button" class="switch" role="switch" data-sw="hide" aria-label="Hide completed steps"></button></div>
+        <div class="set"><span class="lbl">Show tips</span><button type="button" class="switch" role="switch" data-sw="tips" aria-label="Show tips"></button><span class="hint">Dashed advice notes between steps.</span></div>
+        <div class="set"><span class="lbl">Open current phase automatically</span><button type="button" class="switch" role="switch" data-sw="autoopen" aria-label="Open current phase automatically"></button><span class="hint">Folds finished phases and opens the one you are on.</span></div>
+      </div>
+
+      <div class="group">
+        <h3>Device</h3>
+        <div class="set"><span class="lbl">Keep screen on</span><button type="button" class="switch" role="switch" data-sw="awake" aria-label="Keep screen on"></button><span class="hint" id="wakeHint">Stops the screen dimming while this page is open.</span></div>
+        <div class="set stack" id="installRow"><span class="lbl">Install as an app</span>
+          <span class="hint" id="installHint">On iPhone: open this page in Safari, tap Share, then Add to Home Screen. On Android or desktop Chrome: use the browser menu, then Install app.</span>
+          <div class="acts"><button type="button" class="btn primary" id="installBtn" hidden>Install</button></div>
+        </div>
+      </div>
+
+      <div class="group">
+        <h3>Saving and sync</h3>
+        <div class="set stack"><span class="lbl">Saved on this device</span>
+          <span class="hint" id="storeStatus">Every tick saves instantly in this browser.</span>
+          <span class="hint">An installed home-screen app on iPhone has its own storage, separate from Safari. Use sync or a backup code to bring your progress across.</span>
+        </div>
+        <div class="set stack"><span class="lbl">Sync between devices</span>
+          <span class="hint">Optional. Progress is stored in a private gist on your own GitHub account, so there is no server. Create a classic personal access token at github.com/settings/tokens with only the <b>gist</b> scope, then paste it on each device. The token stays in this browser and can be revoked any time.</span>
+          <div class="sync-state" id="syncState"><i></i><span>Not connected</span></div>
+          <div id="connectRow">
+            <input id="tokenInput" type="password" placeholder="GitHub token (ghp_…)" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="GitHub personal access token">
+            <div class="acts"><button type="button" class="btn primary" id="connectBtn">Connect</button></div>
+          </div>
+          <div class="acts" id="connectedRow" hidden><button type="button" class="btn" id="syncBtn">Sync now</button><button type="button" class="btn danger" id="disconnectBtn">Disconnect</button></div>
+          <div class="msg" id="syncMsg"></div>
+        </div>
+        <div class="set stack"><span class="lbl">Backup</span>
+          <span class="hint" id="backupHint">Download a file you can keep anywhere, or copy a short code.</span>
+          <div class="acts"><button type="button" class="btn" id="exportFile">Download backup</button><button type="button" class="btn" id="importFileBtn">Restore from file</button><input type="file" id="importFile" accept="application/json,.json" hidden></div>
+          <textarea id="exportBox" readonly aria-label="Progress code"></textarea>
+          <div class="acts"><button type="button" class="btn" id="copyBtn">Copy code</button></div>
+          <textarea id="importBox" placeholder="Paste a progress code here" aria-label="Import code"></textarea>
+          <div class="acts"><button type="button" class="btn" id="importBtn">Import code</button></div>
+          <div class="msg" id="ioMsg"></div>
+        </div>
+        <div class="set stack"><span class="lbl">Reset</span><span class="hint">Clears every tick on this device. Settings stay. If sync is on, the reset syncs too.</span>
+          <div class="acts"><button type="button" class="btn danger" id="resetBtn">Reset progress…</button><span id="resetConfirm" hidden><button type="button" class="btn danger" id="resetYes">Yes, clear all</button> <button type="button" class="btn" id="resetNo">Cancel</button></span></div>
+        </div>
+      </div>
+
+      <div class="group">
+        <h3>About</h3>
+        <div class="set stack">
+          <span class="hint">Tarnished's Ledger is an unofficial fan project. It is not affiliated with or endorsed by FromSoftware, Bandai Namco or Sony. Elden Ring and related names are trademarks of their owners. Icons, medals and the map are original drawings.</span>
+          <span class="lbl">Sources</span>
+          <ul class="srcs" id="sources"></ul>
+          <span class="hint"><a href="https://github.com/dsameendra/tarnished-ledger" target="_blank" rel="noopener">Source code on GitHub</a></span>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+</body>
+</html>
