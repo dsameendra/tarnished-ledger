@@ -60,3 +60,11 @@ Open the site with `?mapdebug` to expose `window.__tlMap()` (the Leaflet map, ca
 ## Service worker
 
 `sw.js` precaches the viewer modules and the vendored Leaflet files. The map data modules and images are fetched on first open and cached by the network-first handler. Add the data modules to `SHELL` when they land, and bump `CACHE`.
+
+## Fit, sub-maps and defaults
+
+- `CONTENT` in `js/ui/map.js` holds the non-black region of each image (measured from the art). Fit, minimum zoom and pan bounds use it, and the stage height follows its aspect ratio. Update it when an image changes.
+- `SUBS` holds the Ainsel, Siofra (including Mohgwyn Palace) and Deeproot rectangles for the jump buttons on the Underground layer.
+- Markers that project outside the image are dropped when loading, so they never render and never get a route pin.
+- Default markers ("Essentials"): guide categories in the Route items and Bosses groups plus sites of grace. "Guide" is every `guide: true` category. Markers are dots when zoomed out and glyphs when zoomed in. Ids are strings throughout the viewer.
+- Debug hook: `?mapdebug` exposes `window.__tlMap()`.

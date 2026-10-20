@@ -96,8 +96,8 @@ Corrections to the route are very welcome. Open an issue with the step, what is 
 
 ## Credits
 
-The base-game route follows the community [Elden Ring 100% Achievement Guide by ponkberry](https://steamcommunity.com/sharedfiles/filedetails/?id=2785187510) on Steam. Shadow of the Erdtree facts were checked against the Elden Ring wiki. Icons and trophy medals are original drawings.
+The base-game route follows the community [Elden Ring 100% Achievement Guide by ponkberry](https://steamcommunity.com/sharedfiles/filedetails/?id=2785187510) on Steam. Shadow of the Erdtree facts were checked against the Elden Ring wiki. Icons, trophy medals and the map marker glyphs are original drawings. The Map tab uses map images made from in-game map screenshots and marker data from MapGenie's public data (see `docs/MAP-DATA.md`); that artwork belongs to its owners and is used here in an unofficial fan project.
 
 ## Disclaimer
 
-Unofficial fan project. It is not affiliated with or endorsed by FromSoftware, Bandai Namco or Sony. Elden Ring and related names, characters and artwork are trademarks and copyrights of their owners.
+Unofficial fan project. It is not affiliated with or endorsed by FromSoftware, Bandai Namco or Sony. Elden Ring and related names, characters and artwork, including the in-game map art shown in the Map tab, are trademarks and copyrights of their owners.

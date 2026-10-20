@@ -13,11 +13,12 @@ export function createMarkerCanvas(L, map, { isFound }) {
   let raf = 0;
   const stats = { drawn: 0, total: 0, ms: 0, size: 0 };
 
-  // Dots when zoomed out, growing glyphs as you zoom in.
+  // Small dots over the whole map, bigger dots, then glyphs that grow as you zoom in.
   function sizeFor() {
     const rel = map.getZoom() - map.getMinZoom();
-    return rel < 0.9 ? 0 : Math.min(30, 14 + Math.floor(((rel - 0.9) * 5) / 2) * 2);
+    return rel < 1.5 ? 0 : Math.min(30, 14 + Math.floor(((rel - 1.5) * 5) / 2) * 2);
   }
+  const dotR = () => (map.getZoom() - map.getMinZoom() < 0.9 ? 1.8 : 3.5);
   const place = (m, sc, min) => [m.x * sc - min.x, m.y * sc - min.y];
 
   function draw() {
@@ -38,7 +39,8 @@ export function createMarkerCanvas(L, map, { isFound }) {
     const min = map.getPixelBounds().min;
     const s = sizeFor();
     const dot = s === 0;
-    const size = dot ? 8 : s;
+    const r = dotR();
+    const size = dot ? r * 2 : s;
     const pad = size / 2 + 4;
     let n = 0;
     const dots = new Map();
@@ -51,8 +53,8 @@ export function createMarkerCanvas(L, map, { isFound }) {
         const k = f ? "f" + m.color : m.color;
         let p = dots.get(k);
         if (!p) dots.set(k, (p = new Path2D()));
-        p.moveTo(x + 3.5, y);
-        p.arc(x, y, 3.5, 0, 6.2832);
+        p.moveTo(x + r, y);
+        p.arc(x, y, r, 0, 6.2832);
         continue;
       }
       const sp = sprite(m.glyph, m.color, size, dpr);
@@ -60,7 +62,7 @@ export function createMarkerCanvas(L, map, { isFound }) {
       ctx.drawImage(sp, x - sp.full / 2, y - sp.full / 2, sp.full, sp.full);
       if (f) ctx.globalAlpha = 1;
     }
-    ctx.lineWidth = 2; ctx.strokeStyle = "#14130e";
+    ctx.lineWidth = r < 3 ? 1 : 2; ctx.strokeStyle = "#14130e";
     for (const [k, p] of dots) {
       ctx.globalAlpha = k[0] === "f" ? 0.4 : 1;
       ctx.stroke(p);

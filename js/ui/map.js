@@ -10,6 +10,10 @@ import { iconURL } from "./map-glyphs.js";
 import * as ms from "./map-state.js";
 
 const LAYER_NAME = { base: "Lands Between", under: "Underground", dlc: "Realm of Shadow" };
+// Non-black region of each image [x0, y0, x1, y1] in image pixels, measured from the art, and the underground sub-maps.
+const CONTENT = { base: [20, 8, 1872, 1952], under: [40, 32, 1964, 1916], dlc: [20, 16, 1856, 1932] };
+const SUBS = { ainsel: [36, 705, 716, 1936], siofra: [1118, 566, 1967, 1148], deeproot: [726, 57, 1252, 577] };
+const box = ([x0, y0, x1, y1]) => [[-y1, x0], [-y0, x1]];
 let L, map, D, cv, overlay, bounds, pinLayer, routeLayer;
 let shown = null; // mode on the map: base | under | dlc
 let boot = null;
@@ -96,13 +100,26 @@ async function start() {
   pinLayer = L.layerGroup().addTo(map);
   map.createPane("route").style.zIndex = 450;
   cv = createMarkerCanvas(L, map, { isFound: ms.isFound });
-  enabled = new Set(ms.filter.cats ?? D.cats.filter((c) => c.guide).map((c) => c.id));
+  enabled = new Set(ms.filter.cats ?? essentials());
   buildPanel();
   wireMap();
   $("mapSearch").disabled = false;
   new ResizeObserver(() => { if (visible()) map.invalidateSize({ animate: false }); }).observe($("map"));
   if (/[?&]mapdebug\b/.test(location.search)) window.__tlMap = () => ({ map, cv, D, mode: shown, enabled, selected });
   setMode(mode());
+}
+
+// Default markers: graces, bosses and the route items. Everything else is one tap away.
+const essentials = () => D.cats.filter((c) => c.guide && (c.group === "route" || c.glyph === "grace" || c.group === "bosses")).map((c) => c.id);
+const guideCats = () => D.cats.filter((c) => c.guide).map((c) => c.id);
+
+// The stage follows the art's shape so there is no empty band, but never more than the screen allows.
+function sizeStage() {
+  const [x0, y0, x1, y1] = CONTENT[shown];
+  const w = $("map").clientWidth;
+  if (!w) return;
+  const h = Math.max(340, Math.min(w * (y1 - y0) / (x1 - x0), innerHeight - 210, 900));
+  $("mapWrap").style.setProperty("--mh", Math.round(h) + "px");
 }
 
 // Zoom limits depend on the container size: the minimum is "whole image fits".
@@ -112,7 +129,7 @@ function limits() {
   map.setMinZoom(-10);
   const fz = map.getBoundsZoom(bounds, false);
   map.setMinZoom(fz - 0.3);
-  map.setMaxZoom(Math.max(fz + 4.5, 1.5));
+  map.setMaxZoom(Math.max(fz + 3, 1.2));
   return fz;
 }
 
@@ -128,15 +145,19 @@ function setMode(m) {
   if (overlay) map.removeLayer(overlay);
   shown = m;
   const c = D.calib[m];
-  bounds = L.latLngBounds([[-c.h, 0], [0, c.w]]);
+  const imgBounds = L.latLngBounds([[-c.h, 0], [0, c.w]]);
+  bounds = L.latLngBounds(box(CONTENT[m]));
   const load = $("mapLoading");
   load.hidden = false; load.classList.remove("err"); load.textContent = "Loading map…";
-  const mine = L.imageOverlay(c.img, bounds, { alt: LAYER_NAME[m] + " map", className: "mapimg" }).addTo(map);
+  const mine = L.imageOverlay(c.img, imgBounds, { alt: LAYER_NAME[m] + " map", className: "mapimg" }).addTo(map);
   overlay = mine;
   mine.on("load", () => { if (overlay === mine) load.hidden = true; });
   mine.on("error", () => { if (overlay === mine) imageFailed(); });
-  map.setMaxBounds(bounds.pad(0.2));
+  map.setMaxBounds(bounds.pad(0.15));
+  sizeStage();
+  map.invalidateSize({ animate: false });
   const fz = limits();
+  $("mapSubs").hidden = m !== "under";
   const v = ms.views[m];
   if (fz !== null) {
     if (v && Number.isFinite(v.lat)) map.setView([v.lat, v.lng], Math.max(map.getMinZoom(), Math.min(map.getMaxZoom(), fz + v.d)), { animate: false });
@@ -157,6 +178,9 @@ function fitAll() {
 function zoomState() {
   if (!map) return;
   const z = map.getZoom();
+  // Phase pins: small over the whole map, larger when zoomed in.
+  const d = Math.max(17, Math.min(30, 17 + (z - map.getMinZoom()) * 3));
+  $("map").style.setProperty("--pin", d.toFixed(1) + "px");
   $("mapZoom").querySelector('[data-z="in"]').disabled = z >= map.getMaxZoom() - 0.01;
   $("mapZoom").querySelector('[data-z="out"]').disabled = z <= map.getMinZoom() + 0.01;
 }
@@ -175,8 +199,8 @@ function refreshItems() {
 
 function setCats(ids) {
   enabled = new Set(ids);
-  const guide = D.cats.filter((c) => c.guide).map((c) => c.id);
-  ms.filter.cats = ids.length === guide.length && guide.every((i) => enabled.has(i)) ? null : [...enabled];
+  const def = essentials();
+  ms.filter.cats = ids.length === def.length && def.every((i) => enabled.has(i)) ? null : [...enabled];
   ms.saveFilter();
   syncPanel();
   refreshItems();
@@ -188,7 +212,7 @@ function buildPanel() {
   $("mapPanel").innerHTML = `
     <div class="mp-h"><b>Markers</b><button type="button" class="mp-x" data-close aria-label="Close marker filters">&times;</button></div>
     <label class="mp-row mp-sw"><input type="checkbox" data-f="on"><span>Show markers</span></label>
-    <div class="seg" role="group" aria-label="Marker presets"><button type="button" data-preset="guide">Guide only</button><button type="button" data-preset="all">Everything</button><button type="button" data-preset="none">None</button></div>
+    <div class="seg" role="group" aria-label="Marker presets"><button type="button" data-preset="essentials">Essentials</button><button type="button" data-preset="guide">Guide</button><button type="button" data-preset="all">Everything</button><button type="button" data-preset="none">None</button></div>
     <label class="mp-row"><input type="checkbox" data-f="hideFound"><span>Hide found</span></label>
     <label class="mp-row"><input type="checkbox" data-f="route"><span>Route phases</span></label>
     ${D.groups.map((g) => `<details data-g="${esc(g.id)}" ${ms.filter.collapsed[g.id] ? "" : "open"}><summary>${esc(g.title)}</summary>${rows(g)}</details>`).join("")}
@@ -201,8 +225,8 @@ function syncPanel() {
   const p = $("mapPanel"), f = ms.filter;
   p.querySelectorAll("[data-cat]").forEach((i) => { i.checked = enabled.has(i.dataset.cat); });
   p.querySelectorAll("[data-f]").forEach((i) => { i.checked = Boolean(f[i.dataset.f]); });
-  const guide = D.cats.filter((c) => c.guide).map((c) => c.id);
-  const cur = enabled.size === 0 ? "none" : enabled.size === D.cats.length ? "all" : enabled.size === guide.length && guide.every((i) => enabled.has(i)) ? "guide" : "";
+  const same = (l) => enabled.size === l.length && l.every((i) => enabled.has(i));
+  const cur = enabled.size === 0 ? "none" : enabled.size === D.cats.length ? "all" : same(essentials()) ? "essentials" : same(guideCats()) ? "guide" : "";
   p.querySelectorAll("[data-preset]").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.preset === cur)));
 }
 
@@ -233,7 +257,7 @@ function refreshPins() {
     if (m.layer !== shown) continue;
     const cls = [pi === cur ? "cur" : phaseDone(pi) ? "done" : "", selected?.phase === p.id ? "sel" : ""].join(" ");
     const pin = L.marker([-m.y, m.x], {
-      icon: L.divIcon({ className: "mp-pin-wrap", html: `<span class="mp-pin ${cls}">${phaseLabel(pi)}</span>`, iconSize: [34, 34], iconAnchor: [17, 17] }),
+      icon: L.divIcon({ className: "mp-pin-wrap", html: `<span class="mp-pin ${cls}">${phaseLabel(pi)}</span>`, iconSize: [0, 0] }),
       title: `Phase ${phaseLabel(pi)}: ${p.n}`, riseOnHover: true, zIndexOffset: pi === cur ? 1000 : 0,
     }).on("click", () => showSheet({ phase: p.id })).addTo(pinLayer);
     const el = pin.getElement();
@@ -412,6 +436,17 @@ export function initMap() {
     syncChrome();
     setMode(mode());
   });
+  $("mapSubs").addEventListener("click", (e) => {
+    const b = e.target.closest("button");
+    if (!b || !map) return;
+    const o = { padding: [10, 10], animate: !mq("(prefers-reduced-motion: reduce)"), duration: 0.7 };
+    if (b.dataset.v === "all") fitAll(); else map.flyToBounds(box(SUBS[b.dataset.v]), o);
+  });
+  window.addEventListener("resize", () => {
+    if (!map || !visible()) return;
+    sizeStage();
+    map.invalidateSize({ animate: false });
+  });
   $("mapLayer").addEventListener("click", (e) => {
     const b = e.target.closest("button");
     if (!b || !map) return;
@@ -441,7 +476,8 @@ export function initMap() {
     if (!b) return;
     if (b.dataset.close !== undefined) setPanel(false);
     if (b.dataset.preset) {
-      if (b.dataset.preset === "guide") setCats(D.cats.filter((c) => c.guide).map((c) => c.id));
+      if (b.dataset.preset === "essentials") setCats(essentials());
+      else if (b.dataset.preset === "guide") setCats(guideCats());
       else setCats(b.dataset.preset === "all" ? D.cats.map((c) => c.id) : []);
       if (b.dataset.preset !== "none" && !ms.filter.on) { ms.filter.on = true; ms.saveFilter(); syncPanel(); refreshItems(); }
     }

@@ -7,7 +7,7 @@ The DLC work that earlier versions of this file listed as remaining is finished 
 ## Rules
 - Commit in small commits. Author must be `dsameendra <dumindu0043@gmail.com>`. End each message with:
   `Co-Authored-By: Claude <noreply@anthropic.com>`
-- Do not use or scrape game art, icons or maps (copyright). Icons, trophy medals and the map are original SVG drawings. Wiki links use `https://eldenring.wiki.gg/wiki/Special:Search?go=Go&search=...`.
+- Do not use or scrape game art, icons or maps (copyright). Icons, trophy medals and the marker glyphs are original SVG drawings; the Map tab art comes from in-game map screenshots and its marker data from MapGenie (see docs/MAP-DATA.md). Wiki links use `https://eldenring.wiki.gg/wiki/Special:Search?go=Go&search=...`.
 - Only write game facts you have verified from sources. The DLC has **no trophies or achievements**; it is modelled as goals and counters.
 - Test in a browser (Playwright, Chromium at 390px and 1280px, light and dark). Serve with `python3 -m http.server` and block Google Fonts requests, which are unreachable in sandboxes.
 - Run `npm run check` and `npm test` before every commit. Bump `CACHE` in `sw.js` when shipping.

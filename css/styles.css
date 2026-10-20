@@ -272,8 +272,8 @@ button.jump::after { content: ""; position: absolute; inset: -12px -6px; }
 .mapstatus { margin: 0; color: var(--muted); font-size: .88rem; }
 .mapstatus:not(:empty) { padding: 0 0 8px; }
 .mapwrap { position: relative; display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; }
-.mapstage { position: relative; height: clamp(340px, calc(100svh - 250px), 780px); border-radius: 10px; overflow: hidden; border: 1px solid var(--line); background: color-mix(in srgb, var(--bg) 70%, #000); }
-#map { position: absolute; inset: 0; background: color-mix(in srgb, var(--bg) 70%, #000); font: inherit; }
+.mapstage { position: relative; height: var(--mh, clamp(340px, calc(100svh - 250px), 780px)); border-radius: 10px; overflow: hidden; border: 1px solid var(--line); background: #0b0a08; }
+#map { position: absolute; inset: 0; background: #0b0a08; font: inherit; }
 #map.leaflet-container:focus-visible { outline: 2px solid var(--accent); outline-offset: -3px; }
 .mapimg { max-width: none !important; }
 .mapctl { position: absolute; z-index: 1000; top: 10px; right: 10px; display: grid; gap: 6px; }
@@ -303,19 +303,20 @@ button.jump::after { content: ""; position: absolute; inset: -12px -6px; }
 .mp-row em { font-style: normal; color: var(--muted); font-size: .82rem; font-variant-numeric: tabular-nums; }
 .mp-sw { font-weight: 700; }
 .mappanel .seg { display: flex; }
-.mappanel .seg button { flex: 1; }
+.mappanel .seg button { flex: 1; padding: 7px 4px; font-size: .8rem; }
 .mappanel details { border-top: 1px solid var(--line); }
 .mappanel summary { min-height: 44px; display: flex; align-items: center; cursor: pointer; font-family: var(--display); font-size: .95rem; }
 .mappanel .note { font-size: .82rem; margin: 6px 0 0; }
 @media (min-width: 900px) {
   .mapwrap.panel-open { grid-template-columns: minmax(0, 1fr) 320px; }
-  .mappanel { position: static; max-height: clamp(340px, calc(100svh - 250px), 780px); border-radius: 10px; box-shadow: none; }
+  .mappanel { position: static; max-height: var(--mh, clamp(340px, calc(100svh - 250px), 780px)); border-radius: 10px; box-shadow: none; }
   .mp-x { display: none; }
   .mapsheet { right: auto; width: 340px; top: 64px; bottom: auto; left: 10px; max-height: calc(100% - 80px); }
 }
 .mp-pin-wrap { background: none; border: 0; outline: none; }
-.mp-pin-wrap::before { content: ""; position: absolute; inset: -6px; }
-.mp-pin { position: relative; display: grid; place-items: center; width: 34px; height: 34px; border-radius: 50%; background: var(--raised); color: var(--fg); border: 2.5px solid var(--muted); font: 700 15px var(--display); box-shadow: 0 1px 5px rgb(0 0 0 / .6), 0 0 0 1.5px rgb(255 253 246 / .75); }
+.mp-pin-wrap { width: 0; height: 0; }
+.mp-pin-wrap::before { content: ""; position: absolute; left: -22px; top: -22px; width: 44px; height: 44px; }
+.mp-pin { display: grid; place-items: center; position: absolute; left: calc(var(--pin, 18px) / -2); top: calc(var(--pin, 18px) / -2); width: var(--pin, 18px); height: var(--pin, 18px); border-radius: 50%; background: var(--raised); color: var(--fg); border: 2px solid var(--muted); font: 700 calc(var(--pin, 18px) * .5) var(--display); box-shadow: 0 1px 5px rgb(0 0 0 / .6), 0 0 0 1.5px rgb(255 253 246 / .75); }
 .mp-pin.done { background: var(--ok); color: var(--surface); border-color: var(--surface); }
 .mp-pin.cur { background: var(--accent); color: var(--onaccent); border-color: var(--surface); }
 .mp-pin.cur::after { content: ""; position: absolute; inset: -5px; border-radius: 50%; border: 2.5px solid var(--accent); opacity: .7; animation: mppulse 2s infinite; }
