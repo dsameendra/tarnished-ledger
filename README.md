@@ -1,0 +1,50 @@
+# Tarnished's Ledger
+
+A step-by-step checklist for 100% completion of Elden Ring: all 42 trophies and achievements, every legendary item and all three ending trophies. It works as an installable app on iPhone and desktop.
+
+**Live site:** https://dsameendra.github.io/tarnished-ledger/
+
+## Features
+
+- 25 ordered phases with tick-off steps, a route map and an "Up next" card
+- Trophy list with medals, plus Legendary armaments, ashes, spells and talismans
+- Endings guide covering the save-backup route and the NG / NG+ / NG++ route
+- Progress saves automatically on your device and works offline
+- Settings for theme, accent colour, text size, compact mode and keeping the screen on
+- Copy and paste progress codes to move progress between devices
+
+## Install on iPhone
+
+1. Open the live site in Safari.
+2. Tap Share, then Add to Home Screen.
+
+Keeping the screen on in the installed app needs iOS 18.4 or later.
+
+## Run locally
+
+It is a static site with no build step.
+
+```
+python3 -m http.server 8080
+```
+
+Then open http://localhost:8080. The service worker only registers over HTTPS or localhost.
+
+## Project layout
+
+| File | Purpose |
+|---|---|
+| `index.html` | The whole app: markup, styles, route data and script |
+| `manifest.webmanifest` | Install name, colours and icons |
+| `sw.js` | Offline cache |
+| `icon-*.png` | App icons (180 for iOS, 192 and 512 for Android, a maskable 512) |
+
+## Editing the route
+
+Route data lives in the `PHASES` array inside `index.html`. Each step is `[kind, text, options]`, where `kind` is one of `go`, `boss`, `item`, `quest`, `warn`, `map`, `key` or `tip`. Options can link a step to a trophy (`tr`) or a legendary item (`c`). Bump the cache name in `sw.js` after a change so installed copies refresh.
+
+## Credits and notice
+
+The route is based on the community [Elden Ring 100% Achievement Guide by ponkberry](https://steamcommunity.com/sharedfiles/filedetails/?id=2785187510) on Steam. Icons, medals and the map are original drawings.
+
+This is an unofficial fan project. It is not affiliated with or endorsed by FromSoftware, Bandai Namco or Sony. Elden Ring and related names are trademarks of their owners.

@@ -1,0 +1,16 @@
+{
+  "name": "Tarnished's Ledger",
+  "short_name": "Ledger",
+  "description": "Elden Ring 100% route: every trophy, legendary and ending, step by step.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#13120d",
+  "theme_color": "#13120d",
+  "icons": [
+    {"src": "icon-192.png", "sizes": "192x192", "type": "image/png"},
+    {"src": "icon-512.png", "sizes": "512x512", "type": "image/png"},
+    {"src": "icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable"}
+  ]
+}
