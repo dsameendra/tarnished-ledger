@@ -3,10 +3,10 @@ import * as sync from "./lib/sync.js";
 import * as wake from "./lib/wake.js";
 import { renderRail } from "./ui/rail.js";
 import { renderRoute, applyView, updateRoute, ensureCurrentOpen, initRoute } from "./ui/route.js";
-import { renderTrophies, renderCollect, initLists } from "./ui/lists.js";
+import { renderTrophies, renderCollect, renderCounters, initLists } from "./ui/lists.js";
 import { renderMap, initMap } from "./ui/map.js";
 import { renderGuide } from "./ui/guide.js";
-import { initNav } from "./ui/nav.js";
+import { initNav, renderNav } from "./ui/nav.js";
 import { initSettings, paintSettings, paintStorage, paintWake, refreshBackup } from "./ui/settings.js";
 
 function renderAll() {
@@ -29,9 +29,14 @@ function onMarks() {
   refreshBackup();
 }
 
+function onCounters() {
+  renderRail();
+  renderCounters();
+}
+
 function onSetting(key) {
   paintSettings();
-  if (key === "platform") { renderAll(); return; }
+  if (["platform", "dlc", "focus"].includes(key)) { renderNav(); renderAll(); return; }
   if (["hide", "tips", "compact"].includes(key)) applyView();
   if (key === "autoopen") ensureCurrentOpen();
   if (key === "awake") wake.update(store.setting("awake"), paintWake);
@@ -45,7 +50,7 @@ function boot() {
   initMap();
   initSettings();
   renderAll();
-  store.onChange((kind, detail) => (kind === "marks" ? onMarks() : onSetting(detail)));
+  store.onChange((kind, detail) => (kind === "marks" ? onMarks() : kind === "counters" ? onCounters() : onSetting(detail)));
   sync.init();
   wake.update(store.setting("awake"), paintWake);
   document.addEventListener("visibilitychange", () => wake.update(store.setting("awake"), paintWake));

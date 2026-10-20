@@ -1,6 +1,7 @@
 import * as store from "../lib/store.js";
 import { $, emit } from "../lib/dom.js";
-import { PHASES, TROPHIES, COLLECTIONS, byTrophy, byCollectible, trophyDone, wikiUrl } from "../lib/model.js";
+import { PHASES, TROPHIES, COLLECTIONS, GOALS, byTrophy, byCollectible, byGoal, trophyDone, goalDone, phaseLabel, scope, wikiUrl } from "../lib/model.js";
+import { COUNTERS } from "../data/dlc-goals.js";
 import { tickSVG, ico, medal, COLLECTION_ICON } from "../lib/icons.js";
 import { hasGrades, trophiesWord } from "../lib/labels.js";
 import { toggle } from "./route.js";
@@ -15,8 +16,16 @@ function row({ done, name, sub, stepId, tog, lead, cls = "" }) {
 <div style="min-width:0"><div class="row-name">${name}</div><div class="row-where">${sub}${jump}</div></div></div>`;
 }
 
+const NOTE_TRO = "Each one ticks itself when you finish its step in the route. You can also tick them here, or jump to the step.";
+const NOTE_DLC = "Shadow of the Erdtree has no trophies or achievements. These goals and counters stand in for them, and each goal ticks when you finish its step in the DLC route.";
+
 export function renderTrophies() {
-  $("troTitle").textContent = trophiesWord();
+  const sc = scope();
+  $("troTitle").textContent = sc === "dlc" ? "DLC goals" : trophiesWord();
+  $("troNote").textContent = sc === "dlc" ? NOTE_DLC : NOTE_TRO;
+  $("troList").hidden = sc === "dlc";
+  if (sc === "dlc") { $("troList").innerHTML = ""; renderGoals(); return; }
+  renderGoals();
   const grades = hasGrades();
   const keep = (t) => filter === "all" || (filter === "done") === trophyDone(t[0]);
   const rowFor = (t) => {
@@ -39,6 +48,44 @@ export function renderTrophies() {
     if (list.length) html = `<div class="group"><h3><span>All achievements</span><span class="c">${done}/${TROPHIES.length}</span></h3><div class="cols two">${list.map(rowFor).join("")}</div></div>`;
   }
   $("troList").innerHTML = html || '<p class="empty">Nothing here.</p>';
+}
+
+const level = (c, n) => c.levels.filter((x) => n >= x).length;
+
+export function renderCounters() {
+  const box = $("counters");
+  if (!box) return;
+  [...box.querySelectorAll("[data-counter]")].forEach((el) => {
+    const c = COUNTERS.find((x) => x.id === el.dataset.counter);
+    const n = store.counter(c.id);
+    const input = el.querySelector("input");
+    if (document.activeElement !== input) input.value = n;
+    el.querySelector(".lvl").textContent = `${c.blessing} level ${level(c, n) || 0} of ${c.levels.length}`;
+    el.querySelector(".dec").disabled = n <= 0;
+    el.querySelector(".inc").disabled = n >= c.max;
+  });
+}
+
+export function renderGoals() {
+  const box = $("dlcGoals");
+  if (scope() === "base") { box.innerHTML = ""; return; }
+  const keep = (k) => filter === "all" || (filter === "done") === goalDone(k);
+  const groups = GOALS.map(([title, items]) => {
+    const list = items.filter(([k]) => keep(k));
+    const done = items.filter(([k]) => goalDone(k)).length;
+    if (!list.length) return "";
+    const rows = list.map(([k, name, where]) => {
+      const s = byGoal[k];
+      return row({ done: goalDone(k), name, sub: `${where} · ${phaseLabel(s.pi)}`, stepId: s.id, tog: true, lead: `<span class="lico">${ico(s.kind)}</span>`, cls: "tr" });
+    }).join("");
+    return `<div class="group"><h3><span>${title}</span><span class="c">${done}/${items.length}</span></h3><div class="cols two">${rows}</div></div>`;
+  }).join("");
+  const counters = COUNTERS.map((c) => `<div class="counter" data-counter="${c.id}">
+<div class="c-head"><b>${c.name}</b><span class="lvl"></span></div>
+<div class="c-ctl"><button type="button" class="btn dec" aria-label="One fewer ${c.name}">−</button><input type="number" inputmode="numeric" min="0" max="${c.max}" aria-label="${c.name} collected"><span class="of">/ ${c.max}</span><button type="button" class="btn inc" aria-label="One more ${c.name}">+</button></div>
+<p class="note">${c.note}</p></div>`).join("");
+  box.innerHTML = `${scope() === "both" ? '<h2 class="view-h sub">Shadow of the Erdtree</h2>' : ""}<div class="group counters" id="counters"><h3><span>Blessings</span></h3>${counters}</div>${groups}`;
+  renderCounters();
 }
 
 export function renderCollect() {
@@ -65,6 +112,20 @@ export function initLists() {
     if (r) toggle(r.dataset.tog);
   };
   $("troList").addEventListener("click", handle);
+  $("dlcGoals").addEventListener("click", (e) => {
+    const el = e.target.closest("[data-counter]");
+    if (el) {
+      const id = el.dataset.counter;
+      if (e.target.closest(".inc")) store.setCounter(id, store.counter(id) + 1);
+      else if (e.target.closest(".dec")) store.setCounter(id, store.counter(id) - 1);
+      return;
+    }
+    handle(e);
+  });
+  $("dlcGoals").addEventListener("change", (e) => {
+    const el = e.target.closest("[data-counter]");
+    if (el && e.target.matches("input")) { store.setCounter(el.dataset.counter, Number(e.target.value) || 0); renderCounters(); }
+  });
   $("colList").addEventListener("click", handle);
   $("troFilter").addEventListener("click", (e) => {
     const b = e.target.closest("button");

@@ -12,6 +12,7 @@ function paintControls() {
     $$("button", box).forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.v === String(v))));
   });
   $$("[data-sw]").forEach((b) => b.setAttribute("aria-checked", String(Boolean(store.setting(b.dataset.sw)))));
+  $("focusRow").hidden = !store.setting("dlc");
 }
 
 export function applyTheme() {

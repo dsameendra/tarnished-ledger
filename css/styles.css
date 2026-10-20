@@ -126,7 +126,7 @@ section[hidden] { display: none; }
   padding-left: max(4px, var(--safe-l));
   padding-right: max(4px, var(--safe-r));
 }
-.nav [role="tablist"] { max-width: 760px; margin: 0 auto; display: grid; grid-template-columns: repeat(6, 1fr); }
+.nav [role="tablist"] { max-width: 760px; margin: 0 auto; display: grid; grid-template-columns: repeat(auto-fit, minmax(0, 1fr)); }
 .nav button { background: none; border: 0; padding: 8px 0 7px; display: flex; flex-direction: column; align-items: center; gap: 3px; font-size: .64rem; letter-spacing: .02em; color: var(--muted); cursor: pointer; min-height: 54px; min-width: 0; }
 .nav svg { width: 22px; height: 22px; stroke: currentColor; fill: none; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
 .nav button[aria-selected="true"] { color: var(--accent); font-weight: 700; }
@@ -306,3 +306,19 @@ textarea { width: 100%; min-height: 70px; font: inherit; font-size: .82rem; back
 
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; scroll-behavior: auto !important; } }
 @media print { .nav, .toolbar { display: none; } }
+
+/* DLC: hidden attribute must win over component display rules */
+[hidden] { display: none !important; }
+.view-h.sub { margin-top: 22px; }
+.counters { display: grid; gap: 12px; }
+.counter { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; }
+.counter .c-head { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.counter .lvl { color: var(--muted); font-size: .86rem; }
+.counter .c-ctl { display: flex; align-items: center; gap: 8px; margin: 10px 0 4px; }
+.counter .c-ctl .btn { min-width: 44px; min-height: 44px; font-size: 1.2rem; padding: 0; }
+.counter input { width: 4.5em; min-height: 44px; text-align: center; font: inherit; font-variant-numeric: tabular-nums; color: var(--fg); background: var(--raised); border: 1px solid var(--line); border-radius: 9px; }
+.counter .of { color: var(--muted); }
+.counter .note { margin: 6px 0 0; font-size: .86rem; }
+.counter .btn:disabled { opacity: .4; cursor: default; }
+#map .edge { stroke: var(--line); stroke-width: 1.6; }
+#map .rl.pl { text-anchor: middle; font-size: 6.5px; }

@@ -81,7 +81,7 @@
 
     <section id="v-tro" hidden>
       <h2 class="view-h" id="troTitle">Trophies</h2>
-      <p class="note">Each one ticks itself when you finish its step in the route. You can also tick them here, or jump to the step.</p>
+      <p class="note" id="troNote">Each one ticks itself when you finish its step in the route. You can also tick them here, or jump to the step.</p>
       <div class="seg seg-filter" id="troFilter" role="group" aria-label="Filter">
         <button type="button" data-v="all" aria-pressed="true">All</button>
         <button type="button" data-v="todo" aria-pressed="false">To do</button>
@@ -99,7 +99,7 @@
 
     <section id="v-map" hidden>
       <h2 class="view-h">Route map</h2>
-      <p class="note">A schematic of the Lands Between, not to scale. Numbers match the route phases. Tap one to open it.</p>
+      <p class="note" id="mapNote">A schematic of the Lands Between, not to scale. Numbers match the route phases. Tap one to open it.</p>
       <div class="mapcard">
         <div class="maptools">
           <div class="seg" id="mapWorld" role="group" aria-label="Map" hidden><button type="button" data-v="base" aria-pressed="true">Lands Between</button><button type="button" data-v="dlc" aria-pressed="false">Shadow Realm</button></div>
@@ -110,7 +110,7 @@
           </div>
         </div>
         <div id="map"></div>
-        <div class="legend"><span><i style="background:var(--ok)"></i>Done</span><span><i style="background:var(--accent)"></i>You are here</span><span><i style="background:var(--line)"></i>Ahead</span><span>Dashed outline = underground</span></div>
+        <div class="legend"><span><i style="background:var(--ok)"></i>Done</span><span><i style="background:var(--accent)"></i>You are here</span><span><i style="background:var(--line)"></i>Ahead</span><span id="legUnder">Dashed outline = underground</span></div>
       </div>
       <ul class="phaselist" id="phaseList"></ul>
       <p class="note" id="mapLinks" style="margin-top:14px"></p>

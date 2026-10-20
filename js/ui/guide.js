@@ -3,6 +3,7 @@ import { $ } from "../lib/dom.js";
 import { ico, PATHS } from "../lib/icons.js";
 import { MISSABLES, STONESWORD, UPGRADE, PLATFORMS, ENDINGS } from "../data/guide.js";
 import { trophiesWord } from "../lib/labels.js";
+import { scope } from "../lib/model.js";
 
 const LEGEND = [
   ["go", "Travel or move to a place"],
@@ -18,6 +19,26 @@ const LEGEND = [
   ["tal", "Legendary Talisman"],
 ];
 
+function dlcGuide() {
+  return `<div class="prose">
+  <h3>Shadow of the Erdtree</h3>
+  <p>The expansion has no trophies or achievements, so this app tracks it as goals and counters. Nothing here changes your trophy list.</p>
+  <h3>Getting in</h3>
+  <ol>
+    <li>Defeat Starscourge Radahn in Caelid and Mohg, Lord of Blood, at the Mohgwyn Dynasty Mausoleum. Both must be dead.</li>
+    <li>Find Needle Knight Leda near the cocoon in Mohg's arena, then touch the withered arm inside the cocoon.</li>
+    <li>You arrive on the Gravesite Plain in the Realm of Shadow.</li>
+  </ol>
+  <h3>Blessings</h3>
+  <p>Both blessings are raised at any site of grace and only take effect inside the Realm of Shadow.</p>
+  <table class="keytable"><tbody>
+    <tr><th>Scadutree Blessing</th><td>Maximum level 20, using 50 Scadutree Fragments in total. Level 1 costs 1 fragment, levels 2 to 9 cost 2 each, and levels 10 to 20 cost 3 each.</td></tr>
+    <tr><th>Revered Spirit Ash Blessing</th><td>Maximum level 10, using 25 Revered Spirit Ashes in total. Levels 1 to 3 cost 1 each, 4 and 5 cost 2, 6 to 8 cost 3, level 9 costs 4 and level 10 costs 5. It boosts summoned spirits and Torrent.</td></tr>
+  </tbody></table>
+  <div class="callout">Back up your save before burning the Sealing Tree. Burning it locks you out of finishing the DLC's NPC questlines, so complete those first.</div>
+</div>`;
+}
+
 export function renderGuide() {
   const p = store.setting("platform");
   const t = trophiesWord().toLowerCase();
@@ -25,7 +46,7 @@ export function renderGuide() {
   $("guide").innerHTML = `
 <div class="prose">
   <h3>At a glance</h3>
-  <p>There are 42 ${t} (1 Platinum, 3 Gold, 14 Silver, 24 Bronze), all offline. Expect 60 to 100 hours. You do not need every weapon, spell or boss: only the bosses and legendary items in this route count. DLC is not required.</p>
+  <p>There are 42 ${t} (1 Platinum, 3 Gold, 14 Silver, 24 Bronze), all offline. Expect 60 to 100 hours. You do not need every weapon, spell or boss: only the bosses and legendary items in this route count. The DLC is not required, and it has no trophies of its own.</p>
   <p>You can finish everything in one playthrough if you back up your save before the ending, or in three playthroughs if you cannot.</p>
 </div>
 
@@ -72,6 +93,8 @@ export function renderGuide() {
   <ol>${rows(ENDINGS.routeB)}</ol>
   <div class="callout">Keep the Frenzied Flame for its own run or its own backup. Once inherited it overrides every other ending. Do not open the red door behind Mohg, the Omen until you want that ending.</div>
 </div>
+
+${scope() === "base" ? "" : dlcGuide()}
 
 <div class="prose">
   <h3>How to back up your save</h3>
