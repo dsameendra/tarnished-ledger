@@ -13,8 +13,8 @@ const LAYER_NAME = { base: "Lands Between", under: "Underground", dlc: "Realm of
 let L, map, D, cv, overlay, bounds, pinLayer, routeLayer;
 let shown = null; // mode on the map: base | under | dlc
 let boot = null;
-let picked = null;
-let under = false;
+let picked = ms.filter.world || null;
+let under = Boolean(ms.filter.under);
 let selected = null; // { m } or { phase }
 let enabled = new Set();
 let dirty = false;
@@ -39,6 +39,12 @@ function world() {
 const mode = () => (world() === "dlc" ? "dlc" : under ? "under" : "base");
 const allowed = (layer) => (scope() === "both" || (scope() === "dlc") === (layer === "dlc"));
 
+function saveLayer() {
+  ms.filter.world = picked;
+  ms.filter.under = under;
+  ms.saveFilter();
+}
+
 function status(text) {
   $("mapStatus").textContent = text;
   clearTimeout(statusTimer);
@@ -60,6 +66,13 @@ function fail(e) {
   $("mapLoading").hidden = false;
   $("mapLoading").classList.add("err");
   $("mapLoading").innerHTML = `<span>The map could not be loaded. Check your connection, then try again. The route and checklist still work.</span><button type="button" class="btn" id="mapRetry">Try again</button>`;
+}
+
+// The map itself is fine; only this layer's image is missing. Retry reloads that layer.
+function imageFailed() {
+  const el = $("mapLoading");
+  el.hidden = false; el.classList.add("err");
+  el.innerHTML = `<span>The ${LAYER_NAME[shown]} map image could not be loaded. Check your connection, then try again.</span><button type="button" class="btn" id="mapRetry">Try again</button>`;
 }
 
 function ensureMap() {
@@ -90,7 +103,6 @@ async function start() {
   new ResizeObserver(() => { if (visible()) map.invalidateSize({ animate: false }); }).observe($("map"));
   if (D.dev) window.__tlMap = () => ({ map, cv, D, mode: shown, enabled, selected });
   setMode(mode());
-  $("mapLoading").hidden = true;
 }
 
 // Zoom limits depend on the container size: the minimum is "whole image fits".
@@ -119,9 +131,10 @@ function setMode(m) {
   bounds = L.latLngBounds([[-c.h, 0], [0, c.w]]);
   const load = $("mapLoading");
   load.hidden = false; load.classList.remove("err"); load.textContent = "Loading map…";
-  overlay = L.imageOverlay(c.img, bounds, { alt: LAYER_NAME[m] + " map", className: "mapimg" }).addTo(map);
-  overlay.on("load", () => { load.hidden = true; });
-  overlay.on("error", () => fail(new Error("Map image failed to load")));
+  const mine = L.imageOverlay(c.img, bounds, { alt: LAYER_NAME[m] + " map", className: "mapimg" }).addTo(map);
+  overlay = mine;
+  mine.on("load", () => { if (overlay === mine) load.hidden = true; });
+  mine.on("error", () => { if (overlay === mine) imageFailed(); });
   map.setMaxBounds(bounds.pad(0.2));
   const fz = limits();
   const v = ms.views[m];
@@ -270,6 +283,7 @@ function showSheet(sel) {
 function goTo(m, rel = 3) {
   if (scope() === "both") picked = m.layer === "dlc" ? "dlc" : "base";
   under = m.layer === "under";
+  saveLayer();
   syncChrome();
   if (mode() !== shown) setMode(mode());
   const z = Math.min(map.getMaxZoom(), map.getMinZoom() + 0.3 + rel);
@@ -340,6 +354,19 @@ export function renderMap() {
 }
 
 function wireMap() {
+  // Leaflet only synthesises double-clicks for mouse input, so touch gets its own double-tap zoom.
+  let down = null, lastTap = null;
+  const host = map.getContainer();
+  host.addEventListener("pointerdown", (e) => { down = e.pointerType === "touch" && e.isPrimary ? { x: e.clientX, y: e.clientY, t: e.timeStamp } : null; });
+  host.addEventListener("pointerup", (e) => {
+    const d = down;
+    down = null;
+    if (!d || Math.hypot(e.clientX - d.x, e.clientY - d.y) > 10 || e.timeStamp - d.t > 350) return;
+    if (lastTap && e.timeStamp - lastTap.t < 400 && Math.hypot(e.clientX - lastTap.x, e.clientY - lastTap.y) < 30) {
+      lastTap = null;
+      map.setZoomAround(map.mouseEventToContainerPoint(e), Math.min(map.getMaxZoom(), map.getZoom() + 1));
+    } else lastTap = { t: e.timeStamp, x: e.clientX, y: e.clientY };
+  });
   map.on("click", (e) => {
     const m = cv.hit(e.containerPoint, cv.tol());
     if (m) selectMarker(m); else closeSheet();
@@ -381,6 +408,7 @@ export function initMap() {
     const b = e.target.closest("button");
     if (!b || !map) return;
     picked = b.dataset.v;
+    saveLayer();
     syncChrome();
     setMode(mode());
   });
@@ -388,10 +416,14 @@ export function initMap() {
     const b = e.target.closest("button");
     if (!b || !map) return;
     under = b.dataset.v === "under";
+    saveLayer();
     syncChrome();
     setMode(mode());
   });
-  $("mapLoading").addEventListener("click", (e) => { if (e.target.id === "mapRetry") ensureMap(); });
+  $("mapLoading").addEventListener("click", (e) => {
+    if (e.target.id !== "mapRetry") return;
+    if (map) setMode(shown); else ensureMap();
+  });
 
   const panel = $("mapPanel");
   panel.addEventListener("change", (e) => {

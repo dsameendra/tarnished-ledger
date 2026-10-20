@@ -32,6 +32,8 @@ Markers whose category, layer or projection is invalid are skipped silently.
 
 - Worlds follow `scope()` from `js/lib/model.js`: base scope shows only the Lands Between, dlc scope only the Realm of Shadow, both shows a switch. Inside the Lands Between a Surface and Underground switch swaps the image.
 - Filters: master switch, presets, per-category checkboxes with live counts for the current layer, Hide found, Route phases. Saved under `tarnished-ledger:map-filter`. Found markers are saved under `tarnished-ledger:map-found` (one array of ids, not synced). The last view per layer is saved under `tarnished-ledger:map-view`.
+- The chosen world and Surface or Underground layer are saved with the filters. If a layer image fails to load, the stage shows a message with a retry button and the rest of the map keeps working; if the data or Leaflet fail to load, the same panel offers a full retry.
+- Touch devices get a custom double-tap zoom; mouse double-click is Leaflet's.
 - Taps use generous hit tolerance (larger on coarse pointers). Search ignores filters and shows the match even when its category is off.
 - Route steps can open the map with `emit("locate", stepId)` (from `js/lib/dom.js`). The map handles it by selecting the step's first in-scope location. The Show step buttons in the marker sheet do the reverse with `emit("jump", stepId)`.
 - Reduced motion turns off inertia and fly-to animation. Keyboard: focus the map, arrows pan, plus and minus zoom. Markers on the canvas are not individually focusable; search is the keyboard route to a marker.
