@@ -1,0 +1,53 @@
+// Trophy list. Fields: [key, name, description, grade] with grade p/g/s/b.
+export const TROPHIES=[
+["platinum","Elden Ring","Obtained all trophies","p"],
+["eldenlord","Elden Lord","Achieved the Elden Lord ending","g"],
+["stars","Age of the Stars","Achieved the Age of the Stars ending","g"],
+["frenzy","Lord of Frenzied Flame","Achieved the Lord of Frenzied Flame ending","g"],
+["godrick","Shardbearer Godrick","Defeated Godrick the Grafted","s"],
+["radahn","Shardbearer Radahn","Defeated Starscourge Radahn","s"],
+["morgott","Shardbearer Morgott","Defeated Morgott, the Omen King","s"],
+["rykard","Shardbearer Rykard","Defeated Rykard, Lord of Blasphemy","s"],
+["malenia","Shardbearer Malenia","Defeated Malenia, Blade of Miquella","s"],
+["mohg","Shardbearer Mohg","Defeated Mohg, Lord of Blood","s"],
+["maliketh","Maliketh the Black Blade","Defeated Maliketh","s"],
+["hoarah","Hoarah Loux, Warrior","Defeated Godfrey / Hoarah Loux","s"],
+["placidusax","Dragonlord Placidusax","Defeated Dragonlord Placidusax","s"],
+["godslaying","God-Slaying Armament","Upgraded any armament to its highest stage","s"],
+["armaments","Legendary Armaments","Acquired all 9 legendary armaments","s"],
+["ashes","Legendary Ashen Remains","Acquired all 6 legendary ashen remains","s"],
+["spells","Legendary Sorceries and Incantations","Acquired all 7 legendary spells","s"],
+["talismans","Legendary Talismans","Acquired all 8 legendary talismans","s"],
+["rennala","Rennala, Queen of the Full Moon","Defeated Rennala","b"],
+["fortissax","Lichdragon Fortissax","Defeated Lichdragon Fortissax","b"],
+["gduo","Godskin Duo","Defeated the Godskin Duo","b"],
+["firegiant","Fire Giant","Defeated the Fire Giant","b"],
+["dragonkin","Dragonkin Soldier of Nokstella","Defeated the Dragonkin Soldier","b"],
+["regal","Regal Ancestor Spirit","Defeated the Regal Ancestor Spirit","b"],
+["gargoyle","Valiant Gargoyle","Defeated the Valiant Gargoyles","b"],
+["margit","Margit, the Fell Omen","Defeated Margit","b"],
+["redwolf","Red Wolf of Radagon","Defeated the Red Wolf of Radagon","b"],
+["gnoble","Godskin Noble","Defeated the Godskin Noble","b"],
+["makar","Magma Wyrm Makar","Defeated Magma Wyrm Makar","b"],
+["godfrey","Godfrey, First Elden Lord","Defeated Godfrey's golden shade","b"],
+["mohgomen","Mohg, the Omen","Defeated Mohg, the Omen","b"],
+["mimic","Mimic Tear","Defeated the Mimic Tear","b"],
+["hloretta","Loretta, Knight of the Haligtree","Defeated Loretta in the Haligtree","b"],
+["astel","Astel, Naturalborn of the Void","Defeated Astel","b"],
+["leonine","Leonine Misbegotten","Defeated the Leonine Misbegotten","b"],
+["rloretta","Royal Knight Loretta","Defeated Royal Knight Loretta","b"],
+["elemer","Elemer of the Briar","Defeated Elemer of the Briar","b"],
+["ancestor","Ancestor Spirit","Defeated the Ancestor Spirit","b"],
+["niall","Commander Niall","Defeated Commander Niall","b"],
+["roundtable","Roundtable Hold","Arrived at Roundtable Hold","b"],
+["greatrune","Great Rune","Restored the power of a Great Rune","b"],
+["erdtree","Erdtree Aflame","Used kindling to set the Erdtree aflame","b"]
+];
+
+// Legendary collections keyed by trophy key. Each item: [id, name].
+export const COLLECTIONS={
+armaments:["Legendary Armaments",[["arm1","Grafted Blade Greatsword"],["arm2","Sword of Night and Flame"],["arm3","Ruins Greatsword"],["arm4","Marais Executioner's Sword"],["arm5","Bolt of Gransax"],["arm6","Eclipse Shotel"],["arm7","Golden Order Greatsword"],["arm8","Devourer's Scepter"],["arm9","Dark Moon Greatsword"]]],
+ashes:["Legendary Ashen Remains",[["ash1","Lhutel the Headless"],["ash2","Redmane Knight Ogha"],["ash3","Mimic Tear Ashes"],["ash4","Ancient Dragon Knight Kristoff"],["ash5","Black Knife Tiche"],["ash6","Cleanrot Knight Finlay"]]],
+spells:["Legendary Sorceries & Incantations",[["sp1","Flame of the Fell God"],["sp2","Greyoll's Roar"],["sp3","Comet Azur"],["sp4","Stars of Ruin"],["sp5","Elden Stars"],["sp6","Ranni's Dark Moon"],["sp7","Founding Rain of Stars"]]],
+talismans:["Legendary Talismans",[["tal1","Radagon Icon"],["tal2","Radagon's Soreseal"],["tal3","Godfrey Icon"],["tal4","Moon of Nokstella"],["tal5","Marika's Soreseal"],["tal6","Dragoncrest Greatshield Talisman"],["tal7","Old Lord's Talisman"],["tal8","Erdtree's Favor +2"]]]
+};

@@ -1,0 +1,8 @@
+// Schematic map data. Positions are in a 320x290 sketch space and are not to scale.
+// Region ellipses: [name, cx, cy, rx, ry]
+export const REGIONS=[["Limgrave",150,215,45,30],["Weeping Peninsula",165,270,26,18],["Liurnia",80,145,48,44],["Caelid",245,220,45,30],["Dragonbarrow",255,168,32,17],["Altus Plateau",145,122,40,26],["Mt. Gelmir",100,80,32,17],["Mountaintops",240,85,48,28],["Snowfield",190,46,32,14],["Haligtree",178,15,24,9],["Farum Azula",288,30,24,12],["Leyndell",178,100,15,11]];
+export const UNDERGROUND=[["Siofra / Nokron",150,246,32,10],["Ainsel / Rot",76,206,30,10],["Deeproot",128,160,24,9],["Mohgwyn",118,35,24,9],["Shunning Grounds",205,114,18,7]];
+// One pin per phase id.
+export const PINS={limw:[133,215],storm:[118,196],lime:[172,222],weep:[166,267],liu1:[96,172],acad:[72,140],liu2:[56,112],cael:[238,214],nok:[150,246],alt:[140,128],gel:[100,80],sel:[272,165],ley:[176,100],ran2:[108,150],ain:[78,206],deep:[128,160],moon:[42,188],mtn:[240,86],snow:[192,46],mohg:[118,35],hal:[178,15],far:[288,30],ash1:[206,114],fin:[166,88],endg:[188,88]};
+// Wiki search term for each phase id.
+export const AREAS={limw:"Limgrave",storm:"Stormveil Castle",lime:"Limgrave",weep:"Weeping Peninsula",liu1:"Liurnia of the Lakes",acad:"Academy of Raya Lucaria",liu2:"Caria Manor",cael:"Caelid",nok:"Nokron Eternal City",alt:"Altus Plateau",gel:"Volcano Manor",sel:"Sorceress Sellen",ley:"Leyndell Royal Capital",ran2:"Ranni the Witch",ain:"Ainsel River",deep:"Deeproot Depths",moon:"Moonlight Altar",mtn:"Mountaintops of the Giants",snow:"Consecrated Snowfield",mohg:"Mohgwyn Palace",hal:"Elphael Brace of the Haligtree",far:"Crumbling Farum Azula",ash1:"Subterranean Shunning-Grounds",fin:"Leyndell Ashen Capital",endg:"Endings"};
