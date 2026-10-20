@@ -6,6 +6,8 @@ import { PHASES } from "../js/data/route.js";
 import { DLC_PHASES } from "../js/data/dlc-route.js";
 import { GOALS, COUNTERS } from "../js/data/dlc-goals.js";
 import { TROPHIES, COLLECTIONS } from "../js/data/trophies.js";
+import { CATS } from "../js/data/map-categories.js";
+import { STEP_LOCS, PHASE_FOCUS, TROPHY_LOCS, COLLECT_LOCS, GOAL_LOCS } from "../js/data/map-guide.js";
 import { PINS, DLC_PINS, DLC_EDGES, DLC_AREAS, AREAS } from "../js/data/map.js";
 import { COUNTER_MAX } from "../js/lib/store.js";
 
@@ -79,7 +81,9 @@ const walk = (dir) => readdirSync(join(root, dir)).flatMap((n) => {
   const rel = join(dir, n);
   return statSync(join(root, rel)).isDirectory() ? walk(rel) : [rel];
 });
-const shipped = ["js", "css", "assets"].flatMap(walk).filter((f) => !f.endsWith(".DS_Store"));
+// Map images and marker JSON are large, so they are cached on first use rather than at install.
+const lazy = (f) => f.startsWith("assets/map/");
+const shipped = ["js", "css", "assets"].flatMap(walk).filter((f) => !f.endsWith(".DS_Store") && !lazy(f));
 for (const f of [...shipped, "manifest.webmanifest"]) if (!shellSet.has(f)) err(`${f} ships but is not in the sw.js SHELL`);
 if (!/const CACHE = PREFIX \+ "v\d+"/.test(swSrc)) err('sw.js CACHE must be PREFIX + "v<number>"');
 
@@ -116,5 +120,30 @@ for (const ic of man.icons || []) {
 const themeMeta = /<meta name="theme-color" content="(#[0-9a-fA-F]+)"/.exec(html)?.[1];
 if (themeMeta && man.theme_color && themeMeta.toLowerCase() !== man.theme_color.toLowerCase()) err(`index.html theme-color ${themeMeta} != manifest ${man.theme_color}`);
 
+
+// Map markers and the guide links. Dangling ids fail; unresolved items are only warned about.
+const warnings = [];
+const markerIds = new Set();
+const catIds = new Set(CATS.map((k) => k.id));
+for (const layer of ["base", "under", "dlc"]) {
+  for (const r of JSON.parse(readFileSync(new URL(`../assets/map/data/${layer}.json`, import.meta.url), "utf8"))) {
+    if (markerIds.has(r[0])) err(`duplicate marker id ${r[0]}`);
+    markerIds.add(r[0]);
+    if (!catIds.has(r[1])) err(`marker ${r[0]}: unknown category ${r[1]}`);
+  }
+}
+const stepIds = new Set([...PHASES, ...DLC_PHASES].flatMap((p) => p.s.map((_, i) => `${p.id}.${i}`)));
+const chk = (what, ids) => { for (const id of ids) if (!markerIds.has(id)) err(`${what}: location ${id} is not in the marker data`); };
+for (const [k, v] of Object.entries(STEP_LOCS)) { if (!stepIds.has(k)) err(`STEP_LOCS: unknown step ${k}`); chk(`STEP_LOCS ${k}`, v); }
+for (const [k, v] of Object.entries(PHASE_FOCUS)) { if (!seenPhase.has(k)) err(`PHASE_FOCUS: unknown phase ${k}`); chk(`PHASE_FOCUS ${k}`, [v]); }
+for (const [k, v] of Object.entries(TROPHY_LOCS)) { if (!trophyKeys.has(k)) err(`TROPHY_LOCS: unknown trophy ${k}`); chk(`TROPHY_LOCS ${k}`, v); }
+for (const [k, v] of Object.entries(COLLECT_LOCS)) { if (!collectibles.has(k)) err(`COLLECT_LOCS: unknown collectible ${k}`); chk(`COLLECT_LOCS ${k}`, [v]); }
+for (const [k, v] of Object.entries(GOAL_LOCS)) { if (!goalKeys.has(k)) err(`GOAL_LOCS: unknown goal ${k}`); chk(`GOAL_LOCS ${k}`, v); }
+for (const id of seenPhase) if (!PHASE_FOCUS[id]) err(`phase ${id} has no PHASE_FOCUS`);
+for (const c of collectibles) if (!COLLECT_LOCS[c]) warnings.push(`collectible ${c} has no map location`);
+for (const k of trophyKeys) if (!TROPHY_LOCS[k]) warnings.push(`trophy ${k} has no map location`);
+for (const k of goalKeys) if (!GOAL_LOCS[k]) warnings.push(`goal ${k} has no map location`);
+if (warnings.length) console.warn("warnings (unresolved map links):\n  " + warnings.join("\n  "));
+
 if (errors.length) { console.error(errors.join("\n")); process.exit(1); }
-console.log(`ok: ${seenPhase.size} phases, ${trophyKeys.size} trophies, ${goalKeys.size} goals, ${shellSet.size} shell files`);
+console.log(`ok: ${seenPhase.size} phases, ${trophyKeys.size} trophies, ${goalKeys.size} goals, ${shellSet.size} shell files, ${markerIds.size} markers`);
