@@ -92,3 +92,9 @@ Found markers and the marker filter choices (show markers, selected categories, 
 ## Marker icons
 
 Every category has its own icon in `js/data/map-icons.js` (`[glyph, colour]`), and the shapes are original vector paths in `js/ui/map-glyphs.js`. Characters (person, merchant, ghost, trainer, invasion) share the person shape and differ by colour; everything else has its own shape, such as a padlock for imp seal statues, a bell for bell bearings, a castle for legacy dungeons or a heart for dragon hearts. A test checks that no two categories share the same glyph and colour. To add a shape, add a path to `D` in `map-glyphs.js` and point a category at it.
+
+## Wording, route links and progress
+
+- **Wording**: `js/data/map-verbs.js` picks the words by what a marker is: bosses and enemies say *Mark defeated / Defeated*, items, gear, materials and key items say *Mark picked up / Picked up*, graces and landmarks say *discovered*, dungeons and evergaols say *cleared*, imp seal statues say *opened*, characters say *met*, and puzzles and quests say *done*. Add an exception by category id in `BY_CAT`.
+- **Linked to the route**: a marker is done when you tick it on the map or when a route step that covers it is ticked. `STEP_LOCS` is the main table. Trophies, legendary items and DLC goals are linked through the step that completes them (`TROPHY_LOCS`, `COLLECT_LOCS`, `GOAL_LOCS`). Ticking a marker that is the only one a step covers (one boss, one item) also ticks that step, and unticking undoes it; steps that cover several markers are never ticked from the map.
+- **Progress section** under the map (closed by default, so the map fills the screen): counts and lists per category, "Essentials" (graces, bosses, route items) or every marker, with *Yet to defeat / pick up / discover* and the finished ones. Tapping an item flies to it. The same section has the route phase list on a second tab. `summarize()` in `js/ui/map-progress.js` is pure and unit tested.

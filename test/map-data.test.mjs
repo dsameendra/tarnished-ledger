@@ -94,3 +94,43 @@ test("every map category has its own icon: a known glyph and a unique glyph + co
   }
   for (const id of Object.keys(ICONS)) assert.ok(CATS.some((c) => String(c.id) === id), `icon for unknown category ${id}`);
 });
+
+test("map wording: every category has a verb, and bosses say defeated while items say picked up", async () => {
+  const { verbFor, VERBS } = await import("../js/data/map-verbs.js");
+  for (const c of CATS) assert.ok(Object.values(VERBS).includes(verbFor(c)), `${c.title} has no verb`);
+  const by = (t) => CATS.find((c) => c.title === t);
+  assert.equal(verbFor(by("Boss")).done, "Defeated");
+  assert.equal(verbFor(by("Great Boss")).done, "Defeated");
+  assert.equal(verbFor(by("Weapon")).done, "Picked up");
+  assert.equal(verbFor(by("Map Fragment")).done, "Picked up");
+  assert.equal(verbFor(by("Site of Grace")).done, "Discovered");
+  assert.equal(verbFor(by("Legacy Dungeon")).done, "Cleared");
+  assert.equal(verbFor(by("Merchant")).done, "Met");
+});
+
+test("progress: a marker counts as done from its own tick or from a covering route step", async () => {
+  const { markerDone, summarize, layersFor } = await import("../js/ui/map-progress.js");
+  const D = {
+    stepsOf: new Map([["2", ["a.1"]]]),
+    byLayer: { base: [{ id: "1", cat: "9", title: "B", layer: "base" }, { id: "2", cat: "9", title: "A", layer: "base" }, { id: "3", cat: "9", title: "C", layer: "base" }], under: [], dlc: [{ id: "4", cat: "9", title: "D", layer: "dlc" }] },
+  };
+  const found = new Set(["1"]), steps = new Set(["a.1"]);
+  const isDone = (m) => markerDone(D, m.id, (id) => found.has(id), (s) => steps.has(s));
+  assert.equal(isDone({ id: "1" }), true);
+  assert.equal(isDone({ id: "2" }), true);
+  assert.equal(isDone({ id: "3" }), false);
+  const s = summarize(D, isDone, layersFor("base"), ["9"]);
+  assert.equal(s.total, 3);
+  assert.equal(s.done, 2);
+  assert.deepEqual(s.cats.get("9").todo.map((m) => m.title), ["C"]);
+  assert.equal(summarize(D, isDone, layersFor("both"), ["9"]).total, 4);
+  assert.equal(summarize(D, isDone, layersFor("dlc"), ["9"]).total, 1);
+});
+
+test("map links: trophies, legendaries and goals also cover their markers through their route step", async () => {
+  const { byTrophy, byCollectible, byGoal } = await import("../js/lib/model.js");
+  const { TROPHY_LOCS, COLLECT_LOCS, GOAL_LOCS, STEP_LOCS } = await import("../js/data/map-guide.js");
+  for (const [k, locs] of Object.entries(TROPHY_LOCS)) if (byTrophy[k] && locs.length === 1) assert.ok((STEP_LOCS[byTrophy[k].id] || []).map(String).includes(String(locs[0])), `trophy ${k}`);
+  for (const [k, loc] of Object.entries(COLLECT_LOCS)) assert.ok((STEP_LOCS[byCollectible[k].id] || []).map(String).includes(String(loc)), `collectible ${k}`);
+  for (const [k, locs] of Object.entries(GOAL_LOCS)) for (const l of locs) assert.ok((STEP_LOCS[byGoal[k].id] || []).map(String).includes(String(l)), `goal ${k}`);
+});

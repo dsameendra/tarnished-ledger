@@ -46,3 +46,7 @@ Trailing empty fields are omitted, so a row has 7, 8 or 9 entries.
 3. `npm run check && npm test`
 
 The build fails if a virtual location id no longer has the expected title, so a changed upstream id cannot ship the wrong pin. Add new files to `SHELL` in `sw.js` and bump the cache name on release.
+
+## Credit
+
+The map images come from the maps shared by Eziolambo on Reddit: [Lands Between and underground](https://www.reddit.com/r/Eldenring/comments/tyn3f8/elden_ring_map_1623_mb_and_underground_920_kb/) and [Shadow of the Erdtree](https://www.reddit.com/r/Eldenring/comments/1dthvpe/high_quality_elden_ring_sote_dlc_map_all_grace/). Keep this credit visible in the Map tab, Settings, About and the README.

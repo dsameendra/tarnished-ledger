@@ -71,7 +71,7 @@
       <ul>
         <li><b>Ticking:</b> tap a step to mark it done. Ticks save instantly on this device, and finishing a step ticks its trophies for you.</li>
         <li><b>Expansion:</b> Settings has a switch for Shadow of the Erdtree, which adds its own route and goals.</li>
-        <li><b>Sync:</b> Settings can link a private GitHub gist so your phone and computer share ticks, counters and found map markers.</li>
+        <li><b>Sync:</b> Settings can link a private GitHub gist so your phone and computer share ticks, counters and map progress.</li>
       </ul>
       <div class="acts"><button type="button" class="btn primary" id="welcomeOk">Got it</button><button type="button" class="btn" id="welcomeSet">Open settings</button></div>
     </aside>
@@ -111,7 +111,7 @@
 
     <section id="v-map" hidden>
       <h2 class="view-h">Map</h2>
-      <p class="note" id="mapNote">Drag to pan, pinch or scroll to zoom. Numbered pins are route phases. Tap a marker for details.</p>
+      <p class="note" id="mapNote">Drag to pan, pinch or scroll to zoom. Numbered pins are route phases. Tap a marker for details and to tick it off.</p>
       <div class="mapcard" id="mapCard">
         <div class="maptools">
           <button type="button" class="btn mapexit" id="mapExit" hidden aria-label="Restore the map to its normal size"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg> Restore</button>
@@ -142,8 +142,19 @@
         </div>
         <div class="maplegend"><span><i style="background:var(--ok)"></i>Phase done</span><span><i style="background:var(--accent)"></i>You are here</span><span><i style="background:var(--raised);border:2px solid var(--muted);width:11px;height:11px;box-sizing:border-box"></i>Phase ahead</span></div>
       </div>
-      <ul class="phaselist" id="phaseList"></ul>
+      <section class="mapbelow" id="mapBelow" aria-label="Map progress and route phases">
+        <button type="button" class="mapbelow-h" id="mapBelowBtn" aria-expanded="false" aria-controls="mapBelowBody">
+          <span class="mb-t"><b>Map progress</b><small id="mapBelowSum">Open to see what is done and what is left</small></span>
+          <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <div class="mapbelow-body" id="mapBelowBody" hidden>
+          <div class="seg" id="mapTabs" role="group" aria-label="Show"><button type="button" data-v="prog" aria-pressed="true">Done and to do</button><button type="button" data-v="phases" aria-pressed="false">Route phases</button></div>
+          <div id="mapProgress"></div>
+          <ul class="phaselist" id="phaseList" hidden></ul>
+        </div>
+      </section>
       <p class="note" id="mapLinks" style="margin-top:14px"></p>
+      <p class="note mapcredit" id="mapCredit">Map art by Eziolambo on Reddit: <a href="https://www.reddit.com/r/Eldenring/comments/tyn3f8/elden_ring_map_1623_mb_and_underground_920_kb/" target="_blank" rel="noopener">Lands Between and underground ↗</a> · <a href="https://www.reddit.com/r/Eldenring/comments/1dthvpe/high_quality_elden_ring_sote_dlc_map_all_grace/" target="_blank" rel="noopener">Shadow of the Erdtree ↗</a>. Marker positions are community data. The art belongs to its owners.</p>
     </section>
 
     <section id="v-guide" hidden>
@@ -184,7 +195,7 @@
         <h3>Sync between devices</h3>
         <div class="set stack">
           <span class="hint">Optional. Progress is stored in a private gist on your own GitHub account, so there is no server and nothing to sign up for. The token stays in this browser and you can revoke it on GitHub at any time.</span>
-          <span class="hint"><b>Synced:</b> ticks, blessing counters, found map markers, map filters, and your platform and Shadow of the Erdtree choices. <b>Stays on each device:</b> theme, text size and the other display settings.</span>
+          <span class="hint"><b>Synced:</b> ticks, blessing counters, map progress (what you have found, defeated or picked up), map filters, and your platform and Shadow of the Erdtree choices. <b>Stays on each device:</b> theme, text size and the other display settings.</span>
           <div class="sync-state" id="syncState" role="status"><i></i><span>Not connected</span></div>
           <div id="connectRow">
             <ol class="steps-help">
@@ -234,7 +245,7 @@
 
       <div class="group danger-zone">
         <h3>Reset</h3>
-        <div class="set stack"><span class="hint">Clears every tick, both blessing counters and your found map markers on this device. Appearance and other settings stay. If sync is on, the reset syncs to your other devices too, so download a backup first if you might want it back.</span>
+        <div class="set stack"><span class="hint">Clears every tick, both blessing counters and your map progress on this device. Appearance and other settings stay. If sync is on, the reset syncs to your other devices too, so download a backup first if you might want it back.</span>
           <div class="acts"><button type="button" class="btn danger" id="resetBtn">Reset progress…</button></div>
           <div class="callout" id="resetConfirm" hidden role="alertdialog" aria-labelledby="resetText">
             <p id="resetText" style="margin:0 0 8px"></p>
@@ -247,7 +258,7 @@
       <div class="group">
         <h3>About</h3>
         <div class="set stack">
-          <span class="hint">Tarnished's Ledger is an unofficial fan project. It is not affiliated with or endorsed by FromSoftware, Bandai Namco or Sony. Elden Ring and related names are trademarks of their owners. Icons, medals and the marker glyphs are original drawings. The Map tab shows in-game map art, copyrighted by its owners, with marker data from MapGenie's public data, used in an unofficial fan project.</span>
+          <span class="hint">Tarnished's Ledger is an unofficial fan project. It is not affiliated with or endorsed by FromSoftware, Bandai Namco or Sony. Elden Ring and related names are trademarks of their owners. Icons, medals and the marker glyphs are original drawings. The Map tab shows in-game map art, copyrighted by its owners, with marker data from MapGenie's public data, used in an unofficial fan project. The map images come from the shared maps by Eziolambo on Reddit: <a href="https://www.reddit.com/r/Eldenring/comments/tyn3f8/elden_ring_map_1623_mb_and_underground_920_kb/" target="_blank" rel="noopener">Lands Between and underground ↗</a> and <a href="https://www.reddit.com/r/Eldenring/comments/1dthvpe/high_quality_elden_ring_sote_dlc_map_all_grace/" target="_blank" rel="noopener">Shadow of the Erdtree ↗</a>.</span>
           <span class="lbl">Sources</span>
           <ul class="srcs" id="sources"></ul>
           <span class="hint"><a href="https://github.com/dsameendra/tarnished-ledger" target="_blank" rel="noopener">Source code on GitHub</a></span>

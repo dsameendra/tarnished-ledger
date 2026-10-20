@@ -8,6 +8,8 @@ import { PLACES } from "../data/map-places.js";
 import { loadMapData } from "./map-data.js";
 import { createMarkerCanvas } from "./map-canvas.js";
 import { iconURL } from "./map-glyphs.js";
+import { verbFor } from "../data/map-verbs.js";
+import { summarize, progressHTML, layersFor, markerDone } from "./map-progress.js";
 import * as ms from "./map-state.js";
 import * as sync from "../lib/sync.js";
 
@@ -106,7 +108,7 @@ async function start() {
   placeLayer = L.layerGroup().addTo(map);
   pinLayer = L.layerGroup().addTo(map);
   map.createPane("route").style.zIndex = 450;
-  cv = createMarkerCanvas(L, map, { isFound: ms.isFound });
+  cv = createMarkerCanvas(L, map, { isFound: (id) => doneId(id) });
   enabled = new Set(ms.prefs().cats ?? essentials());
   buildPanel();
   wireMap();
@@ -115,19 +117,31 @@ async function start() {
   new ResizeObserver(() => { if (visible()) map.invalidateSize({ animate: false }); }).observe($("map"));
   if (/[?&]mapdebug\b/.test(location.search)) window.__tlMap = () => ({ map, cv, D, mode: shown, enabled, selected });
   setMode(mode());
+  scheduleBelow();
 }
+
+// A marker is done when you ticked it here or a route step that covers it is ticked.
+const doneId = (id) => markerDone(D, String(id), ms.isFound, store.isDone);
+const doneOf = (m) => doneId(m.id);
 
 // Default markers: graces, bosses and the route items. Everything else is one tap away.
 const essentials = () => D.cats.filter((c) => c.guide && (c.group === "route" || c.glyph === "grace" || c.group === "bosses")).map((c) => c.id);
 const guideCats = () => D.cats.filter((c) => c.guide).map((c) => c.id);
 
-// The stage follows the art's shape so there is no empty band, but never more than the screen allows.
+// With the progress section closed the map fills the screen below the toolbar. With it open the stage follows the
+// art's shape and never takes more than the screen, so the lists below stay reachable by scrolling.
 function sizeStage() {
   if (fs) { $("mapWrap").style.removeProperty("--mh"); return; }
   const [x0, y0, x1, y1] = CONTENT[shown];
   const w = $("map").clientWidth;
   if (!w) return;
-  const h = Math.max(340, Math.min(w * (y1 - y0) / (x1 - x0), innerHeight - 210, 900));
+  let h;
+  if (!ms.filter.below) {
+    const desk = mq("(min-width: 980px)");
+    const wr = $("mapWrap").getBoundingClientRect(), card = $("mapCard").getBoundingClientRect();
+    const top = desk ? wr.top + scrollY : wr.top - card.top;
+    h = Math.max(340, Math.min(innerHeight - top - (desk ? 0 : 68) - 62 - 28, 1400));
+  } else h = Math.max(340, Math.min(w * (y1 - y0) / (x1 - x0), innerHeight - 210, 900));
   $("mapWrap").style.setProperty("--mh", Math.round(h) + "px");
 }
 
@@ -207,10 +221,10 @@ function zoomState() {
 
 function refreshItems() {
   const f = ms.prefs();
-  const list = f.on ? D.byLayer[shown].filter((m) => enabled.has(m.cat) && !(f.hideFound && ms.isFound(m.id))) : [];
+  const list = f.on ? D.byLayer[shown].filter((m) => enabled.has(m.cat) && !(f.hideFound && doneOf(m))) : [];
   cv.setItems(list);
   const n = {};
-  for (const m of D.byLayer[shown]) if (!(f.hideFound && ms.isFound(m.id))) n[m.cat] = (n[m.cat] || 0) + 1;
+  for (const m of D.byLayer[shown]) if (!(f.hideFound && doneOf(m))) n[m.cat] = (n[m.cat] || 0) + 1;
   $("mapPanel").querySelectorAll("[data-n]").forEach((e) => { e.textContent = n[e.dataset.n] || 0; });
   $("mapFilterCount").textContent = f.on ? `· ${list.length}` : "· off";
 }
@@ -230,7 +244,7 @@ function buildPanel() {
     <div class="mp-h"><b>Markers</b><button type="button" class="mp-x" data-close aria-label="Close marker filters">&times;</button></div>
     <label class="mp-row mp-sw"><input type="checkbox" data-f="on"><span>Show markers</span></label>
     <div class="seg" role="group" aria-label="Marker presets"><button type="button" data-preset="essentials">Essentials</button><button type="button" data-preset="guide">Guide</button><button type="button" data-preset="all">Everything</button><button type="button" data-preset="none">None</button></div>
-    <label class="mp-row"><input type="checkbox" data-f="hideFound"><span>Hide found</span></label>
+    <label class="mp-row"><input type="checkbox" data-f="hideFound"><span>Hide completed</span></label>
     <label class="mp-row"><input type="checkbox" data-f="route"><span>Route phases</span></label>
     ${D.groups.map((g) => `<details data-g="${esc(g.id)}" ${ms.filter.collapsed[g.id] ? "" : "open"}><summary>${esc(g.title)}</summary>${rows(g)}</details>`).join("")}
     <p class="note" id="mapSaveNote"></p>`;
@@ -243,8 +257,8 @@ function paintSaveNote() {
   const n = $("mapSaveNote");
   if (!n) return;
   n.innerHTML = sync.isConnected()
-    ? "Found markers and these filters sync with your other devices."
-    : 'Found markers and filters are saved on this device. <button type="button" class="linklike" data-goto-settings>Turn on sync</button> to see them on your other devices.';
+    ? "Your map progress and these filters sync with your other devices."
+    : 'Your map progress and filters are saved on this device. <button type="button" class="linklike" data-goto-settings>Turn on sync</button> to see them on your other devices.';
 }
 
 // Called when another device changed the filters, or markers were found or cleared elsewhere.
@@ -258,8 +272,10 @@ function applyPrefs() {
 
 function refreshFound() {
   if (!map || !D) return;
-  if (ms.prefs().hideFound) refreshItems(); else { refreshItems(); cv.redraw(); }
-  if (selected?.m) { const m = selected.m; const box = $("mapSheet").querySelector("[data-found]"); if (box) box.checked = ms.isFound(m.id); }
+  refreshItems();
+  cv.redraw();
+  if (selected?.m) showSheet({ m: selected.m }, true);
+  scheduleBelow();
 }
 
 function syncPanel() {
@@ -461,7 +477,7 @@ function closeSheet() {
   if (map) refreshPins();
 }
 
-function showSheet(sel) {
+function showSheet(sel, keep = false) {
   selected = sel;
   const box = $("mapSheet");
   if (sel.phase) {
@@ -473,19 +489,120 @@ function showSheet(sel) {
       <div class="ms-act"><button type="button" class="btn primary" data-open="${p.id}">Open in route</button></div>`;
     if (cv) cv.setSelected(null);
   } else {
-    const m = sel.m, c = D.catById.get(m.cat);
+    const m = sel.m, c = D.catById.get(m.cat), v = verbFor(c);
     const grp = D.groups.find((g) => g.id === c.group);
     const steps = (D.stepsOf.get(m.id) || []).map((id) => stepById.get(id)).filter(Boolean).slice(0, 4);
+    const via = steps.find((s) => store.isDone(s.id));
+    const done = doneOf(m);
     const where = LAYER_NAME[m.layer] + (m.sub && m.sub !== "_" ? ` · ${m.sub[0].toUpperCase()}${m.sub.slice(1)}` : "");
     box.innerHTML = `<button type="button" class="ms-x" data-close aria-label="Close details">&times;</button>
       <div class="ms-h"><img src="${iconURL(m.glyph, m.color, 28)}" alt="" width="34" height="34"><div><b>${esc(m.title)}</b><small>${esc(c.title)}${grp ? " · " + esc(grp.title) : ""} · ${esc(where)}</small></div></div>
       ${m.note ? `<p>${esc(m.note)}</p>` : ""}
-      <label class="mp-row"><input type="checkbox" data-found="${esc(m.id)}" ${ms.isFound(m.id) ? "checked" : ""}><span>Mark found</span></label>
+      <label class="mp-row ms-tick"><input type="checkbox" data-done="${esc(m.id)}" ${done ? "checked" : ""}><span>${done ? esc(v.done) : esc(v.mark)}</span></label>
+      ${via && !ms.isFound(m.id) ? `<p class="ms-note">Counted because the route step is ticked.</p>` : ""}
       <div class="ms-act"><a class="btn" href="${wikiUrl(m.title)}" target="_blank" rel="noopener">Wiki ↗</a>${steps.map((s) => `<button type="button" class="btn" data-step="${s.id}">Show step ${phaseLabel(s.pi)}: ${esc(s.text.length > 36 ? s.text.slice(0, 35) + "…" : s.text)}</button>`).join("")}</div>`;
     if (cv) cv.setSelected(m);
   }
   box.hidden = false;
   if (map) refreshPins();
+}
+
+// Ticking a marker also ticks a route step that covers only that marker (one boss, one item), and the
+// other way round, so the map and the checklist never disagree. Steps that cover several markers stay as they are.
+function setMarkerDone(m, on) {
+  ms.setFound(m.id, on);
+  for (const id of D.stepsOf.get(m.id) || []) {
+    const s = stepById.get(id);
+    if (s && s.kind !== "tip" && D.stepLocs[id]?.length === 1 && store.isDone(id) !== on) store.setDone(id, on);
+  }
+}
+
+// ---- progress section below the map ----
+
+const pg = { scope: ms.filter.pgScope, open: new Set(), limit: new Map(), closedGroups: new Set(ms.filter.pgClosed) };
+let belowRaf = 0;
+
+function scheduleBelow() {
+  if (belowRaf) return;
+  belowRaf = requestAnimationFrame(() => { belowRaf = 0; renderBelow(); });
+}
+
+function renderBelow() {
+  if (!D) return;
+  const layers = layersFor(scope());
+  const ess = summarize(D, doneOf, layers, essentials());
+  $("mapBelowSum").textContent = `${ess.done} of ${ess.total} essentials done`;
+  if ($("mapBelowBody").hidden || ms.filter.tab !== "prog") return;
+  const sum = pg.scope === "essentials" ? ess : summarize(D, doneOf, layers, D.cats.map((c) => c.id));
+  const keep = document.activeElement?.closest?.("#mapProgress") ? ["pgCat", "pgPick", "pgMore", "pgScope"].map((k) => [k, document.activeElement.dataset[k]]).find(([, v]) => v !== undefined) : null;
+  $("mapProgress").innerHTML = progressHTML(D, sum, pg);
+  if (keep) {
+    const attr = { pgCat: "data-pg-cat", pgPick: "data-pg-pick", pgMore: "data-pg-more", pgScope: "data-pg-scope" }[keep[0]];
+    $("mapProgress").querySelector(`[${attr}="${CSS.escape(keep[1])}"]`)?.focus({ preventScroll: true });
+  }
+}
+
+function paintBelow() {
+  const open = ms.filter.below, tab = ms.filter.tab;
+  $("mapBelowBody").hidden = !open;
+  $("mapBelowBtn").setAttribute("aria-expanded", String(open));
+  $("mapBelow").classList.toggle("open", open);
+  [...$("mapTabs").children].forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.v === tab)));
+  $("mapProgress").hidden = tab !== "prog";
+  $("phaseList").hidden = tab !== "phases";
+}
+
+function setBelow(open) {
+  ms.filter.below = open;
+  ms.saveFilter();
+  paintBelow();
+  if (map) {
+    const c = map.getCenter(), z = map.getZoom() - fitZ;
+    sizeStage();
+    requestAnimationFrame(() => {
+      map.invalidateSize({ animate: false });
+      limits();
+      map.setView(c, Math.max(map.getMinZoom(), Math.min(map.getMaxZoom(), fitZ + z)), { animate: false });
+      zoomState();
+    });
+  }
+  renderBelow();
+}
+
+function wireBelow() {
+  $("mapBelowBtn").addEventListener("click", () => setBelow(!ms.filter.below));
+  $("mapTabs").addEventListener("click", (e) => {
+    const b = e.target.closest("button");
+    if (!b) return;
+    ms.filter.tab = b.dataset.v;
+    ms.saveFilter();
+    paintBelow();
+    renderBelow();
+  });
+  const box = $("mapProgress");
+  box.addEventListener("click", async (e) => {
+    const b = e.target.closest("button");
+    if (!b) return;
+    if (b.dataset.pgScope) { pg.scope = b.dataset.pgScope; ms.filter.pgScope = pg.scope; ms.saveFilter(); renderBelow(); }
+    else if (b.dataset.pgCat) { const id = b.dataset.pgCat; if (pg.open.has(id)) pg.open.delete(id); else pg.open.add(id); renderBelow(); }
+    else if (b.dataset.pgMore) { pg.limit.set(b.dataset.pgMore, (pg.limit.get(b.dataset.pgMore) || 20) + 40); renderBelow(); }
+    else if (b.dataset.pgPick) {
+      await ensureMap();
+      const m = D?.byId.get(b.dataset.pgPick);
+      if (!m) return;
+      if (!fs) $("mapCard").scrollIntoView({ block: "start", behavior: mq("(prefers-reduced-motion: reduce)") ? "auto" : "smooth" });
+      goTo(m);
+      selectMarker(m);
+    }
+  });
+  box.addEventListener("toggle", (e) => {
+    const g = e.target.dataset?.pgG;
+    if (!g) return;
+    if (e.target.open) pg.closedGroups.delete(g); else pg.closedGroups.add(g);
+    ms.filter.pgClosed = [...pg.closedGroups];
+    ms.saveFilter();
+  }, true);
+  paintBelow();
 }
 
 // ---- navigation ----
@@ -556,11 +673,12 @@ function renderPhaseList() {
 export function renderMap() {
   syncChrome();
   renderPhaseList();
+  scheduleBelow();
   if (!D || !map) return;
   if (!visible()) { dirty = true; return; }
   if (selected?.phase && Boolean(PHASES.find((p) => p.id === selected.phase)?.dlc) !== (world() === "dlc")) selected = null;
   if (mode() !== shown) setMode(mode());
-  else refreshPins();
+  else { refreshPins(); refreshItems(); cv.redraw(); if (selected?.m) showSheet({ m: selected.m }, true); }
 }
 
 function wireMap() {
@@ -620,6 +738,7 @@ export function initMap() {
     else if (b.dataset.z === "fit") fitAll(); else map.setZoom(map.getZoom() + (b.dataset.z === "in" ? 1 : -1));
   });
   $("mapHere").addEventListener("click", findMe);
+  wireBelow();
   $("mapGo").addEventListener("change", (e) => { goPlace(e.target.value); e.target.value = ""; });
   wireFs();
   $("mapFilterBtn").addEventListener("click", () => ensureMap().then(() => { if (D) setPanel($("mapPanel").hidden); }));
@@ -690,9 +809,9 @@ export function initMap() {
     if (b.dataset.step) emit("jump", b.dataset.step);
   });
   sheet.addEventListener("change", (e) => {
-    if (!e.target.dataset.found) return;
-    ms.setFound(e.target.dataset.found, e.target.checked);
-    if (ms.prefs().hideFound) refreshItems(); else cv.redraw();
+    const id = e.target.dataset.done;
+    const m = id && D.byId.get(id);
+    if (m) setMarkerDone(m, e.target.checked);
   });
 
   const input = $("mapSearch");
@@ -730,7 +849,10 @@ export function initMap() {
       if (!map) return;
       map.invalidateSize({ animate: false });
       if (mode() !== shown) setMode(mode());
-      else { refreshPins(); zoomState(); }
+      else { refreshPins(); refreshItems(); cv.redraw(); zoomState(); }
+      sizeStage();
+      map.invalidateSize({ animate: false });
+      scheduleBelow();
       dirty = false;
     });
   };

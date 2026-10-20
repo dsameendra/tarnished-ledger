@@ -23,7 +23,7 @@ export function applyTheme() {
   r.dataset.accent = store.setting("accent");
   r.dataset.size = store.setting("size");
   const dark = mode === "dark" || (mode === "system" && matchMedia("(prefers-color-scheme: dark)").matches);
-  const color = dark ? "#13120d" : "#f4efe1";
+  const color = getComputedStyle(r).getPropertyValue("--bg").trim() || (dark ? "#13120d" : "#ece8de");
   $$('meta[name="theme-color"]').forEach((m) => { m.content = color; });
 }
 

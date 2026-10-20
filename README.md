@@ -31,7 +31,7 @@ Shadow of the Erdtree can be switched on in Settings. The DLC has no trophies, s
 - **Legendary items** tracker: armaments, ashen remains, spells and talismans.
 - **Shadow of the Erdtree** (optional): 12 DLC phases, 15 completion goals, and Scadutree Fragment and Revered Spirit Ash counters with blessing levels. A "DLC only" mode hides the base game.
 - **Guide tab**: easy-to-miss content, Stonesword Key uses, upgrade costs, the endings and how to back up your save on each platform.
-- **Interactive map** of the Lands Between, underground regions and the Realm of Shadow: pan, pinch and zoom, layers, marker filters, search, place names, an overview map and a full screen view.
+- **Interactive map** of the Lands Between, underground regions and the Realm of Shadow: pan, pinch and zoom, layers, marker filters, search, place names, an overview map and a maximized view. Ticking a boss or item in the route ticks it on the map too, and a progress section lists what is done and what is left.
 - **Sync between devices** through a private GitHub gist (optional), plus file and code backups.
 - **Works offline** and installs as an app on iPhone, Android and desktop. Can keep the screen awake while you play.
 - **Themes**: system, light and dark, four accents, three text sizes, compact rows.
@@ -96,7 +96,7 @@ Corrections to the route are very welcome. Open an issue with the step, what is 
 
 ## Credits
 
-The base-game route follows the community [Elden Ring 100% Achievement Guide by ponkberry](https://steamcommunity.com/sharedfiles/filedetails/?id=2785187510) on Steam. Shadow of the Erdtree facts were checked against the Elden Ring wiki. Icons, trophy medals and the map marker glyphs are original drawings. The Map tab uses map images made from in-game map screenshots and marker data from MapGenie's public data (see `docs/MAP-DATA.md`); that artwork belongs to its owners and is used here in an unofficial fan project.
+The base-game route follows the community [Elden Ring 100% Achievement Guide by ponkberry](https://steamcommunity.com/sharedfiles/filedetails/?id=2785187510) on Steam. Shadow of the Erdtree facts were checked against the Elden Ring wiki. Icons, trophy medals and the map marker glyphs are original drawings. The Map tab uses map images made from in-game map screenshots and marker data from MapGenie's public data (see `docs/MAP-DATA.md`); that artwork belongs to its owners and is used here in an unofficial fan project. The map images are the shared maps by Eziolambo on Reddit ([Lands Between and underground](https://www.reddit.com/r/Eldenring/comments/tyn3f8/elden_ring_map_1623_mb_and_underground_920_kb/), [Shadow of the Erdtree](https://www.reddit.com/r/Eldenring/comments/1dthvpe/high_quality_elden_ring_sote_dlc_map_all_grace/)).
 
 ## Disclaimer
 
