@@ -15,7 +15,7 @@ Installable, offline-ready, no account, no build step.
 </div>
 
 <p align="center">
-  <img src="docs/screenshots/route-desktop-dark.webp" width="760" alt="The route tab on desktop in the dark theme">
+  <img src="docs/screenshots/route-desktop-dark.webp" width="760" alt="The route tab on desktop in the dark theme, with a half-ticked phase open">
 </p>
 
 ## What it is
@@ -46,7 +46,7 @@ Shadow of the Erdtree can be switched on in Settings. The DLC has no trophies, s
     <td width="50%"><img src="docs/screenshots/goals-phone-light.webp" alt="Shadow of the Erdtree goals and blessing counters on a phone, light theme"></td>
   </tr>
   <tr>
-    <td align="center"><sub>Route: pick up where you left off</sub></td>
+    <td align="center"><sub>Route: finished, half-done and untouched phases at a glance</sub></td>
     <td align="center"><sub>Shadow of the Erdtree goals and counters</sub></td>
   </tr>
 </table>
