@@ -81,8 +81,11 @@ const walk = (dir) => readdirSync(join(root, dir)).flatMap((n) => {
   const rel = join(dir, n);
   return statSync(join(root, rel)).isDirectory() ? walk(rel) : [rel];
 });
-// Map images and marker JSON are large, so they are cached on first use rather than at install.
-const lazy = (f) => f.startsWith("assets/map/");
+// Map tiles are cached as you view them; the map images and marker data are in MAP_PACK (fetched after install).
+const mapPack = JSON.parse("[" + /const MAP_PACK = \[([\s\S]*?)\];/.exec(swSrc)[1].replace(/,\s*$/, "") + "]");
+for (const f of mapPack) if (!existsSync(join(root, f))) err(`MAP_PACK lists missing file ${f}`);
+const lazy = (f) => f.startsWith("assets/map/tiles/") || mapPack.includes(f);
+for (const f of walk("assets/map")) if (!f.startsWith("assets/map/tiles/") && !f.endsWith(".DS_Store") && !mapPack.includes(f)) err(`${f} ships but is not in the sw.js MAP_PACK`);
 const shipped = ["js", "css", "assets", "vendor"].flatMap(walk).filter((f) => !f.endsWith(".DS_Store") && !f.endsWith("LICENSE") && !lazy(f));
 for (const f of [...shipped, "manifest.webmanifest"]) if (!shellSet.has(f)) err(`${f} ships but is not in the sw.js SHELL`);
 if (!/const CACHE = PREFIX \+ "v\d+"/.test(swSrc)) err('sw.js CACHE must be PREFIX + "v<number>"');

@@ -101,3 +101,7 @@ The base-game route follows the community [Elden Ring 100% Achievement Guide by 
 ## Disclaimer
 
 Unofficial fan project. It is not affiliated with or endorsed by FromSoftware, Bandai Namco or Sony. Elden Ring and related names, characters and artwork, including the in-game map art shown in the Map tab, are trademarks and copyrights of their owners.
+
+## License
+
+The code is [MIT licensed](LICENSE). The license does not cover third-party material: Elden Ring and Shadow of the Erdtree are the property of FromSoftware and Bandai Namco, the map images are by Eziolambo (see above), and the marker data comes from community sources. Those belong to their owners and are used here in an unofficial fan project.

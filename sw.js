@@ -2,7 +2,7 @@
 // calls to api.github.com (sync) are never intercepted or cached.
 // Keep SHELL in step with the files in the repo: `npm run check` fails when they drift apart.
 const PREFIX = "tarnished-ledger-";
-const CACHE = PREFIX + "v22";
+const CACHE = PREFIX + "v23";
 // Map tiles never change under the same name, so they live in their own cache that survives updates.
 const TILES = PREFIX + "tiles";
 const SHELL = [
@@ -13,12 +13,19 @@ const SHELL = [
   "vendor/leaflet/leaflet.js", "vendor/leaflet/leaflet.css", "js/ui/guide.js", "js/ui/settings.js",
   "assets/icons/icon-64.png", "assets/icons/icon-180.png", "assets/icons/icon-192.png", "assets/icons/icon-512.png", "assets/icons/icon-maskable-512.png",
 ];
+// The map pack (about 2.5 MB): images and marker data for every map. Fetched after the app itself is installed and
+// never blocks the install, so a failure only means the map is cached on first use instead. Tiles are cached as you view them.
+const MAP_PACK = [
+  "assets/map/surface.webp", "assets/map/underground.webp", "assets/map/dlc.webp", "assets/map/hub.svg",
+  "assets/map/data/base.json", "assets/map/data/under.json", "assets/map/data/dlc.json", "assets/map/data/hub.json",
+];
 const FONT_HOSTS = ["fonts.googleapis.com", "fonts.gstatic.com"];
 const NETWORK_WAIT_MS = 6000;
 
 self.addEventListener("install", (e) => {
   // "reload" skips the HTTP cache, so a new version never precaches files that are still cached from the old one.
-  e.waitUntil(caches.open(CACHE).then((c) => c.addAll(SHELL.map((u) => new Request(u, { cache: "reload" })))));
+  e.waitUntil(caches.open(CACHE).then((c) => c.addAll(SHELL.map((u) => new Request(u, { cache: "reload" })))
+    .then(() => Promise.allSettled(MAP_PACK.map((u) => c.add(new Request(u, { cache: "reload" })))))));
   self.skipWaiting();
 });
 self.addEventListener("activate", (e) => {

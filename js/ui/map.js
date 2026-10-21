@@ -19,7 +19,7 @@ import * as sync from "../lib/sync.js";
 
 const LAYER_NAME = { base: "Lands Between", under: "Underground", dlc: "Realm of Shadow", hub: "Roundtable Hold" };
 // Non-black region of each image [x0, y0, x1, y1] in image pixels, measured from the art, and the underground sub-maps.
-const CONTENT = { base: [20, 8, 1872, 1952], under: [40, 32, 1964, 1916], dlc: [20, 16, 1856, 1932], hub: [0, 0, 1602, 1252] };
+const CONTENT = { base: [20, 8, 1872, 1952], under: [40, 32, 1964, 1916], dlc: [20, 16, 1856, 1932], hub: [-90, -70, 1692, 1322] };
 const SUBS = { ainsel: [36, 705, 716, 1936], siofra: [1118, 566, 1967, 1148], deeproot: [726, 57, 1252, 577] };
 const box = ([x0, y0, x1, y1]) => [[-y1, x0], [-y0, x1]];
 let L, map, D, cv, overlay, tiles, bounds, pinLayer, routeLayer, placeLayer;
