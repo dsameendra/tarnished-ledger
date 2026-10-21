@@ -65,7 +65,7 @@ Shadow of the Erdtree can be switched on in Settings. The DLC has no trophies, s
 
 <p align="center">
   <img src="docs/screenshots/map-desktop-dark.webp" width="760" alt="Maximized map of the Lands Between with the numbered route drawn on it, dark theme"><br>
-  <sub>The Lands Between with the route drawn through each phase, marker filters and the overview map.</sub>
+  <sub>Zoomed in on Limgrave and Caelid: the route drawn through each phase, marker filters and the overview map.</sub>
 </p>
 
 <table>
@@ -74,8 +74,8 @@ Shadow of the Erdtree can be switched on in Settings. The DLC has no trophies, s
     <td width="38%"><img src="docs/screenshots/map-phone-dark.webp" alt="Maximized map on a phone, dark theme"></td>
   </tr>
   <tr>
-    <td align="center"><sub>Realm of Shadow (Shadow of the Erdtree)</sub></td>
-    <td align="center"><sub>The same map on a phone</sub></td>
+    <td align="center"><sub>Realm of Shadow (Shadow of the Erdtree), zoomed in</sub></td>
+    <td align="center"><sub>The same map on a phone, with the overview map in the corner</sub></td>
   </tr>
 </table>
 
