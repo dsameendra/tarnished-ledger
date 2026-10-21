@@ -2,7 +2,7 @@
 // calls to api.github.com (sync) are never intercepted or cached.
 // Keep SHELL in step with the files in the repo: `npm run check` fails when they drift apart.
 const PREFIX = "tarnished-ledger-";
-const CACHE = PREFIX + "v25";
+const CACHE = PREFIX + "v26";
 // Map tiles never change under the same name, so they live in their own cache that survives updates.
 const TILES = PREFIX + "tiles";
 const SHELL = [

@@ -295,7 +295,7 @@ button.jump::after { content: ""; position: absolute; inset: -12px -6px; }
 .mapstatus { margin: 0; color: var(--muted); font-size: .88rem; }
 .mapstatus:not(:empty) { padding: 0 0 8px; }
 .mapwrap { position: relative; display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; }
-.mapstage { position: relative; height: var(--mh, clamp(340px, calc(100svh - 250px), 780px)); border-radius: 10px; overflow: hidden; border: 1px solid var(--line); background: #0b0a08; }
+.mapstage { position: relative; height: var(--mh, clamp(340px, calc(100svh - 250px), 780px)); border-radius: 10px; overflow: hidden; isolation: isolate; border: 1px solid var(--line); background: #0b0a08; }
 #map { position: absolute; inset: 0; background: #0b0a08; font: inherit; }
 #map.leaflet-container:focus-visible { outline: 2px solid var(--accent); outline-offset: -3px; }
 .mapimg { max-width: none !important; }

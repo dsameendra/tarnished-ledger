@@ -19,3 +19,7 @@ test("installed iPhone/iPad app: the layout clears the status area, scoped to ht
   // no top inset is read straight from env() any more outside the single definition
   assert.equal((css.match(/env\(safe-area-inset-top/g) || []).length, 1);
 });
+
+test("the map stage is its own stacking context, so Leaflet's panes (z-index up to 1000) never paint over the bottom nav", () => {
+  assert.match(css, /\.mapstage \{[^}]*isolation: isolate;/);
+});
