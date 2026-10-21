@@ -23,7 +23,7 @@ function order(list, from) {
 
 const spread = (list) => Math.max(0, ...list.flatMap((a, i) => list.slice(i + 1).filter((b) => a.layer === b.layer).map((b) => dist(a, b))));
 
-// phases: the phases of one world in route order. steps: all steps ({id, kind, pi}). D: { byId, stepLocs }.
+// phases: the phases of one world in route order. steps: all steps ({id, kind, pi}). D: { byId, stepLocs, pathSkip? }.
 export function buildRoute(D, phases, steps, phaseIndex) {
   const stops = [];
   let prev = null;
@@ -31,7 +31,7 @@ export function buildRoute(D, phases, steps, phaseIndex) {
     const pi = phaseIndex(p);
     let seq = 0;
     for (const s of steps) {
-      if (s.pi !== pi || SKIP_KINDS.has(s.kind)) continue;
+      if (s.pi !== pi || SKIP_KINDS.has(s.kind) || D.pathSkip?.has(s.id)) continue;
       let ms = (D.stepLocs[s.id] || []).map((id) => D.byId.get(String(id))).filter(Boolean);
       if (!ms.length) continue;
       // One layer per step: stay where the player is, otherwise follow the first marker.

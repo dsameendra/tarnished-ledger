@@ -40,5 +40,5 @@ export async function loadMapData() {
   for (const [k, locs] of Object.entries(guide.GOAL_LOCS || {})) if (byGoal[k]) link(byGoal[k].id, locs);
   const stepsOf = new Map();
   for (const [step, locs] of Object.entries(stepLocs)) for (const l of locs) (stepsOf.get(l) || stepsOf.set(l, []).get(l)).push(step);
-  return { calib, groups, cats: [...catById.values()], catById, list, byId, byLayer, stepsOf, stepLocs, focus: Object.fromEntries(Object.entries(guide.PHASE_FOCUS || {}).map(([k, v]) => [k, String(v)])) };
+  return { pathSkip: new Set(guide.PATH_SKIP || []), calib, groups, cats: [...catById.values()], catById, list, byId, byLayer, stepsOf, stepLocs, focus: Object.fromEntries(Object.entries(guide.PHASE_FOCUS || {}).map(([k, v]) => [k, String(v)])) };
 }

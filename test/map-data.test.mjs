@@ -154,3 +154,23 @@ test("route path: stops follow step order, merge stacked markers, skip collectio
   assert.deepEqual(st.done, [true, false, false, false]);
   assert.equal(st.next, 1);
 });
+
+test("route path: a vague 'head toward X' step in PATH_SKIP is not a stop, so the path goes straight to the boss", async () => {
+  const { buildRoute } = await import("../js/ui/map-route.js");
+  const mk = (id, x, y) => ({ id: String(id), x, y, layer: "base" });
+  const byId = new Map([mk(1, 600, 1500), mk(2, 500, 1450), mk(3, 540, 1470), mk(4, 520, 1465)].map((m) => [m.id, m]));
+  const D = { byId, pathSkip: new Set(["p.1"]), stepLocs: { "p.0": ["1"], "p.1": ["2"], "p.2": ["3"], "p.3": ["4"] } };
+  const steps = ["p.0", "p.1", "p.2", "p.3"].map((id) => ({ id, kind: "go", pi: 0 }));
+  const r = buildRoute(D, [{ id: "p" }], steps, () => 0);
+  assert.deepEqual(r.stops.map((s) => s.markers[0].id), ["1", "3", "4"]);
+  assert.ok(D.pathSkip.size === 1);
+});
+
+test("PATH_SKIP and the twin steps only name real steps", async () => {
+  const { PATH_SKIP } = await import("../js/data/map-guide.js");
+  const { TWINS } = await import("../js/data/twins.js");
+  const { steps } = await import("../js/lib/model.js");
+  const ids = new Set(steps.map((s) => s.id));
+  for (const id of PATH_SKIP) assert.ok(ids.has(id), "PATH_SKIP " + id);
+  for (const g of TWINS) for (const id of g) assert.ok(ids.has(id), "TWINS " + id);
+});
