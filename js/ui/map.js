@@ -123,7 +123,7 @@ async function start() {
   $("mapSearch").disabled = false;
   $("mapGo").disabled = false;
   new ResizeObserver(() => { if (visible()) map.invalidateSize({ animate: false }); }).observe($("map"));
-  if (/[?&]mapdebug\b/.test(location.search)) window.__tlMap = () => ({ map, cv, D, mode: shown, enabled, selected });
+  if (/[?&]mapdebug\b/.test(location.search)) window.__tlMap = () => ({ map, cv, D, mode: shown, enabled, selected, selectMarker });
   setMode(mode());
   scheduleBelow();
 }
@@ -730,8 +730,18 @@ function wirePhasePanels() {
 
 // Ticking a marker also ticks a route step that covers only that marker (one boss, one item), and the
 // other way round, so the map and the checklist never disagree. Steps that cover several markers stay as they are.
+// Scadutree Fragments and Revered Spirit Ashes also feed the blessing counters on the Goals tab: finding one on the
+// map adds 1 to its counter, un-finding it takes 1 off. The counter can still be set by hand and is never forced.
+const COUNTER_OF = { 11317: "sf", 11316: "rsa" };
 function setMarkerDone(m, on) {
+  const was = ms.isFound(m.id);
   ms.setFound(m.id, on);
+  const cid = COUNTER_OF[m.cat];
+  if (cid && was !== on) {
+    store.setCounter(cid, store.counter(cid) + (on ? 1 : -1));
+    const c = cid === "sf" ? ["Scadutree Fragments", 50] : ["Revered Spirit Ashes", 25];
+    status(`${c[0]}: ${store.counter(cid)} of ${c[1]} on the Goals counter.`);
+  }
   for (const id of D.stepsOf.get(m.id) || []) {
     const s = stepById.get(id);
     if (s && s.kind !== "tip" && D.stepLocs[id]?.length === 1 && store.isDone(id) !== on) store.setDone(id, on);
@@ -1097,6 +1107,18 @@ export function initMap() {
     if (!map) return;
     map.invalidateSize({ animate: false });
     selectPhase(pid);
+  });
+  // The Goals tab counters ask the map to show every Scadutree Fragment or Revered Spirit Ash.
+  on("mapcat", async (cat) => {
+    emit("tab", "map");
+    await ensureMap();
+    const list = map && D.list.filter((m) => m.cat === String(cat) && allowed(m.layer));
+    if (!list?.length) return;
+    map.invalidateSize({ animate: false });
+    if (!enabled.has(String(cat))) setCats([...enabled, String(cat)]);
+    if (!ms.prefs().on) { ms.setPref({ on: true }); syncPanel(); refreshItems(); }
+    goTo(list[0], 0);
+    status(`${list.length} on the map. ${list.filter(doneOf).length} found.`);
   });
   on("locate", async (stepId) => {
     emit("tab", "map");

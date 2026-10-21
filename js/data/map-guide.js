@@ -90,6 +90,7 @@ export const STEP_LOCS = {
   "ley.3": [167693], // Godfrey, First Elden Lord (base)
   "ley.4": [169162, 166536], // Bolt of Gransax (base); Erdtree Sanctuary (base)
   "ley.5": [167374], // Morgott, the Omen King (base)
+  "ley.6": [166536], // Erdtree Sanctuary (base)
   "ran2.0": [166221], // Ranni the Witch (base)
   "ran2.1": [164173, 164410, 180903], // Carian Study Hall (base); Divine Tower of Liurnia (base); Carian Inverted Statue (base)
   "ran2.2": [169305], // Cursemark of Death (base)
@@ -148,6 +149,7 @@ export const STEP_LOCS = {
   "far.3": [168029], // Beside the Great Bridge (base)
   "far.4": [169010, 164727], // Devourer's Scepter (base); Knight Bernahl (base)
   "far.5": [169443], // Old Lord's Talisman (base)
+  "far.6": [168029], // Beside the Great Bridge (base)
   "far.7": [168522], // Dragonlord Placidusax (base)
   "far.9": [167619], // Maliketh, the Black Blade (base)
   "ash1.0": [168184], // Erdtree's Favor +2 (base)
@@ -201,6 +203,7 @@ export const STEP_LOCS = {
   "d11.1": [382041, 381743], // Church of the Bud (dlc); Messmer's Kindling (dlc)
   "d11.2": [380796], // Stagefront (dlc)
   "d11.3": [382111], // First Rise (dlc)
+  "d11.4": [384098], // Needle Knight Leda, beside Enir-Ilim (dlc)
   "d11.5": [382044], // Promised Consort Radahn (dlc)
 };
 
