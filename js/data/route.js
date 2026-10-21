@@ -24,7 +24,7 @@ export const PHASES=[
 ["item","Climb the Divine Tower of Limgrave and restore Godrick's Great Rune at the top.",{tr:"greatrune"}]]},
 {id:"lime",n:"East Limgrave",sub:"Sellen and the first medallion",s:[
 ["go","From Gatefront, ride east along the road and over the bridge. Take the south fork to Waypoint Ruins."],
-["boss","Go down the stairs inside the ruins and beat Mad Pumpkin Head."],
+["boss","Waypoint Ruins: clear or ignore the Miranda Sprouts, then use Torrent to double-jump over the wall into the blocked central area. Go down the stairs inside and beat Mad Pumpkin Head."],
 ["quest","Talk to Sellen in the cellar. Exhaust her dialogue and agree to become her apprentice."],
 ["map","Map Fragment: Limgrave, East. Head east into Mistwood near the Minor Erdtree."],
 ["key","Fort Haight (south-east of the Minor Erdtree): Dectus Medallion (Left) in the chest at the top of the tallest tower."],
@@ -57,7 +57,7 @@ export const PHASES=[
 ["go","Back at the fork, go straight and rest at Manor Upper Level."],
 ["boss","Defeat Royal Knight Loretta.",{tr:"rloretta"}],
 ["quest","Climb to Ranni's Rise and talk to Ranni. Agree to serve her. Also talk to Blaidd, Iji and Seluvis at the Three Sisters."],
-["warn","Never give Seluvis's Amber Draught to Ranni. It ends her questline and locks Age of the Stars and the Dark Moon Greatsword."],
+["warn","Never give Seluvis's Amber Draught (Seluvis's Potion) to Ranni. It angers her and halts her questline until you seek Absolution at the Church of Vows. Do not kill Seluvis either; that makes Blaidd hostile."],
 ["boss","Ruin-Strewn Precipice (ravine in north Liurnia): defeat Magma Wyrm Makar.",{tr:"makar"}],
 ["go","Take the lift past Makar and rest at the first Altus Plateau grace. This starts Radahn's Festival."]]},
 {id:"cael",n:"Caelid",sub:"Fort Faroth, Greyoll, Radahn",s:[
@@ -162,8 +162,8 @@ export const PHASES=[
 ["go","Ordina, Liturgical Town: enter the Evergaol, light the 4 statue torches to break the seal, and take the waygate to the Haligtree. Touch the first grace."],
 ["go","Back in the Snowfield, take the portal to Mohgwyn Palace (it stays inactive until you kill the Sanguine Noble invader) and touch the first grace."]]},
 {id:"mohg",n:"Mohgwyn Palace",sub:"Mohg, Lord of Blood",s:[
-["map","Map Fragment: Mohgwyn Palace. Go down from the Palace Approach Ledge-Road grace hugging the right wall."],
-["go","Go up the path into the dark cave and rest at Dynasty Mausoleum Midpoint."],
+["map","Map Fragment: Mohgwyn Palace. From Palace Approach Ledge-Road follow the path down the slope (the guide says keep to the right wall) to the blood lake, then head north-north-west past the three hunting-horn Albinaurics and west to a stone ruin. The map is on a sitting corpse in the middle of the ruin, next to the Dynasty Mausoleum Entrance grace."],
+["go","From the Dynasty Mausoleum Entrance grace go up the south-west stairs, follow the linear path to the dark cave doorway (Sanguine Nobles ambush you inside, bring a light source) and rest at Dynasty Mausoleum Midpoint on the far side."],
 ["boss","Defeat Mohg, Lord of Blood. A Purifying Crystal Tear in your flask helps in phase 2.",{tr:"mohg"}]]},
 {id:"hal",n:"Elphael, Brace of the Haligtree",sub:"Malenia",s:[
 ["go","Go down the main branch under the large envoy, take the ladder and rest at Haligtree Town."],
@@ -172,9 +172,9 @@ export const PHASES=[
 ["go","Take the elevator down in the tower and cross the bridge to the Prayer Room grace."],
 ["item","Cleanrot Knight Finlay: from Prayer Room go north to a gazebo platform with a crimson scarab. The chest is in the room next to it.",{c:"ash6"}],
 ["item","Marika's Soreseal: from Prayer Room go down to the bottom area, near the patrolling Putrid Avatar and Royal Revenants. Open the imp seal gate with a Stonesword Key. The talisman is on an altar inside.",{c:"tal5"}],
-["go","Go north past the Putrid Avatar and the ballistas to Haligtree Roots, then down the hallway through the rot pools to Drainage Channel."],
+["go","Go north past the Putrid Avatar guarding a doorway and the ballistas to the next grace (ponkberry's guide calls it Haligtree Roots; in game it is Elphael Inner Wall), then take the hallway across the center of the tree, through the scarlet rot pools, to Drainage Channel."],
 ["item","Dragoncrest Greatshield Talisman: from Drainage Channel follow the branch to the building to the north, climb onto its roof, drop through the square hole into the rafters and open the chest.",{c:"tal6"}],
-["boss","Go to the bottom floor, take the elevator down and defeat Malenia, Blade of Miquella.",{tr:"malenia"}]]},
+["boss","Go down to the bottom floor of the building (south-west doorway) and take the elevator down to the Haligtree Roots grace. Continue forward through the fog wall and defeat Malenia, Blade of Miquella.",{tr:"malenia"}]]},
 {id:"far",n:"Crumbling Farum Azula",sub:"Do everything here before Maliketh",s:[
 ["go","Drop down and head west through the graces: Crumbling Beast Grave, Crumbling Beast Grave Depths, Tempest-Facing Balcony, Dragon Temple."],
 ["boss","Defeat the Godskin Duo.",{tr:"gduo"}],
