@@ -269,6 +269,19 @@ button.jump::after { content: ""; position: absolute; inset: -12px -6px; }
 .mapcard { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 10px; margin-bottom: 14px; }
 .maptools { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; padding: 2px 0 8px; }
 .mapcard .seg button, .mapcard .btn { min-height: 44px; }
+/* Top bar, not maximized: what you are looking at (world, map, region) on top, what you can do (go to, find me, markers, maximize) below. */
+.mapcard:not(.fs) .maptools { row-gap: 10px; }
+.mapcard:not(.fs) .mt-subs { flex-basis: 100%; border: 0; background: none; gap: 6px; overflow: visible; }
+.mapcard:not(.fs) .mt-subs button { border: 1px solid var(--edge); border-radius: 999px; min-height: 36px; padding: 0 14px; background: var(--raised); }
+.mapcard:not(.fs) .mt-subs button[aria-pressed="true"] { border-color: var(--accent); }
+.mapcard:not(.fs) .mt-go { flex: 1 1 11rem; max-width: 20rem; }
+.mapcard:not(.fs) .mt-go select { width: 100%; max-width: none; }
+@media (max-width: 520px) {
+  .mapcard:not(.fs) #mapWorld, .mapcard:not(.fs) #mapLayer { display: flex; flex: 1 1 100%; }
+  .mapcard:not(.fs) #mapWorld button, .mapcard:not(.fs) #mapLayer button { flex: 1; padding-inline: 6px; }
+  .mapcard:not(.fs) .mt-go { flex-basis: 100%; max-width: none; }
+  .mapcard:not(.fs) .maptools > .btn { flex: 1 1 auto; padding-inline: 10px; white-space: nowrap; }
+}
 .mapsearch { position: absolute; z-index: 1050; top: 10px; left: 10px; right: 64px; max-width: 380px; }
 .mapsearch input { width: 100%; box-shadow: 0 2px 8px rgb(0 0 0 / .35); font: inherit; font-size: .95rem; padding: 10px 12px; border-radius: 9px; border: 1px solid var(--line); background: var(--raised); color: var(--fg); min-height: 44px; }
 .mapsearch input:disabled { opacity: .6; }
@@ -522,6 +535,10 @@ html.map-fs, html.map-fs body { overflow: hidden; overscroll-behavior: none; }
 .pg-bar { display: block; height: 6px; border-radius: 3px; background: var(--line); overflow: hidden; }
 .pg-bar i { display: block; height: 100%; background: var(--accent); }
 .pg-sum { display: grid; gap: 8px; }
+/* Segmented switches in the progress section: equal-width, centred labels, never wider than they need on a big screen. */
+.mapbelow .seg { display: flex; max-width: 30rem; }
+.mapbelow .seg button { flex: 1; text-align: center; min-height: 44px; }
+.mapbelow #pgScope { max-width: 22rem; }
 .pg-sum b { font-variant-numeric: tabular-nums; }
 .pg-pct { color: var(--muted); margin-left: 6px; }
 .pg-g { border-top: 1px solid var(--line); }
