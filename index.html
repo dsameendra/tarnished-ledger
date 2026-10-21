@@ -3,6 +3,15 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<script>
+// Installed iPhone/iPad app (Add to Home Screen): the page runs under the status bar, so the layout needs extra top room. Run before first paint.
+(function () {
+  var r = document.documentElement;
+  var apple = /iPhone|iPad|iPod|Macintosh/.test(navigator.userAgent) && navigator.maxTouchPoints > 1;
+  var installed = navigator.standalone === true || (apple && matchMedia("(display-mode: standalone)").matches);
+  if (installed) r.classList.add("ios-pwa");
+})();
+</script>
 <title>Tarnished's Ledger</title>
 <meta name="description" content="Step-by-step checklist for every Elden Ring trophy and achievement, with a route map and cross-device progress sync. Unofficial fan project.">
 <meta name="theme-color" content="#13120d">
