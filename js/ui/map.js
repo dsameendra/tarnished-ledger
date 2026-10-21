@@ -203,6 +203,7 @@ function setMode(m) {
   map.invalidateSize({ animate: false });
   const fz = limits();
   $("mapSubs").hidden = m !== "under";
+  if (m !== "hub") status("");
   if (m === "hub") status("Roundtable Hold: marker positions only. There is no public floor plan, so the rooms are not drawn.");
   const v = ms.views[m];
   if (fz !== null) {

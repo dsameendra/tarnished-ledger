@@ -571,6 +571,7 @@ html.map-fs, html.map-fs body { overflow: hidden; overscroll-behavior: none; }
 @media (min-width: 900px) { .mapcard.fs .mapsheet.phase { width: 400px; top: 66px; max-height: calc(100% - 84px); } }
 .maplink { display: inline-flex; align-items: center; min-height: 36px; padding: 0 12px; margin-top: 2px; border: 1px solid var(--edge); border-radius: 999px; background: var(--raised); color: var(--accent); font: inherit; font-size: .84rem; font-weight: 700; cursor: pointer; }
 .maplink:hover, .maplink:focus-visible { background: var(--accent-soft); }
+@media (pointer: coarse) { .maplink { min-height: 44px; } }
 .ms-sub { margin: 10px 0 0; font: 700 .86rem var(--body); color: var(--muted); }
 .ms-steps { margin-top: 2px; }
 .ps-t small { color: var(--muted); font-weight: 700; margin-right: 4px; }
