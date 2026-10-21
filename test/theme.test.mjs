@@ -17,7 +17,7 @@ function tokens(accent) {
   const get = (p) => Object.fromEntries([...block.matchAll(new RegExp(`--${p}-(\\w+): (#[0-9a-f]{6})`, "g"))].map((m) => [m[1], m[2]]));
   return { light: get("l"), dark: get("d") };
 }
-const ACCENT = { gold: ["#7c5d15", "#d6b159"], crimson: ["#9b2f3a", "#e0727c"], frost: ["#2f6487", "#86b9dc"], silver: ["#5d5f66", "#c3c6ce"] };
+const ACCENT = { gold: ["#7c5d15", "#d6b159"], crimson: ["#9b2f3a", "#e0727c"], frost: ["#2f6487", "#86b9dc"], silver: ["#5d5f66", "#c3c6ce"], verdant: ["#2f6b3a", "#7fc48b"] };
 
 for (const accent of Object.keys(ACCENT)) {
   for (const mode of ["light", "dark"]) {

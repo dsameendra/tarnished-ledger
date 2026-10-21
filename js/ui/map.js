@@ -505,7 +505,7 @@ function drawBreaks() {
     if (!near && !focus.has(br.from.phase) && !focus.has(br.to.phase)) continue;
     for (const [s, text] of [[br.from, `To ${LAYER_NAME[br.to.layer]}`], [br.to, `From ${LAYER_NAME[br.from.layer]}`]]) {
       if (s.layer !== shown) continue;
-      L.marker([-s.y, s.x], { interactive: false, keyboard: false, pane: "route", icon: L.divIcon({ className: "mp-break-wrap", html: `<span class="mp-break">${esc(text)}</span>`, iconSize: [0, 0] }) }).addTo(breakLayer);
+      L.marker([-s.y, s.x], { interactive: false, keyboard: false, pane: "route", icon: L.divIcon({ className: "mp-break-wrap", html: `<span class="mp-break${s === br.to ? " in" : ""}">${esc(text)}</span>`, iconSize: [0, 0] }) }).addTo(breakLayer);
     }
   }
 }
