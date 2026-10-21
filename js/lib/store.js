@@ -6,6 +6,7 @@
 // the map filter choices sync.
 
 import { TWINS } from "../data/twins.js";
+import { COUNTER_MARKERS } from "../data/counter-markers.js";
 
 const KEY = "tarnished-ledger:v2";
 const LEGACY_KEY = "er100-v1";
@@ -38,7 +39,10 @@ let storageOK = true;
 export const get = () => state;
 export const isDone = (id) => state.marks[id]?.[0] === 1;
 export const setting = (k) => state.settings[k];
-export const counter = (id) => state.counters[id]?.[0] || 0;
+// A blessing counter is the markers found on the map plus a hand-set offset (which can be negative), so finds made on
+// two devices both count after a merge.
+const foundCount = (id) => (COUNTER_MARKERS[id] || []).filter((m) => state.found[m]?.[0] === 1).length;
+export const counter = (id) => Math.max(0, Math.min(COUNTER_MAX[id] ?? 0, (state.counters[id]?.[0] || 0) + foundCount(id)));
 export const isFound = (id) => state.found[String(id)]?.[0] === 1;
 export const mapPrefs = () => state.mapPrefs;
 export const isStorageOK = () => storageOK;
@@ -88,7 +92,8 @@ export function cleanCounters(raw) {
 
 function clampCounter(id, value) {
   const n = Math.round(Number(value));
-  return Number.isFinite(n) ? Math.max(0, Math.min(COUNTER_MAX[id] ?? 0, n)) : 0;
+  const max = COUNTER_MAX[id] ?? 0;
+  return Number.isFinite(n) ? Math.max(-max, Math.min(max, n)) : 0;
 }
 
 // Map filter choices: booleans plus an optional list of category ids (null means the default set).
@@ -189,6 +194,7 @@ export function setFound(id, on) {
   state.found[String(id)] = [on ? 1 : 0, stamp(state.found[String(id)])];
   write();
   emit("found");
+  if (Object.values(COUNTER_MARKERS).some((l) => l.includes(String(id)))) emit("counters");
 }
 
 export function setMapPrefs(patch) {
@@ -240,7 +246,8 @@ export function setSetting(key, value) {
 
 export function setCounter(id, value) {
   if (!hasOwn(COUNTER_MAX, id)) return;
-  state.counters[id] = [clampCounter(id, value), Date.now()];
+  const shown = Math.max(0, Math.min(COUNTER_MAX[id], Math.round(Number(value)) || 0));
+  state.counters[id] = [clampCounter(id, shown - foundCount(id)), Date.now()];
   write();
   emit("counters");
 }
@@ -318,7 +325,7 @@ export function mergeExtras(remote) {
   }
   if (counters || found || prefs || changed.length) write();
   if (counters) emit("counters");
-  if (found) emit("found");
+  if (found) { emit("found"); emit("counters"); }
   if (prefs) emit("mapprefs", "remote");
   changed.forEach((k) => emit("settings", k));
   return counters || found || prefs || changed.length > 0;
@@ -394,7 +401,7 @@ export function importData(input, validIds) {
   if (mapPrefs) { state.mapPrefs = mapPrefs; state.mapT = now + 1; }
   write();
   if (counters) emit("counters");
-  if (found) emit("found");
+  if (found) { emit("found"); emit("counters"); }
   if (mapPrefs) emit("mapprefs", "remote");
   emit("marks");
   return n;

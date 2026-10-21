@@ -63,3 +63,22 @@ test("twin steps (base route and the DLC prerequisites) tick together and settle
   store.mergeMarks({ [a]: [0, Date.now() + 5000] });
   assert.equal(store.isDone(b), false);
 });
+
+test("blessing counter = markers found on the map + hand-set offset; both devices' finds count after a merge", async () => {
+  const { COUNTER_MARKERS } = await import("../js/data/counter-markers.js");
+  const [a, b, c] = COUNTER_MARKERS.sf;
+  store.resetProgress([]);
+  store.setCounter("sf", 5);
+  assert.equal(store.counter("sf"), 5);
+  store.setFound(a, true);
+  assert.equal(store.counter("sf"), 6);
+  // another device found b while offline
+  store.mergeExtras({ found: { [b]: [1, Date.now() + 10] } });
+  assert.equal(store.counter("sf"), 7);
+  store.setCounter("sf", 1); // below the number found: the offset goes negative, the display follows
+  assert.equal(store.counter("sf"), 1);
+  store.setFound(c, true);
+  assert.equal(store.counter("sf"), 2);
+  store.setCounter("sf", 0);
+  assert.equal(store.counter("sf"), 0);
+});

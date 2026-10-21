@@ -693,7 +693,7 @@ function selectPhase(pid, fly = true) {
   if (scope() === "both") { const w = p.dlc ? "dlc" : "base"; if (picked !== w && (picked || "base") !== w) { picked = w; saveLayer(); syncChrome(); setMode(mode()); } }
   const m = phaseAnchor(pid);
   if (fly && m && allowed(m.layer)) {
-    if (m.layer !== shown) { lay = m.layer === "under" || m.layer === "hub" ? m.layer : "base"; saveLayer(); syncChrome(); if (mode() !== shown) setMode(mode()); }
+    if (m.layer !== shown) { if (m.layer !== "dlc") lay = m.layer; saveLayer(); syncChrome(); if (mode() !== shown) setMode(mode()); }
     goTo(m, 2);
   }
   showSheet({ phase: pid });
@@ -706,7 +706,7 @@ function focusStep(stepId) {
   if (!list.length) { status("This step has no marker on the map."); return; }
   const first = list[0];
   if (list.length === 1 || list.some((m) => m.layer !== first.layer)) { goTo(first); selectMarker(first, from); return; }
-  if (first.layer !== shown) { lay = first.layer === "under" || first.layer === "hub" ? first.layer : "base"; saveLayer(); syncChrome(); setMode(mode()); }
+  if (first.layer !== shown) { if (first.layer !== "dlc") lay = first.layer; saveLayer(); syncChrome(); setMode(mode()); }
   const ll = list.map((m) => [-m.y, m.x]);
   const o = { padding: [70, 70], maxZoom: Math.min(map.getMaxZoom(), fitZ + 3), animate: !mq("(prefers-reduced-motion: reduce)"), duration: 0.7 };
   map.flyToBounds(ll, o);
@@ -733,15 +733,14 @@ function wirePhasePanels() {
 
 // Ticking a marker also ticks a route step that covers only that marker (one boss, one item), and the
 // other way round, so the map and the checklist never disagree. Steps that cover several markers stay as they are.
-// Scadutree Fragments and Revered Spirit Ashes also feed the blessing counters on the Goals tab: finding one on the
-// map adds 1 to its counter, un-finding it takes 1 off. The counter can still be set by hand and is never forced.
+// Scadutree Fragments and Revered Spirit Ashes also feed the blessing counters on the Goals tab: the counter is the
+// number found on the map plus anything added by hand (see COUNTER_MARKERS in the store).
 const COUNTER_OF = { 11317: "sf", 11316: "rsa" };
 function setMarkerDone(m, on) {
   const was = ms.isFound(m.id);
   ms.setFound(m.id, on);
   const cid = COUNTER_OF[m.cat];
   if (cid && was !== on) {
-    store.setCounter(cid, store.counter(cid) + (on ? 1 : -1));
     const c = cid === "sf" ? ["Scadutree Fragments", 50] : ["Revered Spirit Ashes", 25];
     status(`${c[0]}: ${store.counter(cid)} of ${c[1]} on the Goals counter.`);
   }
@@ -843,7 +842,7 @@ function wireBelow() {
 
 function goTo(m, rel = 3) {
   if (scope() === "both") picked = m.layer === "dlc" ? "dlc" : "base";
-  lay = m.layer === "under" || m.layer === "hub" ? m.layer : "base";
+  if (m.layer !== "dlc") lay = m.layer;
   saveLayer();
   syncChrome();
   if (mode() !== shown) setMode(mode());
