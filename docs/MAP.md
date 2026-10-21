@@ -110,3 +110,13 @@ Every category has its own icon in `js/data/map-icons.js` (`[glyph, colour]`), a
 ## Sharp tiles
 
 `assets/map/tiles/` holds a tile pyramid per map. The one-piece `assets/map/*.webp` always loads first, so there is something to look at immediately. When you zoom in, the tile layer fetches only the visible 512px tiles at the level that matches the zoom, and the blurrier picture shows underneath until each tile arrives. Tiles are served cache-first by the service worker (they never change under the same name), so a place you have looked at stays available offline. Surface 3 levels (up to 7544 px wide), underground and the Realm of Shadow 2 levels. To change the images, rebuild with `scripts/calibrate/hires.py` and bump the cache name in `sw.js`.
+
+## Roundtable Hold
+
+The base-game Roundtable Hold has no part of the world map, so it is its own layer (`hub`, the third button next to Surface and Underground). MapGenie files its 126 markers under region 1333, and `scripts/build-map-data.mjs` writes them to `assets/map/data/hub.json`. No public floor plan exists, so there is no fitted art: `assets/map/hub.svg` is a plain original backdrop and the calibration in `js/data/map-calib.js` (`hub`) only spreads MapGenie's positions across it (22,000,000 px per Web Mercator unit, 90px margin). Positions are relative to each other, not to any room. The layer always shows everything in it, whatever the category filters say. The Nightreign hub is a different place and is not used.
+
+## Twin steps, counters and skipped path steps
+
+- `js/data/twins.js` lists route steps that are the same fact in two places (Radahn and Mohg in the base route and in D1). Ticking one ticks the other, and merges settle each pair by the newer timestamp. Ticking the boss on the map reaches both through the markers they share.
+- Finding a Scadutree Fragment or Revered Spirit Ash on the map adds 1 to its Goals counter, and un-finding takes 1 off. The counter can still be set by hand.
+- `PATH_SKIP` in `js/data/map-guide.js` lists steps that stay linked (Show on map, ticking) but are not drawn as a stop on the route, such as a vague "head toward the castle" step that would send the line the wrong way.
