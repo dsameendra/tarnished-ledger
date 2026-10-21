@@ -1079,7 +1079,8 @@ export function initMap() {
     const m = b && D.byId.get(b.dataset.id);
     if (!m) return;
     $("mapResults").hidden = true;
-    input.value = m.title;
+    input.value = "";
+    input.blur();
     goTo(m);
     selectMarker(m);
   });
