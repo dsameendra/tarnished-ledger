@@ -26,7 +26,7 @@ export const DLC_PHASES=[
 {id:"d4",n:"Cerulean Coast",sub:"Putrescent Knight and Charo's Hidden Grave",s:[
 ["go","Travel to the Cerulean Coast. Look for the glowing items along the shore."],
 ["boss","Optional bosses on the coast: Demi-Human Queen Marigga, the Ghostflame Dragon and the Dancer of Ranah."],
-["boss","Defeat the Putrescent Knight in Stone Coffin Fissure.",{g:"putrescent"}],
+["boss","Defeat the Putrescent Knight in Stone Coffin Fissure. The entrance stays sealed until Miquella's great rune breaks, which happens when you approach Shadow Keep or cross the bridge east of Bonny Village. If it is sealed, come back after Shadow Keep.",{g:"putrescent"}],
 ["go","In Dragon's Pit on the Gravesite Plain, defeat the Ancient Dragon-Man. The door behind him leads on to Jagged Peak, and the way to Charo's Hidden Grave starts from the Terminus grace."],
 ["boss","Optional in Charo's Hidden Grave: Death Rite Bird and a Tibia Mariner."]]},
 {id:"d5",n:"Scadu Altus",sub:"Highroad Cross, Fog Rift Fort and Rauh Base",s:[

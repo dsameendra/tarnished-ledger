@@ -9,7 +9,7 @@ export const MISSABLES = [
 ];
 
 export const STONESWORD = [
-  ["Night's Sacred Ground, Nokron", "Mimic Tear Ashes", "up to 2"],
+  ["Night's Sacred Ground, Nokron", "Mimic Tear Ashes", "1"],
   ["Golden Lineage Evergaol, Altus Plateau", "Godfrey Icon", "1"],
   ["Sainted Hero's Grave, Altus Plateau", "Ancient Dragon Knight Kristoff Ashes", "1 to 2"],
   ["Cave of the Forlorn, Mountaintops", "Golden Order Greatsword", "2"],

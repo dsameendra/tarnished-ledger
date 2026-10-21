@@ -5,7 +5,7 @@ export const PHASES=[
 {id:"prep",n:"Before You Start",sub:"Setup for the whole run",s:[
 ["tip","Choose a route now: one playthrough with save backups (Route A) or three playthroughs (Route B). Read the Endings & Saves tab."],
 ["tip","Pick one weapon to upgrade all game. God-Slaying Armament needs a normal weapon at +25 or a special (somber) weapon at +10."],
-["tip","Pick up every Stonesword Key you see. You will use them on: Night's Sacred Ground (Mimic Tear Ashes, up to 2), Golden Lineage Evergaol (Godfrey Icon), Sainted Hero's Grave (1 to 2), Cave of the Forlorn (2, for the Golden Order Greatsword) and the Marika's Soreseal gate. That is around 7 to 9 in total."],
+["tip","Pick up every Stonesword Key you see. You will use them on: Night's Sacred Ground (Mimic Tear Ashes, 1), Golden Lineage Evergaol (Godfrey Icon), Sainted Hero's Grave (1 to 2), Cave of the Forlorn (2, for the Golden Order Greatsword) and the Marika's Soreseal gate. That is around 6 to 8 in total."],
 ["tip","Legendary Armaments and Talismans can be handed to you by another player in co-op. Legendary Ashen Remains and Spells cannot. Weapons from Remembrances don't count."],
 ["tip","You don't need every weapon, spell or boss. Only the items and bosses in this list count."],
 ["go","Read the setup notes above, choose your route and your weapon, then tick this to start the run."]]},
@@ -74,13 +74,13 @@ export const PHASES=[
 ["boss","Go through the yellow mist gate at Redmane Castle and defeat the Misbegotten Warrior and Crucible Knight for the Ruins Greatsword.",{c:"arm3"}]]},
 {id:"nok",n:"Siofra River & Nokron",sub:"Underground cities",s:[
 ["go","Enter Siofra River Well in Limgrave, below the Minor Erdtree area."],
-["go","Light all the Hallowhorn braziers around Siofra River to open the boss arena."],
+["go","Light all 8 Hallowhorn obelisks around Siofra River, then interact with the deer carcass at the back of the temple to open the boss arena."],
 ["boss","Defeat the Ancestor Spirit.",{tr:"ancestor"}],
 ["go","After Radahn, a meteor crater appears south-west of the Minor Erdtree in Mistwood. Climb down the rocks into Nokron, Eternal City."],
 ["boss","Defeat the Mimic Tear.",{tr:"mimic"}],
-["item","Night's Sacred Ground: cross the church, go around the altar to the locked area and open it with Stonesword Keys (up to 2). Take the Mimic Tear Ashes from the chest.",{c:"ash3"}],
+["item","Night's Sacred Ground: cross the church, go around the altar to the locked area and open it with a Stonesword Key (1). Take the Mimic Tear Ashes from the chest.",{c:"ash3"}],
 ["quest","Night's Sacred Ground: take the Fingerslayer Blade from its chest for Ranni."],
-["boss","Light the 6 Hallowhorn braziers in Nokron and defeat the Regal Ancestor Spirit.",{tr:"regal"}],
+["boss","Light the 6 Hallowhorn obelisks in Nokron and defeat the Regal Ancestor Spirit.",{tr:"regal"}],
 ["boss","Siofra Aqueduct: defeat the Valiant Gargoyles.",{tr:"gargoyle"}],
 ["go","Lie in the coffin past the Gargoyles to reach Deeproot Depths. Touch the grace; you'll come back later."]]},
 {id:"alt",n:"Altus Plateau",sub:"Evergaol, Sainted Hero, Shaded Castle",s:[
@@ -105,16 +105,16 @@ export const PHASES=[
 ["warn","Back at Volcano Manor, find Bernahl (left-side doors near Tanith's dining room) and exhaust his dialogue. He'll invade in Farum Azula and drop the Devourer's Scepter."]]},
 {id:"sel",n:"Sellen's Quest",sub:"Stars of Ruin",s:[
 ["quest","Show Comet Azur to Sellen at Waypoint Ruins. Pick the dialogue options about Azur's sorcery, her story, journeying together and asking a favour to receive the Sellian Sealbreaker."],
-["go","In Dragonbarrow, south of Greyoll, drop off the cliffs near Fort Faroth (there is a spirit spring). Find the illusory wall behind a giant gravestone, near a sorcerer enemy. This leads to Sellia Hideaway."],
+["go","From the Church of the Plague grace in Caelid, go north up the hill, pass under the wooden arch and find the small graveyard with one sorcerer enemy. Hit the illusory wall behind the main headstone along the cliffside. It leads to Sellia Hideaway."],
 ["item","At the end of the tunnel, drop from the purple crystals to the blue magic seal door. Open it with the Sealbreaker and talk to Master Lusat for Stars of Ruin.",{c:"sp4"}]]},
 {id:"ley",n:"Leyndell, Royal Capital",sub:"Godfrey shade and Morgott",s:[
 ["go","From Capital Rampart, follow the path to East Capital Rampart."],
 ["go","Go through the battlement, ride the elevator down, and follow the main road to Avenue Balcony."],
 ["go","Head north-west, cross the dragon's wing onto a walled path heading south, and climb the tree branches to a golden fog gate."],
 ["boss","Defeat Godfrey, First Elden Lord (golden shade).",{tr:"godfrey"}],
-["warn","Bolt of Gransax: from Erdtree Sanctuary go west, down the stairs and take the elevator. Go down more stairs; a giant spear sticks out of the wall on your left. Drop onto it and pick up the item. MISSABLE once the Erdtree burns.",{c:"arm5"}],
+["warn","Bolt of Gransax: from Erdtree Sanctuary go west, down the stairs and take the elevator. Go down more stairs; a giant spear sticks out of the wall on your left. Drop onto it and pick up the item. MISSABLE once Leyndell becomes the Ashen Capital (after Maliketh).",{c:"arm5"}],
 ["boss","Defeat Morgott, the Omen King.",{tr:"morgott"}],
-["go","Walk up to the Erdtree trunk, inspect the thorn seal, then rest at the grace."]]},
+["go","Walk up to the Erdtree trunk, inspect the thorn seal, then rest at the grace. Talk to Melina there: she gives you the Rold Medallion for the Grand Lift of Rold."]]},
 {id:"ran2",n:"Ranni's Quest, Part 2",sub:"Cursemark of Death",s:[
 ["quest","Give Ranni the Fingerslayer Blade. She gives you the Carian Inverted Statue."],
 ["go","Carian Study Hall (east Liurnia): place the statue on the altar near the entrance to flip the tower, then climb it to the Divine Tower of Liurnia."],
@@ -148,7 +148,7 @@ export const PHASES=[
 ["item","Climb Chelona's Rise and take Ranni's Dark Moon from the top.",{c:"sp6"}]]},
 {id:"mtn",n:"Forbidden Lands & Mountaintops",sub:"Castle Sol, Fire Giant",s:[
 ["go","From Avenue Balcony, take the main road east and the stairs to the giant lift. Cross the bridges and ride down into the Forbidden Lands."],
-["go","Ride to the Grand Lift of Rold (a Black Blade Kindred guards it) and take it up."],
+["go","Ride to the Grand Lift of Rold (a Black Blade Kindred guards it) and use the Rold Medallion to take it up."],
 ["go","Follow the narrow path to the frozen river, head east, and climb the cliffs to the north to Castle Sol."],
 ["item","Eclipse Shotel: on the altar of the Church of the Eclipse in Castle Sol.",{c:"arm6"}],
 ["boss","Defeat Commander Niall. This opens the way to the roof of the tower in the northeast of Castle Sol, where the Haligtree Secret Medallion (Left) lies.",{tr:"niall"}],
@@ -160,7 +160,7 @@ export const PHASES=[
 ["go","Warp to the Grand Lift of Rold and hold up the joined Haligtree Secret Medallion to reach the Consecrated Snowfield."],
 ["boss","Cave of the Forlorn (the entrance needs two Stonesword Keys): defeat the Misbegotten Crusader at the end for the Golden Order Greatsword.",{c:"arm7"}],
 ["go","Ordina, Liturgical Town: enter the Evergaol, light the 4 statue torches to break the seal, and take the waygate to the Haligtree. Touch the first grace."],
-["go","Back in the Snowfield, take the portal to Mohgwyn Palace and touch the first grace."]]},
+["go","Back in the Snowfield, take the portal to Mohgwyn Palace (it stays inactive until you kill the Sanguine Noble invader) and touch the first grace."]]},
 {id:"mohg",n:"Mohgwyn Palace",sub:"Mohg, Lord of Blood",s:[
 ["map","Map Fragment: Mohgwyn Palace. Go down from the Palace Approach Ledge-Road grace hugging the right wall."],
 ["go","Go up the path into the dark cave and rest at Dynasty Mausoleum Midpoint."],
@@ -180,7 +180,7 @@ export const PHASES=[
 ["boss","Defeat the Godskin Duo.",{tr:"gduo"}],
 ["go","Go north down the stairs, through the ruins and the small doorway on the right. Pass the Crucible Knight and drop off the ledge to Dragon Temple Rooftop."],
 ["go","Cross the rooftops past the dragon, use the fallen gazebo as a bridge, and take the elevator up to Beside the Great Bridge."],
-["item","Go up the stairs to the broken end of the bridge, down the steps and ladder. Bernahl invades here: kill him for the Devourer's Scepter. (If you missed him, he's at the Warmaster's Shack in Limgrave.)",{c:"arm8"}],
+["item","Go up the stairs to the broken end of the bridge, down the steps and ladder. Bernahl invades here: kill him for the Devourer's Scepter. (He only invades after Rykard is dead and you have finished his dialogue at Volcano Manor. If you skipped that, go back to the Manor and talk to him first.)",{c:"arm8"}],
 ["item","Old Lord's Talisman: in the chest inside the tower across that bridge.",{c:"tal7"}],
 ["go","From Beside the Great Bridge take the elevator down, go to the west end of the platform and drop off the south side. Follow it to the bottom and lie down in the flat circle where a statue stood."],
 ["boss","Defeat Dragonlord Placidusax.",{tr:"placidusax"}],
