@@ -34,18 +34,25 @@ export function buildRoute(D, phases, steps, phaseIndex) {
       if (s.pi !== pi || SKIP_KINDS.has(s.kind) || D.pathSkip?.has(s.id)) continue;
       let ms = (D.stepLocs[s.id] || []).map((id) => D.byId.get(String(id))).filter(Boolean);
       if (!ms.length) continue;
-      // One layer per step: stay where the player is, otherwise follow the first marker.
+      // One layer per step: stay where the player is, otherwise follow the first marker. A step that also sends you to
+      // the Roundtable Hold (Melina takes you there) visits the world markers first and the hub after them.
+      const hub = ms.some((m) => m.layer !== "hub") ? ms.filter((m) => m.layer === "hub") : [];
+      if (hub.length) ms = ms.filter((m) => m.layer !== "hub");
       const layer = prev && ms.some((m) => m.layer === prev.layer) ? prev.layer : ms[0].layer;
       ms = ms.filter((m) => m.layer === layer);
       if (ms.length > 3 && spread(ms) > SPREAD_PX) continue; // a collection step, not a leg of the route
-      for (const m of order(ms, prev && prev.layer === layer ? prev : null)) {
-        if (prev && prev.layer === m.layer && (prev.markers.some((x) => x.id === m.id) || dist(prev, m) < MERGE_PX)) {
-          if (!prev.markers.some((x) => x.id === m.id)) prev.markers.push(m);
-          if (!prev.steps.includes(s.id)) prev.steps.push(s.id);
-          continue;
+      for (const list of hub.length ? [ms, hub] : [ms]) {
+        // Steps in PATH_ORDERED name their places in the order you walk them; the rest are visited nearest-first.
+        const seq_ = D.pathOrdered?.has(s.id) ? list : order(list, prev && prev.layer === list[0].layer ? prev : null);
+        for (const m of seq_) {
+          if (prev && prev.layer === m.layer && (prev.markers.some((x) => x.id === m.id) || dist(prev, m) < MERGE_PX)) {
+            if (!prev.markers.some((x) => x.id === m.id)) prev.markers.push(m);
+            if (!prev.steps.includes(s.id)) prev.steps.push(s.id);
+            continue;
+          }
+          prev = { x: m.x, y: m.y, layer: m.layer, markers: [m], steps: [s.id], phase: p.id, pi, seq: ++seq, i: stops.length };
+          stops.push(prev);
         }
-        prev = { x: m.x, y: m.y, layer: m.layer, markers: [m], steps: [s.id], phase: p.id, pi, seq: ++seq, i: stops.length };
-        stops.push(prev);
       }
     }
   }

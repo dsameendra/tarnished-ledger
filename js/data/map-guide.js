@@ -253,6 +253,10 @@ export const PHASE_FOCUS = {
 // whose place is reached later by a more specific step, or that are the same stop as a later one.
 export const PATH_SKIP = ["limw.3", "cael.4", "prep.2", "d3.2"];
 
+// Steps whose places are listed in the order you walk them (far.0 names its graces west to east, d4.3 goes Dragon's Pit,
+// Terminus, then Charo's). Every other step with several places is visited nearest-first from where you are.
+export const PATH_ORDERED = ["far.0", "hal.6", "d4.3", "d7.0", "liu1.8"];
+
 // Trophy key -> location ids (where it is earned or what it needs).
 export const TROPHY_LOCS = {
   eldenlord: [176997], // Elden Beast (base)

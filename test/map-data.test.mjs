@@ -174,3 +174,14 @@ test("PATH_SKIP and the twin steps only name real steps", async () => {
   for (const id of PATH_SKIP) assert.ok(ids.has(id), "PATH_SKIP " + id);
   for (const g of TWINS) for (const id of g) assert.ok(ids.has(id), "TWINS " + id);
 });
+
+test("route path: PATH_ORDERED steps keep the listed order, and a step that also goes to the Roundtable Hold visits the world first, then the hub", async () => {
+  const { buildRoute } = await import("../js/ui/map-route.js");
+  const mk = (id, x, y, layer = "base") => ({ id: String(id), x, y, layer });
+  const byId = new Map([mk(1, 100, 100), mk(2, 300, 100), mk(3, 500, 100), mk(4, 40, 40, "hub")].map((m) => [m.id, m]));
+  const D = { byId, pathOrdered: new Set(["o.1"]), stepLocs: { "o.0": ["1"], "o.1": ["3", "2"], "o.2": ["3", "4"] } };
+  const steps = ["o.0", "o.1", "o.2"].map((id) => ({ id, kind: "go", pi: 0 }));
+  const r = buildRoute(D, [{ id: "o" }], steps, () => 0);
+  assert.deepEqual(r.stops.map((s) => s.markers.map((m) => m.id).join("+")), ["1", "3", "2", "3", "4"]);
+  assert.equal(r.breaks.length, 1, "the line breaks where it goes to the hub");
+});
