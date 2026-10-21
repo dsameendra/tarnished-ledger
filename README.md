@@ -15,7 +15,7 @@ Installable, offline-ready, no account, no build step.
 </div>
 
 <p align="center">
-  <img src="docs/screenshots/route-desktop-dark.png" width="760" alt="The route tab on desktop in the dark theme">
+  <img src="docs/screenshots/route-desktop-dark.webp" width="760" alt="The route tab on desktop in the dark theme">
 </p>
 
 ## What it is
@@ -26,7 +26,7 @@ Shadow of the Erdtree can be switched on in Settings. The DLC has no trophies, s
 
 ## Features
 
-- **25 route phases** of tick-off steps with an "Up next" card, search, collapsible phases and "hide done".
+- **26 route phases** of tick-off steps with an "Up next" card, search, collapsible phases and "hide done".
 - **Trophy list** with PlayStation medals (or Xbox/PC achievement wording) that tick themselves from the route.
 - **Legendary items** tracker: armaments, ashen remains, spells and talismans.
 - **Shadow of the Erdtree** (optional): 12 DLC phases, 15 completion goals, and Scadutree Fragment and Revered Spirit Ash counters with blessing levels. A "DLC only" mode hides the base game.
@@ -34,15 +34,65 @@ Shadow of the Erdtree can be switched on in Settings. The DLC has no trophies, s
 - **Interactive map** of the Lands Between, underground regions, the Roundtable Hold (marker positions only) and the Realm of Shadow: pan, pinch and zoom, layers, marker filters, search, place names, an overview map and a maximized view. Ticking a boss or item in the route ticks it on the map too, and a progress section lists what is done and what is left. Pick a route phase on the map to read and tick its checklist without leaving the map.
 - **Sync between devices** through a private GitHub gist (optional), plus file and code backups.
 - **Works offline** and installs as an app on iPhone, Android and desktop. Can keep the screen awake while you play.
-- **Themes**: system, light and dark, four accents, three text sizes, compact rows.
+- **Themes**: system, light and dark, five accents, three text sizes, compact rows.
+
+## Screenshots
+
+### Route and trophies
 
 <table>
   <tr>
-    <td><img src="docs/screenshots/route-phone-dark.png" alt="Route on a phone, dark" width="260"></td>
-    <td><img src="docs/screenshots/goals-phone-light.png" alt="DLC goals and blessing counters, light" width="260"></td>
-    <td><img src="docs/screenshots/trophies-desktop-light.png" alt="Trophy list on desktop, light" width="420"></td>
+    <td width="50%"><img src="docs/screenshots/route-phone-dark.webp" alt="Route on a phone with the Up next card, dark theme"></td>
+    <td width="50%"><img src="docs/screenshots/goals-phone-light.webp" alt="Shadow of the Erdtree goals and blessing counters on a phone, light theme"></td>
+  </tr>
+  <tr>
+    <td align="center"><sub>Route: pick up where you left off</sub></td>
+    <td align="center"><sub>Shadow of the Erdtree goals and counters</sub></td>
   </tr>
 </table>
+
+<p align="center">
+  <img src="docs/screenshots/trophies-desktop-light.webp" width="760" alt="The trophy list with PlayStation medals on desktop, light theme"><br>
+  <sub>Trophy list. Each trophy ticks itself when its route step is done.</sub>
+</p>
+
+<p align="center">
+  <img src="docs/screenshots/legendary-desktop-dark.webp" width="760" alt="Legendary armaments, ashen remains, spells and talismans checklist, dark theme"><br>
+  <sub>Legendary items, with a link from each one to its route step.</sub>
+</p>
+
+### Map
+
+<p align="center">
+  <img src="docs/screenshots/map-desktop-dark.webp" width="760" alt="Maximized map of the Lands Between with the numbered route drawn on it, dark theme"><br>
+  <sub>The Lands Between with the route drawn through each phase, marker filters and the overview map.</sub>
+</p>
+
+<table>
+  <tr>
+    <td width="62%"><img src="docs/screenshots/map-dlc-desktop-light.webp" alt="Realm of Shadow map, light theme"></td>
+    <td width="38%"><img src="docs/screenshots/map-phone-dark.webp" alt="Maximized map on a phone, dark theme"></td>
+  </tr>
+  <tr>
+    <td align="center"><sub>Realm of Shadow (Shadow of the Erdtree)</sub></td>
+    <td align="center"><sub>The same map on a phone</sub></td>
+  </tr>
+</table>
+
+### Guide and settings
+
+<table>
+  <tr>
+    <td width="30%"><img src="docs/screenshots/guide-phone-light.webp" alt="The Guide tab on a phone, light theme"></td>
+    <td width="70%"><img src="docs/screenshots/settings-desktop-dark-green.webp" alt="Settings with the Mistwood green accent, dark theme"></td>
+  </tr>
+  <tr>
+    <td align="center"><sub>Guide tab</sub></td>
+    <td align="center"><sub>Settings: themes, accents (shown in Mistwood green), sync and backups</sub></td>
+  </tr>
+</table>
+
+<sub>Screenshots show a sample save part-way through the game.</sub>
 
 ## Use it
 
