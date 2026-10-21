@@ -18,7 +18,7 @@ export async function loadMapData() {
   const catById = new Map(cats.map((c) => { const ic = ICONS[c.id]; return [String(c.id), { ...c, id: String(c.id), glyph: ic?.[0] ?? c.glyph, color: ic?.[1] ?? c.color ?? COLORS[c.glyph] ?? COLORS.misc }]; }));
   const list = [];
   const byId = new Map();
-  const byLayer = { base: [], under: [], dlc: [] };
+  const byLayer = { base: [], under: [], hub: [], dlc: [] };
   for (const [id, cat, lat, lng, title, layer, sub, note, wiki] of rows) {
     const c = catById.get(String(cat));
     if (!c || !byLayer[layer] || !calib[layer]) continue;

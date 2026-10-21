@@ -8,7 +8,7 @@ import { PHASES } from "../js/data/route.js";
 import { DLC_PHASES } from "../js/data/dlc-route.js";
 
 const load = (l) => JSON.parse(readFileSync(new URL(`../assets/map/data/${l}.json`, import.meta.url), "utf8"));
-const data = { base: load("base"), under: load("under"), dlc: load("dlc") };
+const data = { base: load("base"), under: load("under"), hub: load("hub"), dlc: load("dlc") };
 const all = Object.values(data).flat();
 const catIds = new Set(CATS.map((k) => k.id));
 

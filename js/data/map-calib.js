@@ -3,6 +3,8 @@ export const CALIB = {
   base: { img: "assets/map/surface.webp", w: 1886, h: 1960, t: { _: [1872121.308, 0.0, -931667.87, 0.0, 1872121.308, -931285.193] } },
   under: { img: "assets/map/underground.webp", w: 2000, h: 1961, t: { ainsel: [3879145.19, 0.0, -1930564.749, 0.0, 3879145.19, -1934449.88], siofra: [3879145.19, 0.0, -1930880.325, 0.0, 3879145.19, -1935572.457], deeproot: [3879145.19, 0.0, -1931009.425, 0.0, 3879145.19, -1934666.823] } },
   dlc: { img: "assets/map/dlc.webp", w: 1883, h: 1960, t: { _: [4024875.957, 0.0, -2003772.973, 0.0, 4024875.957, -2004035.483] } },
+  // Roundtable Hold: MapGenie positions only, no fitted image (there is no public floor plan). 22,000,000 px per Web Mercator unit, 90px margin.
+  hub: { img: "assets/map/hub.svg", w: 1602, h: 1252, t: { _: [22000000.0, 0.0, -10946660.651, 0.0, 22000000.0, -10964284.541] } },
 };
 
 export function project(mapKey, sub, lat, lng) {

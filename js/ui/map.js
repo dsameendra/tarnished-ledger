@@ -17,18 +17,18 @@ import { buildRoute, phaseStarts, stopStates } from "./map-route.js";
 import * as ms from "./map-state.js";
 import * as sync from "../lib/sync.js";
 
-const LAYER_NAME = { base: "Lands Between", under: "Underground", dlc: "Realm of Shadow" };
+const LAYER_NAME = { base: "Lands Between", under: "Underground", dlc: "Realm of Shadow", hub: "Roundtable Hold" };
 // Non-black region of each image [x0, y0, x1, y1] in image pixels, measured from the art, and the underground sub-maps.
-const CONTENT = { base: [20, 8, 1872, 1952], under: [40, 32, 1964, 1916], dlc: [20, 16, 1856, 1932] };
+const CONTENT = { base: [20, 8, 1872, 1952], under: [40, 32, 1964, 1916], dlc: [20, 16, 1856, 1932], hub: [0, 0, 1602, 1252] };
 const SUBS = { ainsel: [36, 705, 716, 1936], siofra: [1118, 566, 1967, 1148], deeproot: [726, 57, 1252, 577] };
 const box = ([x0, y0, x1, y1]) => [[-y1, x0], [-y0, x1]];
 let L, map, D, cv, overlay, tiles, bounds, pinLayer, routeLayer, placeLayer;
 let fs = false; // maximized view
 let fitZ = 0;
-let shown = null; // mode on the map: base | under | dlc
+let shown = null; // mode on the map: base | under | hub | dlc
 let boot = null;
 let picked = ms.filter.world || null;
-let under = Boolean(ms.filter.under);
+let lay = ms.filter.lay || (ms.filter.under ? "under" : "base"); // which map of the base game: base | under | hub
 let selected = null; // { m } or { phase }
 let enabled = new Set();
 let dirty = false;
@@ -50,12 +50,13 @@ function world() {
   if (sc === "dlc") return "dlc";
   return picked || "base";
 }
-const mode = () => (world() === "dlc" ? "dlc" : under ? "under" : "base");
+const mode = () => (world() === "dlc" ? "dlc" : lay);
 const allowed = (layer) => (scope() === "both" || (scope() === "dlc") === (layer === "dlc"));
 
 function saveLayer() {
   ms.filter.world = picked;
-  ms.filter.under = under;
+  ms.filter.lay = lay;
+  ms.filter.under = lay === "under";
   ms.saveFilter();
 }
 
@@ -202,6 +203,7 @@ function setMode(m) {
   map.invalidateSize({ animate: false });
   const fz = limits();
   $("mapSubs").hidden = m !== "under";
+  if (m === "hub") status("Roundtable Hold: marker positions only. There is no public floor plan, so the rooms are not drawn.");
   const v = ms.views[m];
   if (fz !== null) {
     if (v && Number.isFinite(v.lat)) map.setView([v.lat, v.lng], Math.max(map.getMinZoom(), Math.min(map.getMaxZoom(), fz + v.d)), { animate: false });
@@ -240,7 +242,8 @@ function zoomState() {
 
 function refreshItems() {
   const f = ms.prefs();
-  const list = f.on ? D.byLayer[shown].filter((m) => enabled.has(m.cat) && !(f.hideFound && doneOf(m))) : [];
+  // The Roundtable Hold is small, so it always shows everything in it; the category filters apply to the world maps.
+  const list = f.on ? D.byLayer[shown].filter((m) => (shown === "hub" || enabled.has(m.cat)) && !(f.hideFound && doneOf(m))) : [];
   cv.setItems(list);
   const n = {};
   for (const m of D.byLayer[shown]) if (!(f.hideFound && doneOf(m))) n[m.cat] = (n[m.cat] || 0) + 1;
@@ -690,7 +693,7 @@ function selectPhase(pid, fly = true) {
   if (scope() === "both") { const w = p.dlc ? "dlc" : "base"; if (picked !== w && (picked || "base") !== w) { picked = w; saveLayer(); syncChrome(); setMode(mode()); } }
   const m = phaseAnchor(pid);
   if (fly && m && allowed(m.layer)) {
-    if (m.layer !== shown) { under = m.layer === "under"; saveLayer(); syncChrome(); if (mode() !== shown) setMode(mode()); }
+    if (m.layer !== shown) { lay = m.layer === "under" || m.layer === "hub" ? m.layer : "base"; saveLayer(); syncChrome(); if (mode() !== shown) setMode(mode()); }
     goTo(m, 2);
   }
   showSheet({ phase: pid });
@@ -703,7 +706,7 @@ function focusStep(stepId) {
   if (!list.length) { status("This step has no marker on the map."); return; }
   const first = list[0];
   if (list.length === 1 || list.some((m) => m.layer !== first.layer)) { goTo(first); selectMarker(first, from); return; }
-  if (first.layer !== shown) { under = first.layer === "under"; saveLayer(); syncChrome(); setMode(mode()); }
+  if (first.layer !== shown) { lay = first.layer === "under" || first.layer === "hub" ? first.layer : "base"; saveLayer(); syncChrome(); setMode(mode()); }
   const ll = list.map((m) => [-m.y, m.x]);
   const o = { padding: [70, 70], maxZoom: Math.min(map.getMaxZoom(), fitZ + 3), animate: !mq("(prefers-reduced-motion: reduce)"), duration: 0.7 };
   map.flyToBounds(ll, o);
@@ -840,7 +843,7 @@ function wireBelow() {
 
 function goTo(m, rel = 3) {
   if (scope() === "both") picked = m.layer === "dlc" ? "dlc" : "base";
-  under = m.layer === "under";
+  lay = m.layer === "under" || m.layer === "hub" ? m.layer : "base";
   saveLayer();
   syncChrome();
   if (mode() !== shown) setMode(mode());
@@ -892,7 +895,7 @@ function syncChrome() {
   $("mapWorld").hidden = sc !== "both";
   [...$("mapWorld").children].forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.v === w)));
   $("mapLayer").hidden = w === "dlc";
-  [...$("mapLayer").children].forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.v === (under ? "under" : "base"))));
+  [...$("mapLayer").children].forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.v === lay)));
 }
 
 function renderPhaseList() {
@@ -1007,7 +1010,7 @@ export function initMap() {
   $("mapLayer").addEventListener("click", (e) => {
     const b = e.target.closest("button");
     if (!b || !map) return;
-    under = b.dataset.v === "under";
+    lay = b.dataset.v;
     saveLayer();
     syncChrome();
     setMode(mode());

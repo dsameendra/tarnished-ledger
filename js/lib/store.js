@@ -5,6 +5,8 @@
 // Display settings (theme, text size, ...) are per device. The profile, counters, ticks, found markers and
 // the map filter choices sync.
 
+import { TWINS } from "../data/twins.js";
+
 const KEY = "tarnished-ledger:v2";
 const LEGACY_KEY = "er100-v1";
 
@@ -142,6 +144,7 @@ export function load() {
       lastBackup: Number(s.lastBackup) || 0,
     };
     adoptLegacyMap();
+    if (reconcileTwins()) write();
     return;
   }
   if (old) {
@@ -156,6 +159,7 @@ export function load() {
     } catch { /* legacy data unreadable: start fresh */ }
   }
   adoptLegacyMap();
+  if (reconcileTwins()) write();
 }
 
 // Before found markers and map filters synced, the map kept them under its own keys. Fold them in once.
@@ -194,15 +198,35 @@ export function setMapPrefs(patch) {
   emit("mapprefs", "local");
 }
 
+const twinOf = (id) => { for (const g of TWINS) if (g.includes(id)) return g.filter((x) => x !== id); return []; };
+
+// Make each pair of twin steps agree. The newer tick wins and keeps its timestamp, so every device settles the same way.
+function reconcileTwins() {
+  let changed = false;
+  for (const [a, b] of TWINS) {
+    const x = state.marks[a], y = state.marks[b];
+    if (!x && !y) continue;
+    if (x && y && x[0] === y[0]) continue;
+    const xWins = !y || (x && (x[1] > y[1] || (x[1] === y[1] && x[0] > y[0])));
+    const [win, lose] = xWins ? [a, b] : [b, a];
+    const w = state.marks[win];
+    if (!state.marks[lose] && !w[0]) continue;
+    state.marks[lose] = [w[0], w[1]];
+    changed = true;
+  }
+  return changed;
+}
+
 export function setDone(id, value) {
   state.marks[id] = [value ? 1 : 0, stamp(state.marks[id])];
+  for (const t of twinOf(id)) state.marks[t] = [value ? 1 : 0, stamp(state.marks[t])];
   write();
   emit("marks");
 }
 
 // Set several steps at once (a whole phase): one save and one update instead of one per step.
 export function setDoneMany(ids, value) {
-  for (const id of ids) state.marks[id] = [value ? 1 : 0, stamp(state.marks[id])];
+  for (const id of new Set([...ids, ...ids.flatMap(twinOf)])) state.marks[id] = [value ? 1 : 0, stamp(state.marks[id])];
   write();
   emit("marks");
 }
@@ -260,6 +284,7 @@ export function mergeMarks(remote, validIds) {
       changed = true;
     }
   }
+  if (reconcileTwins()) changed = true;
   if (changed) { write(); emit("marks"); }
   return changed;
 }

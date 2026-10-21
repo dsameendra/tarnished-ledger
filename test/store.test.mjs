@@ -49,3 +49,17 @@ test("importData restores counters from a v3 backup", () => {
   store.importData({ marks: {}, counters: { sf: [7, 1] } });
   assert.equal(store.counter("sf"), 7);
 });
+
+test("twin steps (base route and the DLC prerequisites) tick together and settle by newest timestamp", async () => {
+  const { TWINS } = await import("../js/data/twins.js");
+  const [a, b] = TWINS[0];
+  store.setDone(a, true);
+  assert.equal(store.isDone(b), true);
+  store.setDone(b, false);
+  assert.equal(store.isDone(a), false);
+  store.setDoneMany([a], true);
+  assert.equal(store.isDone(b), true);
+  // a remote copy that only knows one of them, and is newer, settles both
+  store.mergeMarks({ [a]: [0, Date.now() + 5000] });
+  assert.equal(store.isDone(b), false);
+});

@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1602 1252" width="1602" height="1252">
+  <defs>
+    <radialGradient id="g" cx="50%" cy="50%" r="75%"><stop offset="0" stop-color="#3b3328"/><stop offset="1" stop-color="#1c1813"/></radialGradient>
+    <pattern id="p" width="80" height="80" patternUnits="userSpaceOnUse"><path d="M80 0H0V80" fill="none" stroke="#c9a85c" stroke-opacity=".08" stroke-width="1"/></pattern>
+  </defs>
+  <rect width="1602" height="1252" fill="url(#g)"/>
+  <rect width="1602" height="1252" fill="url(#p)"/>
+  <rect x="30" y="30" width="1542" height="1192" rx="14" fill="none" stroke="#c9a85c" stroke-opacity=".35" stroke-width="2"/>
+  <rect x="42" y="42" width="1518" height="1168" rx="10" fill="none" stroke="#c9a85c" stroke-opacity=".18" stroke-width="1"/>
+  <g fill="#c9a85c" fill-opacity=".2" font-family="Georgia,serif" text-anchor="middle">
+    <text x="801" y="1196" font-size="26" letter-spacing="6">ROUNDTABLE HOLD</text>
+  </g>
+</svg>

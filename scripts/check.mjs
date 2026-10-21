@@ -125,7 +125,7 @@ if (themeMeta && man.theme_color && themeMeta.toLowerCase() !== man.theme_color.
 const warnings = [];
 const markerIds = new Set();
 const catIds = new Set(CATS.map((k) => k.id));
-for (const layer of ["base", "under", "dlc"]) {
+for (const layer of ["base", "under", "hub", "dlc"]) {
   for (const r of JSON.parse(readFileSync(new URL(`../assets/map/data/${layer}.json`, import.meta.url), "utf8"))) {
     if (markerIds.has(r[0])) err(`duplicate marker id ${r[0]}`);
     markerIds.add(r[0]);

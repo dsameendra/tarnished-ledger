@@ -3,11 +3,11 @@
 import { verbFor } from "../data/map-verbs.js";
 import { iconURL } from "./map-glyphs.js";
 
-const LAYER_NAME = { base: "Lands Between", under: "Underground", dlc: "Realm of Shadow" };
+const LAYER_NAME = { base: "Lands Between", under: "Underground", dlc: "Realm of Shadow", hub: "Roundtable Hold" };
 const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
 
 // Layers that belong to the current scope: base game, DLC only, or both.
-export const layersFor = (scope) => (scope === "dlc" ? ["dlc"] : scope === "both" ? ["base", "under", "dlc"] : ["base", "under"]);
+export const layersFor = (scope) => (scope === "dlc" ? ["dlc"] : scope === "both" ? ["base", "under", "hub", "dlc"] : ["base", "under", "hub"]);
 
 // A marker is done when you ticked it on the map or a route step that covers it is ticked.
 export function markerDone(D, id, isFound, stepDone) {
