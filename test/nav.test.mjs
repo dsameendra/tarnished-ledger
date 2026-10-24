@@ -18,7 +18,7 @@ test("phone nav: four tabs, six views, hash ids unchanged", () => {
 test("phone nav css: opposite tab sets per breakpoint, 12px labels, 44px rows", () => {
   assert.match(css, /\.nav \.tab-d \{ display: none; \}/);
   assert.match(css, /\.nav \.tab-m, \.ckswitch, \.moresheet \{ display: none !important; \}/);
-  assert.match(css, /\.nav button \{ font-size: \.75rem; \}/);
+  assert.match(css, /\.nav button \{[^}]*font-size: var\(--fs-xs\)/);
   assert.match(css, /\.more-row \{[^}]*min-height: 52px/);
   assert.match(css, /\.seg\.ckswitch button \{ min-height: 44px/);
 });
