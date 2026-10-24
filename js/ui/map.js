@@ -984,6 +984,7 @@ export function initMap() {
     else if (b.dataset.z === "fit") fitAll(); else map.setZoom(map.getZoom() + (b.dataset.z === "in" ? 1 : -1));
   });
   $("mapHere").addEventListener("click", findMe);
+  $("mapSkip").addEventListener("click", () => { $("mapBelowBtn").focus(); $("mapBelowBtn").scrollIntoView({ block: "center" }); });
   wireBelow();
   $("mapGo").addEventListener("change", (e) => { goPlace(e.target.value); e.target.value = ""; });
   wireFs();

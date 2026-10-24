@@ -209,12 +209,13 @@ details.phase > summary::-webkit-details-marker { display: none; }
 .ph-links a { font-size: .84rem; display: inline-block; padding: 8px 0; }
 ol.steps { list-style: none; margin: 0; padding: 0 10px 10px; display: flex; flex-direction: column; gap: 6px; }
 
-.step { display: grid; grid-template-columns: auto auto 1fr; gap: 12px; align-items: start; background: var(--raised); border: 1px solid var(--line); border-radius: 10px; padding: 11px 12px; cursor: pointer; transition: background .25s, opacity .25s; }
+.step { display: grid; grid-template-columns: auto auto 1fr; gap: 12px; align-items: start; background: var(--raised); border: 1px solid var(--line); border-radius: 10px; padding: 11px 12px; cursor: pointer; transition: background .25s; }
 .step.tip { grid-template-columns: auto 1fr; background: transparent; border-style: dashed; cursor: default; }
 .step.warn { background: var(--warn-soft); border-color: color-mix(in srgb, var(--warn) 35%, transparent); }
 .step.flash { background: var(--accent-soft); }
-.step.checked { opacity: .7; }
-.step.checked .txt p { text-decoration: line-through; text-decoration-color: color-mix(in srgb, var(--muted) 55%, transparent); }
+.step.checked { background: var(--surface); }
+.step.checked .ico { opacity: .6; }
+.step.checked .txt p { color: var(--muted); text-decoration: line-through; text-decoration-color: color-mix(in srgb, var(--muted) 55%, transparent); }
 .compact .step { padding: 7px 10px; gap: 10px; grid-template-columns: auto 1fr; }
 .compact .ico, .compact .chips, .compact .links { display: none; }
 .hide-done .step.checked, .hide-done .phase.done, .no-tips .step.tip, .step.nomatch, .phase.nomatch { display: none; }
@@ -399,7 +400,7 @@ code { font-size: .85em; background: var(--raised); border: 1px solid var(--line
 .seg { display: inline-flex; border: 1px solid var(--edge); border-radius: 9px; overflow: hidden; background: var(--raised); flex-wrap: wrap; }
 .seg button { border: 0; background: none; padding: 7px 12px; font-size: .88rem; cursor: pointer; color: var(--muted); min-height: 38px; }
 .seg-filter button { min-height: 44px; padding-inline: 16px; }
-.seg-filter button i { font-style: normal; font-variant-numeric: tabular-nums; opacity: .8; margin-left: 2px; }
+.seg-filter button i { font-style: normal; font-variant-numeric: tabular-nums; margin-left: 2px; }
 .seg button[aria-pressed="true"] { background: var(--accent); color: var(--onaccent); font-weight: 700; }
 .swatches { display: flex; gap: 10px; }
 .swatches button { width: 34px; height: 34px; border-radius: 50%; border: 2px solid var(--edge); cursor: pointer; padding: 0; }
@@ -551,14 +552,16 @@ html.map-fs, html.map-fs body { overflow: hidden; overscroll-behavior: none; }
 .pg-cat { border-top: 1px dashed var(--line); }
 .pg-row { display: grid; grid-template-columns: 22px minmax(0, 1fr) auto; column-gap: 10px; row-gap: 4px; align-items: center; width: 100%; min-height: 52px; padding: 8px 4px; background: none; border: 0; color: var(--fg); text-align: left; cursor: pointer; font: inherit; }
 .pg-row .pg-bar { grid-column: 2 / -1; }
-.pg-row:hover, .pg-row:focus-visible { background: var(--accent-soft); outline: none; }
+.pg-row:hover, .pg-row:focus-visible { background: var(--accent-soft); }
+.pg-row:focus-visible { outline: 2px solid var(--accent); outline-offset: -3px; }
 .pg-n { color: var(--muted); font-variant-numeric: tabular-nums; font-size: .9rem; }
 .pg-cat.all .pg-n { color: var(--ok); }
 .pg-body { padding: 0 4px 10px 32px; display: grid; gap: 6px; }
 .pg-body h4 { margin: 4px 0 0; font: 700 .9rem var(--body); display: flex; gap: 8px; align-items: baseline; }
 .pg-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
 .pg-list button { display: flex; justify-content: space-between; gap: 10px; width: 100%; min-height: 44px; align-items: center; padding: 4px 8px; background: none; border: 0; border-radius: 8px; color: var(--fg); text-align: left; cursor: pointer; font: inherit; }
-.pg-list button:hover, .pg-list button:focus-visible { background: var(--accent-soft); outline: none; }
+.pg-list button:hover, .pg-list button:focus-visible { background: var(--accent-soft); }
+.pg-list button:focus-visible { outline: 2px solid var(--accent); outline-offset: -3px; }
 .pg-w { color: var(--muted); font-size: .8rem; flex: none; }
 .pg-empty { margin: 0; color: var(--muted); font-size: .9rem; }
 .pg-done > summary { cursor: pointer; min-height: 44px; display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: .9rem; }
@@ -592,7 +595,19 @@ html.map-fs, html.map-fs body { overflow: hidden; overscroll-behavior: none; }
 @media (min-width: 900px) { .mapcard.fs .mapsheet.phase { width: 400px; top: 66px; max-height: calc(100% - 84px); } }
 .maplink { display: inline-flex; align-items: center; min-height: 36px; padding: 0 12px; margin-top: 2px; border: 1px solid var(--edge); border-radius: 999px; background: var(--raised); color: var(--accent); font: inherit; font-size: .84rem; font-weight: 700; cursor: pointer; }
 .maplink:hover, .maplink:focus-visible { background: var(--accent-soft); }
-@media (pointer: coarse) { .maplink { min-height: 44px; } }
+@media (pointer: coarse) {
+  .maplink { min-height: 44px; }
+  .seg button { min-height: 44px; }
+  .swatches { gap: 6px; }
+  .swatches button { width: 44px; height: 44px; }
+  .switch::before { content: ""; position: absolute; inset: -7px 0; }
+  .set a, .prose a { padding-block: 10px; }
+}
+/* A short landscape phone: leave room under the inline map so a swipe on the page can still scroll (Maximize is the way to explore). */
+@media (orientation: landscape) and (max-height: 500px) { .mapcard:not(.fs) .mapstage { height: clamp(200px, 55svh, 340px); } }
+.skipmap { position: absolute; left: -9999px; border: 0; font: inherit; cursor: pointer; }
+.skipmap:focus { position: static; display: inline-block; margin: 0 0 8px; padding: 10px 16px; border-radius: 9px; background: var(--accent); color: var(--onaccent); font-weight: 700; }
+.mapcard.fs .skipmap { display: none; }
 .ms-sub { margin: 10px 0 0; font: 700 .86rem var(--body); color: var(--muted); }
 .ms-steps { margin-top: 2px; }
 .ps-t small { color: var(--muted); font-weight: 700; margin-right: 4px; }

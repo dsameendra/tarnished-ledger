@@ -132,10 +132,12 @@
           <button type="button" class="btn mapfs" id="mapFs" aria-pressed="false" aria-label="Maximize the map"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Maximize</span></button>
           <button type="button" class="btn" id="mapFilterBtn" aria-expanded="false" aria-controls="mapPanel">Markers <span id="mapFilterCount"></span></button>
         </div>
+        <button type="button" class="skipmap" id="mapSkip">Skip the map controls</button>
         <p class="mapstatus" id="mapStatus" role="status" aria-live="polite"></p>
         <div class="mapwrap" id="mapWrap">
           <div class="mapstage">
-            <div id="map" aria-label="Interactive map. Drag to pan, plus and minus keys to zoom."></div>
+            <p class="sr" id="mapHelp">Markers on the map cannot be focused. To open one, use Find a marker, Go to, or the lists under Map progress. Arrow keys pan the map and plus and minus zoom it.</p>
+            <div id="map" aria-label="Interactive map. Drag to pan, plus and minus keys to zoom." aria-describedby="mapHelp"></div>
             <div class="mapsearch">
               <input type="search" id="mapSearch" placeholder="Find a marker by name" aria-label="Find a marker by name" autocomplete="off" disabled>
               <ul id="mapResults" aria-label="Matching markers" hidden></ul>
