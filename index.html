@@ -44,7 +44,7 @@
 <a class="skip" href="#main">Skip to content</a>
 <div class="shell">
 
-  <aside class="rail">
+  <aside class="rail" aria-label="Progress">
     <div class="top">
       <img src="assets/icons/icon-180.png" alt="" width="44" height="44">
       <h1>Tarnished's Ledger <small id="rail-sub">Elden Ring 100% route</small></h1>
@@ -64,7 +64,7 @@
       <div class="minis" id="minis">
         <div class="mini"><span>Steps</span><span id="sSteps">0/0</span><div class="bar"><i id="bSteps"></i></div></div>
         <div class="mini" id="mTro"><span id="lblTro">Trophies</span><span id="sTro">0/42</span><div class="bar"><i id="bTro"></i></div></div>
-        <div class="mini" id="mLeg"><span>Legendaries</span><span id="sLeg">0/30</span><div class="bar"><i id="bLeg"></i></div></div>
+        <div class="mini" id="mLeg"><span>Legendary items</span><span id="sLeg">0/30</span><div class="bar"><i id="bLeg"></i></div></div>
         <div class="mini" id="mGoal" hidden><span>DLC goals</span><span id="sGoal">0/0</span><div class="bar"><i id="bGoal"></i></div></div>
         <div class="mini" id="mBless" hidden><span>Blessings</span><span id="sBless">0/75</span><div class="bar"><i id="bBless"></i></div></div>
       </div>
@@ -79,7 +79,7 @@
       <div class="next" id="next"></div>
       <aside class="welcome" id="welcome" hidden aria-labelledby="welcomeH">
         <h2 id="welcomeH">Welcome, Tarnished</h2>
-        <p>Tick the box beside a step when you finish it. Ticks save on this device, and finishing a step ticks its trophy for you. Playing Shadow of the Erdtree, or using a second device? Settings has both.</p>
+        <p>Tick the box beside a step when you finish it. Ticks save on this device, and finishing a step ticks its <span id="welcomeTr">trophy</span> for you. Playing Shadow of the Erdtree, or using a second device? Settings has both.</p>
         <div class="acts"><button type="button" class="btn primary" id="welcomeOk">Got it</button><button type="button" class="btn" id="welcomeSet">Open settings</button></div>
       </aside>
       <div class="toolbar">
@@ -89,8 +89,8 @@
           <button type="button" class="qclear" id="qClear" aria-label="Clear search" hidden>&times;</button>
         </label>
         <label class="jumpph"><span class="sr">Jump to a phase</span><select id="jumpPhase" aria-label="Jump to a phase"></select></label>
-        <button class="btn" id="compactBtn" type="button" aria-pressed="false">Compact</button>
-        <button class="btn" id="hideBtn" type="button" aria-pressed="false">Hide done</button>
+        <button class="btn" id="compactBtn" type="button" title="Compact steps: tighter rows without icons or tags" aria-pressed="false">Compact</button>
+        <button class="btn" id="hideBtn" type="button" title="Hide completed steps" aria-pressed="false">Hide done</button>
         <button class="btn" id="foldBtn" type="button">Collapse all</button>
       </div>
       <p class="qcount" id="qCount" role="status" aria-live="polite" hidden></p>
@@ -113,8 +113,8 @@
     </section>
 
     <section id="v-col" hidden>
-      <h2 class="view-h">Legendaries</h2>
-      <p class="note">Four trophies need a full set: Legendary Armaments (9), Ashen Remains (6), Sorceries and Incantations (7) and Talismans (8). Nothing else in the game has to be collected.</p>
+      <h2 class="view-h">Legendary items</h2>
+      <p class="note" id="colNote">Four trophies need a full set: Legendary Armaments (9), Ashen Remains (6), Sorceries and Incantations (7) and Talismans (8). Nothing else in the game has to be collected.</p>
       <div id="colList"></div>
     </section>
 

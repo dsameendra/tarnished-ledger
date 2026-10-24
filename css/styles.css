@@ -17,6 +17,8 @@
   --edge: var(--l-edge);
   --accent: var(--acc-l);
   --accent-soft: color-mix(in srgb, var(--accent) 16%, var(--surface));
+  --accent-ink: color-mix(in srgb, var(--accent) 75%, var(--fg)); /* text on an accent tint: 5.8:1 or better in every accent and theme */
+  --muted-ink: color-mix(in srgb, var(--muted) 78%, var(--fg)); /* muted text on an accent tint */
   --warn: #a3392a;
   --warn-soft: #f4ddd5;
   --ok: #4a6b3a;
@@ -42,7 +44,7 @@
 :root { --l-bg: #ece8de; --l-surface: #f8f6f0; --l-raised: #fffdf8; --l-fg: #221f18; --l-muted: #655e4e; --l-line: #d6cfbf; --l-edge: #8a8271;
   --d-bg: #13120d; --d-surface: #1c1a14; --d-raised: #24211a; --d-fg: #ede6d5; --d-muted: #aaa18b; --d-line: #35312a; --d-edge: #7a7565; }
 :root[data-accent="crimson"] { --l-bg: #f0dade; --l-surface: #faeef0; --l-raised: #fff8f9; --l-fg: #22181a; --l-muted: #6c474d; --l-line: #ddb8be; --l-edge: #926a70;
-  --d-bg: #160a0c; --d-surface: #201012; --d-raised: #2a1418; --d-fg: #e8dadd; --d-muted: #be838b; --d-line: #3b2428; --d-edge: #865961; }
+  --d-bg: #160a0c; --d-surface: #201012; --d-raised: #2a1418; --d-fg: #e8dadd; --d-muted: #be838b; --d-line: #3b2428; --d-edge: #90636b; }
 :root[data-accent="frost"] { --l-bg: #d9e5f1; --l-surface: #edf4fb; --l-raised: #f8fcff; --l-fg: #181d22; --l-muted: #46596d; --l-line: #b7cade; --l-edge: #687d93;
   --d-bg: #091017; --d-surface: #0f1821; --d-raised: #141f2a; --d-fg: #dae1e8; --d-muted: #7d9ec0; --d-line: #232f3c; --d-edge: #576f88; }
 :root[data-accent="silver"] { --l-bg: #e1e2e9; --l-surface: #f2f2f6; --l-raised: #fafafd; --l-fg: #181922; --l-muted: #535560; --l-line: #c4c6d1; --l-edge: #777884;
@@ -163,15 +165,15 @@ section[hidden] { display: none; }
 .map-fs .toast { bottom: calc(var(--safe-b) + 16px); z-index: 3000; }
 /* phone navigation (A3): four tabs (Route, Checklists, Map, More); the six-item set shows from 980px up */
 .nav .tab-d { display: none; }
-.seg.ckswitch { display: flex; margin: 0 0 12px; }
+.seg.ckswitch { display: flex; margin: 12px 0; }
 .seg.ckswitch button { min-height: 44px; flex: 1; font-size: var(--fs-ui); }
 .seg.ckswitch[hidden], .moresheet[hidden] { display: none; }
 .moresheet { position: fixed; inset: 0 0 var(--navh, 64px); z-index: 19; display: flex; flex-direction: column; justify-content: flex-end; }
 .more-scrim { position: absolute; inset: 0; background: rgb(0 0 0 / .45); }
-.more-list { position: relative; margin: 0 8px 8px; padding: 6px; display: grid; background: var(--raised); border: 1px solid var(--line); border-radius: var(--r-lg); box-shadow: 0 -8px 28px rgb(0 0 0 / .4); }
+.more-list { position: relative; margin: 0 max(16px, var(--safe-r)) 8px max(16px, var(--safe-l)); padding: 6px; display: grid; background: var(--raised); border: 1px solid var(--line); border-radius: var(--r-lg); box-shadow: 0 -8px 28px rgb(0 0 0 / .4); }
 .more-row { display: flex; align-items: center; gap: 14px; min-height: 52px; padding: 0 14px; border: 0; border-radius: var(--r-md); background: none; color: var(--fg); font: inherit; font-size: var(--fs-lg); text-align: left; cursor: pointer; }
 .more-row svg { width: 22px; height: 22px; stroke: currentColor; fill: none; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; flex: none; }
-.more-row[aria-current="page"] { background: var(--accent-soft); color: var(--accent); font-weight: 700; }
+.more-row[aria-current="page"] { background: var(--accent-soft); color: var(--accent-ink); font-weight: 700; }
 .more-row:focus-visible { outline: 2px solid var(--accent); outline-offset: -3px; }
 @media (min-width: 980px) {
   .nav .tab-d { display: flex; }
@@ -212,7 +214,6 @@ section[hidden] { display: none; }
   .hero .minis { grid-column: 1 / -1; padding-bottom: 6px; }
 }
 @media (max-width: 699.98px) {
-  .step.checked .chips, .step.checked .links { display: none; }
   .step[data-kind="go"] { grid-template-columns: auto 1fr; }
   .step[data-kind="go"] .ico { display: none; }
 }
@@ -229,7 +230,7 @@ section[hidden] { display: none; }
 
 /* up next */
 .next { margin: 12px 0 14px; padding: 14px 16px; border-radius: var(--r-lg); background: var(--accent-soft); border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent); }
-.next .where small { font: var(--fs-sm) var(--display); color: var(--muted); margin-left: 10px; letter-spacing: 0; }
+.next .where small { font: var(--fs-sm) var(--display); color: var(--muted-ink); margin-left: 10px; letter-spacing: 0; }
 .next .where { font-family: var(--display); font-size: var(--fs-lg); margin: 0 0 6px; }
 .next p { margin: 0 0 12px; max-width: 70ch; }
 .acts { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
@@ -333,12 +334,12 @@ details.phase.ahead:not([open]):last-of-type > summary::before { bottom: 50%; }
 .txt p { margin: 0; max-width: 72ch; }
 .chips { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
 .chip { max-width: 100%; overflow-wrap: anywhere; font-size: var(--fs-xs); letter-spacing: .07em; text-transform: uppercase; padding: 2px 7px; border-radius: 4px; border: 1px solid var(--line); color: var(--muted); font-weight: 700; }
-.chip.trophy { background: var(--accent-soft); border-color: transparent; color: var(--accent); }
+.chip.trophy { background: var(--accent-soft); border-color: transparent; color: var(--accent-ink); }
 .chip.legend { background: var(--accent); border-color: var(--accent); color: var(--onaccent); }
 .chip.miss { background: var(--warn); border-color: var(--warn); color: var(--surface); }
 .chip.key { border-color: var(--accent); color: var(--accent); }
 .links { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 6px; }
-.links a { font-size: var(--fs-sm); padding: 4px 0; text-decoration: none; border-bottom: 1px solid color-mix(in srgb, var(--accent) 40%, transparent); }
+.links a { font-size: var(--fs-sm); padding: 4px 0; text-decoration: underline; text-decoration-color: color-mix(in srgb, var(--accent) 45%, transparent); text-underline-offset: 3px; }
 
 /* lighter step rows on phones: tick, text, one muted meta line; wiki and map sit behind "More" (always open on the current step) */
 .step .meta, .step .more { display: none; }
@@ -353,14 +354,15 @@ details.phase.ahead:not([open]):last-of-type > summary::before { bottom: 50%; }
   .step .more { display: grid; place-items: center; position: relative; width: 30px; height: 30px; margin-top: -2px; border: 0; border-radius: 8px; background: transparent; color: var(--muted); cursor: pointer; padding: 0; }
   .step .more::after { content: ""; position: absolute; inset: -6px -6px -6px -6px; }
   .step .more svg { width: 20px; height: 20px; fill: currentColor; }
-  .step .more[aria-expanded="true"] { background: var(--accent-soft); color: var(--accent); }
+  .step .more[aria-expanded="true"] { background: var(--accent-soft); color: var(--accent-ink); }
   .step.open .links, .step.cur .links { display: flex; }
   .step.cur .more { display: none; }
   .step.cur:not(.checked) { border-color: color-mix(in srgb, var(--accent) 55%, var(--line)); }
   .step .links a, .step .links .maplink { min-height: 44px; display: inline-flex; align-items: center; padding-block: 0; }
-  .step.checked .meta, .step.checked .links, .step.checked .more, .step.checked .chips { display: none; }
+  .step.checked .meta { display: none; }
+  .step.checked.open .meta { display: block; }
   .toolbar .btn { padding-inline: 8px; white-space: nowrap; }
-  .toolbar .btn[aria-pressed="true"] { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); }
+  .toolbar .btn[aria-pressed="true"] { background: var(--accent-soft); border-color: var(--accent); color: var(--accent-ink); }
   .compact .step .meta { display: none; }
   .compact .step:not(.tip) { grid-template-columns: auto 1fr auto; padding: 5px 4px 5px 10px; }
 }
@@ -375,7 +377,7 @@ details.phase.ahead:not([open]):last-of-type > summary::before { bottom: 50%; }
 .row.tr { align-items: center; }
 .row[data-tog] { cursor: pointer; }
 .row.checked .row-name { color: var(--muted); text-decoration: line-through; }
-.row .check { width: 24px; height: 24px; border-radius: var(--r-sm); position: relative; }
+.row .check { width: 28px; height: 28px; border-radius: var(--r-sm); position: relative; }
 .row button.check::after { content: ""; position: absolute; inset: -10px; }
 .row[data-tog]:hover { background: color-mix(in srgb, var(--accent) 7%, transparent); }
 .row[data-tog]:focus-within { background: color-mix(in srgb, var(--accent) 7%, transparent); }
@@ -757,7 +759,7 @@ html.map-fs, html.map-fs body { overflow: hidden; overscroll-behavior: none; }
 .mp-break.in { transform: translate(-50%, 90%); } /* "From X" sits below the stop so it does not stack on a nearby "To X" */
 .mp-break { position: absolute; transform: translate(-50%, -165%); white-space: nowrap; background: #14130e; color: #fffdf6; border: 1px solid #f2c14e; border-radius: 999px; padding: 2px 9px; font: 700 11px system-ui, sans-serif; box-shadow: 0 1px 5px rgb(0 0 0 / .6); pointer-events: none; }
 .maplegend .lg-line { display: inline-block; width: 18px; height: 0; border: 0; border-top: 4px solid; border-radius: 2px; margin-right: 5px; vertical-align: 2px; background: none; }
-.maplegend .lg-line.lg-done { border-color: #8fd06a; } .maplegend .lg-line.lg-next { border-color: #f2c14e; } .maplegend .lg-line.lg-ahead { border-top: 3px dashed #fffdf6; }
+.maplegend .lg-line.lg-done { border-color: #8fd06a; } .maplegend .lg-line.lg-next { border-color: #f2c14e; } .maplegend .lg-line.lg-ahead { border-top: 3px dashed var(--muted); }
 .maptile { max-width: none !important; image-rendering: auto; }
 
 /* Installed iPhone/iPad app only (html.ios-pwa is set by the script in index.html). The status bar is translucent and the page
@@ -771,10 +773,54 @@ html.ios-pwa {
 html.ios-pwa .shell { padding-top: calc(14px + var(--top-inset)); }
 @media (min-width: 980px) { html.ios-pwa .shell { padding-top: calc(28px + var(--top-inset)); } }
 
+/* Review pass (UI/UX polish). */
+::placeholder { color: var(--muted); opacity: 1; }
+/* done steps recede at every width: tags and links fold away; the "..." button (or keyboard focus) brings them back */
+.step.checked .chips, .step.checked .links { display: none; }
+.step.checked.open .chips, .step.checked.open .links { display: flex; }
+.step.checked .more { display: grid; place-items: center; position: relative; width: 30px; height: 30px; margin-top: -2px; border: 0; border-radius: 8px; background: transparent; color: var(--muted); cursor: pointer; padding: 0; }
+.step.checked .more::after { content: ""; position: absolute; inset: -6px; }
+.step.checked .more svg { width: 20px; height: 20px; fill: currentColor; }
+.step.checked .more[aria-expanded="true"] { background: var(--accent-soft); color: var(--accent-ink); }
+.step.checked:has(:focus-visible) .chips, .step.checked:has(:focus-visible) .links { display: flex; }
+@media (min-width: 700px) {
+  .step.checked:not(.tip) { grid-template-columns: auto auto 1fr auto; }
+  .compact .step.checked:not(.tip) { grid-template-columns: auto 1fr auto; }
+  .compact .step.checked .more { display: none; }
+}
+/* the Platinum row (and any row with no step) is a locked medal, not a checkbox */
+.row .check.lock { border-style: dashed; cursor: default; }
+.row .check.lock .lk { width: 15px; height: 15px; stroke: var(--muted); stroke-width: 2; fill: none; stroke-linecap: round; stroke-linejoin: round; opacity: 1; }
+.row .check.lock .tk { display: none; }
+.row.checked .check.lock { border-style: solid; }
+.row.checked .check.lock .tk { display: block; }
+.row.checked .check.lock .lk { display: none; }
+/* a tap on the text of a step on a touch screen only pulses the box it should have used */
+@keyframes tickhint { 0%, 100% { box-shadow: 0 0 0 0 transparent; } 40% { box-shadow: 0 0 0 7px color-mix(in srgb, var(--accent) 45%, transparent); } }
+.check.hint { animation: tickhint .6s ease-out 2; }
+/* "Mark phase done" is a quiet text action, apart from the "Show phase on map" pill */
+.ph-links .maplink[data-phaseall] { margin-left: auto; min-height: 36px; padding: 0 4px; border: 0; background: none; border-radius: var(--r-sm); color: var(--muted); font-weight: 400; text-decoration: underline; text-underline-offset: 3px; }
+.ph-links .maplink[data-phaseall]:hover, .ph-links .maplink[data-phaseall]:focus-visible { background: none; color: var(--fg); }
+@media (pointer: coarse) {
+  .ph-links .maplink[data-phaseall] { min-height: 44px; }
+  .links a { display: inline-flex; align-items: center; min-height: 44px; padding-block: 0; }
+}
+/* the Trophies / Legendary / DLC switch on phones, in Main game and DLC mode */
+@media (max-width: 979.98px) {
+  #v-tro[data-sub="dlc"] #troList, #v-tro[data-sub="tro"] #dlcGoals { display: none; }
+}
+/* 360px and narrower (and Large text on a small phone): search takes a row, Jump and Compact share the next */
+@media (max-width: 360px) {
+  #v-route .toolbar .search { grid-column: span 6; }
+  #v-route .toolbar .jumpph, #v-route .toolbar .btn { grid-column: span 3; }
+}
+/* meta lines break after a middot, never before one */
+.row-where { overflow-wrap: anywhere; }
+
 /* Touch targets and reflow leftovers (44px hit areas for ticks, switches and standalone links; no layout change: the extra
    area comes from pseudo-element insets, or from padding cancelled by a negative margin). Keep this block last. */
 @media (pointer: coarse) {
-  .row button.check::after { inset: -12px; }     /* 24px box + 2 x 2px border inside the inset = 44px */
+  .row button.check::after { inset: -10px; }     /* 28px box inside the inset = 48px, the same as a route step */
   .jump::after { content: ""; position: absolute; inset: -13px -6px; }
   .ph-links a { padding-block: 12px; margin-block: -4px; }
   .set a, .prose a, .note a, .hint a, .mapcredit a, #sources a { padding-block: 13px; }

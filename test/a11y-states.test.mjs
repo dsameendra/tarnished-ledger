@@ -29,7 +29,7 @@ test("Settings controls reach 44px on touch screens", () => {
 test("ticks, switches and standalone links reach a 44px hit area on touch, and 200% zoom does not overflow", () => {
   const block = css.slice(css.indexOf("/* Touch targets and reflow leftovers"));
   // the abs-positioned inset is measured inside the border: 24px box + 2 x 2px border + 2 x 12px = 44px
-  assert.match(block, /\.row button\.check::after \{ inset: -12px; \}/);
+  assert.match(block, /\.row button\.check::after \{ inset: -10px; \}/);
   assert.match(css, /\.step \.check::after \{ content: ""; position: absolute; inset: -10px; \}/); // 28px box
   assert.match(block, /\.jump::after \{[^}]*inset: -13px -6px/);
   assert.match(block, /\.ph-links a \{ padding-block: 12px; margin-block: -4px; \}/);

@@ -23,8 +23,12 @@ export const PATHS = {
   list: '<path d="M4 6.5l1.5 1.5L8 5.5M4 12.5l1.5 1.5L8 11.5M4 18.5l1.5 1.5L8 17.5M11 7h9M11 13h9M11 19h9"/>',
   more: '<circle cx="5" cy="12" r="1.3"/><circle cx="12" cy="12" r="1.3"/><circle cx="19" cy="12" r="1.3"/>',
   search: '<circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/>',
+  gear: '<path d="M10.5 4.6L10.9 2.5h2.2l.4 2.1 2.7 1.1 1.7-1.3 1.7 1.7-1.3 1.7 1.1 2.7 2.1.4v2.2l-2.1.4-1.1 2.7 1.3 1.7-1.7 1.7-1.7-1.3-2.7 1.1-.4 2.1h-2.2l-.4-2.1-2.7-1.1-1.7 1.3-1.7-1.7 1.3-1.7-1.1-2.7-2.1-.4v-2.2l2.1-.4 1.1-2.7-1.3-1.7 1.7-1.7 1.7 1.3z"/><circle cx="12" cy="12" r="3"/>',
+  book: '<path d="M12 6.5C9.8 5 7 4.5 4 4.9V18c3-.4 5.8.1 8 1.6 2.2-1.5 5-2 8-1.6V4.9c-3-.4-5.8.1-8 1.6z"/><path d="M12 6.5v13.1M7 8.5c1-.1 1.9 0 2.8.3M7 12c1-.1 1.9 0 2.8.3"/>',
+  lock: '<rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3M12 14.5v2"/>',
 };
 
+export const lockSVG = '<svg class="lk" viewBox="0 0 24 24" aria-hidden="true">' + PATHS.lock + '</svg>';
 export const tickSVG = '<svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7"/></svg>';
 export const ico = (name) => `<svg viewBox="0 0 24 24" aria-hidden="true">${PATHS[name] || PATHS.go}</svg>`;
 
