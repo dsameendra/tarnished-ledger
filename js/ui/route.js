@@ -6,7 +6,7 @@ import { BOSS_TERMS } from "../data/links.js";
 import { STEP_LOCS } from "../data/map-guide.js";
 import { AREAS, DLC_AREAS } from "../data/map.js";
 import { trophyWord } from "../lib/labels.js";
-import { showToast, clip } from "./toast.js";
+import { showToast } from "./toast.js";
 
 let programmatic = false;
 let query = "";
@@ -233,21 +233,19 @@ function alsoTicked(step) {
   return out;
 }
 
+let lastTick = null;
+
 export function toggle(id) {
   const before = currentPhase();
   const prev = store.isDone(id);
   store.setDone(id, !prev);
   const step = stepById.get(id);
   const after = currentPhase();
-  if (step) {
-    // long names are cut at a word boundary; "also ticked" lists at most two items, the rest is counted
-    const extra = !prev ? alsoTicked(step).map((x) => clip(x, 34)) : [];
-    const more = extra.length > 2 ? ` and ${extra.length - 2} more` : "";
-    showToast(`${prev ? "Unticked" : "Ticked"}: ${clip(step.text)}${extra.length ? ` · also ticked ${extra.slice(0, 2).join(", ")}${more}` : ""}`, () => {
-      store.setDone(id, prev);
-      if (currentPhase() === before) moveOpen(after, before);
-    });
-  }
+  // No message for a single tick (one tap reverses it); Ctrl/Cmd+Z undoes the last one. A step that also earned a
+  // trophy, legendary item or goal gets a brief outline instead of a notice.
+  lastTick = () => { store.setDone(id, prev); if (currentPhase() === before) moveOpen(after, before); };
+  const li = step && !prev && alsoTicked(step).length ? document.getElementById("s-" + id) : null;
+  if (li) { li.classList.add("earned"); setTimeout(() => li.classList.remove("earned"), 1400); }
   moveOpen(before, after);
 }
 
@@ -341,6 +339,14 @@ export function initRoute() {
     if (!store.setting("autoopen")) store.setClosed(e.target.dataset.pid, !e.target.open);
   }, true);
   $("q").addEventListener("input", (e) => setQuery(e.target.value));
+  document.addEventListener("keydown", (e) => {
+    if (!(e.ctrlKey || e.metaKey) || e.shiftKey || e.key.toLowerCase() !== "z" || !lastTick || !$("toast").hidden) return;
+    if (/^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement?.tagName || "")) return;
+    e.preventDefault();
+    const fn = lastTick;
+    lastTick = null;
+    fn();
+  });
   $("jumpPhase").addEventListener("change", (e) => {
     const el = $("p-" + e.target.value);
     e.target.value = "";

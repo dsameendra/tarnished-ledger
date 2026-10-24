@@ -44,20 +44,16 @@ test("the map is a labelled group (not an application, which would switch off sc
   assert.match(html, /<div id="map" role="group" aria-label="Interactive map/);
 });
 
-test("toast: names are cut at a word boundary, and map ticks have an Undo", async () => {
-  const toast = readFileSync(new URL("../js/ui/toast.js", import.meta.url), "utf8");
+test("notifications are rare: single ticks and map ticks show no toast, only Mark phase done does", () => {
   const map = readFileSync(new URL("../js/ui/map.js", import.meta.url), "utf8");
   const route = readFileSync(new URL("../js/ui/route.js", import.meta.url), "utf8");
-  const clip = new Function(`${toast.match(/export function clip[\s\S]*?\n\}/)[0].replace("export ", "")}; return clip;`)();
-  assert.equal(clip("Defeat Margit"), "Defeat Margit");
-  const long = clip("Speak to Roderika at the Roundtable Hold and give her the Smithing Stones", 48);
-  assert.ok(long.length <= 48 && long.endsWith("…") && !/\s…$/.test(long), long);
-  assert.equal(long, "Speak to Roderika at the Roundtable Hold and…");
-  assert.equal(clip("Supercalifragilisticexpialidocious_and_more_words", 20).length, 20); // one long word: hard cut
-  assert.doesNotMatch(route, /slice\(0, 47\)/);
+  assert.doesNotMatch(map, /showToast/);
+  assert.equal((route.match(/showToast\(/g) || []).length, 1); // togglePhase only
   assert.match(route, /Undo brings the previous phase back/);
-  assert.match(map, /showToast\(`\$\{on \? "Ticked" : "Unticked"\}: \$\{clip\(m\.title\)\}`/);
-  assert.match(toast, /mapsheet:not\(\[hidden\]\)/);
+  // a single tick is undone with Ctrl/Cmd+Z, and an earned trophy is a brief outline, not a message
+  assert.match(route, /lastTick = \(\) =>/);
+  assert.match(route, /classList\.add\("earned"\)/);
+  assert.match(css, /\.step\.earned \{/);
 });
 
 test("the map explains how to reach markers without a pointer, and can be skipped", () => {
@@ -70,7 +66,7 @@ test("on a short landscape phone the inline map leaves room to scroll the page",
   assert.match(css, /@media \(orientation: landscape\) and \(max-height: 500px\) \{ \.mapcard:not\(\.fs\) \.mapstage \{ height: clamp\(200px, 55svh, 340px\); \} \}/);
 });
 
-test("an accidental tick is recoverable: a toast with Undo, and on touch only the tick box ticks", () => {
+test("an accidental tick is recoverable: Undo for bulk ticks, and on touch only the tick box ticks", () => {
   const route = readFileSync(new URL("../js/ui/route.js", import.meta.url), "utf8");
   const lists = readFileSync(new URL("../js/ui/lists.js", import.meta.url), "utf8");
   assert.match(html, /id="toast"[^>]*role="status"/);

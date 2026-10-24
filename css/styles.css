@@ -323,6 +323,7 @@ details.phase.ahead:not([open]):last-of-type > summary::before { bottom: 50%; }
 .step.tip { grid-template-columns: auto 1fr; background: transparent; border-style: dashed; cursor: default; }
 .step.warn { background: var(--warn-soft); border-color: color-mix(in srgb, var(--warn) 35%, transparent); }
 .step.flash { background: var(--accent-soft); }
+.step.earned { box-shadow: inset 0 0 0 2px var(--accent); transition: box-shadow .3s; }
 .step.checked { background: var(--surface); }
 .step.checked .ico { opacity: .6; }
 .step.checked .txt p { color: var(--muted); text-decoration: line-through; text-decoration-color: color-mix(in srgb, var(--muted) 55%, transparent); }
