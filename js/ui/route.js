@@ -42,11 +42,13 @@ function stepHTML(s) {
   if (s.kind === "tip") return `<li class="step tip" data-text="${attr(s.text)}"><span class="tipmark" aria-hidden="true">✦</span><div class="txt"><p>${s.text}</p></div></li>`;
   const done = store.isDone(s.id);
   return `<li class="step ${s.kind === "warn" ? "warn" : ""} ${done ? "checked" : ""}" data-kind="${s.kind}" data-id="${s.id}" id="s-${s.id}" data-text="${attr(s.text)}">
-<button type="button" class="check" aria-label="${plain(s.text)}" aria-pressed="${done}">${tickSVG}</button>
+<button type="button" class="check" aria-label="Done: ${short(plain(s.text))}" aria-pressed="${done}">${tickSVG}</button>
 <span class="ico" aria-hidden="true">${ico(stepIcon(s))}</span>
 <div class="txt"><p>${s.text}</p>${chips(s)}${links(s)}</div></li>`;
 }
 
+// A long step would be read twice (as the button name, then as the paragraph), so the button carries the start of it.
+const short = (t) => (t.length > 60 ? t.slice(0, 59).replace(/\s+\S*$/, "") + "…" : t);
 const plain = (t) => t.replace(/<[^>]+>/g, "").replace(/"/g, "&quot;");
 const attr = (t) => plain(t).toLowerCase();
 

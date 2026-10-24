@@ -285,7 +285,7 @@ ol.steps { list-style: none; margin: 0; padding: 0 10px 10px; display: flex; fle
 .txt { min-width: 0; }
 .txt p { margin: 0; max-width: 72ch; }
 .chips { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
-.chip { font-size: var(--fs-xs); letter-spacing: .07em; text-transform: uppercase; padding: 2px 7px; border-radius: 4px; border: 1px solid var(--line); color: var(--muted); font-weight: 700; }
+.chip { max-width: 100%; overflow-wrap: anywhere; font-size: var(--fs-xs); letter-spacing: .07em; text-transform: uppercase; padding: 2px 7px; border-radius: 4px; border: 1px solid var(--line); color: var(--muted); font-weight: 700; }
 .chip.trophy { background: var(--accent-soft); border-color: transparent; color: var(--accent); }
 .chip.legend { background: var(--accent); border-color: var(--accent); color: var(--onaccent); }
 .chip.miss { background: var(--warn); border-color: var(--warn); color: var(--surface); }
@@ -648,7 +648,7 @@ html.map-fs, html.map-fs body { overflow: hidden; overscroll-behavior: none; }
 .maplink:hover, .maplink:focus-visible { background: var(--accent-soft); }
 @media (pointer: coarse) {
   .maplink { min-height: 44px; }
-  .seg button { min-height: 44px; }
+  .seg button { min-height: 44px; min-width: 44px; }
   .swatches { gap: 6px; }
   .swatches button { width: 44px; height: 44px; }
   .switch::before { content: ""; position: absolute; inset: -7px 0; }

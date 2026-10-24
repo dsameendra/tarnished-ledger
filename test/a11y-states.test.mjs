@@ -21,7 +21,7 @@ test("keyboard focus is visible on the map progress lists", () => {
 
 test("Settings controls reach 44px on touch screens", () => {
   const coarse = css.slice(css.indexOf("@media (pointer: coarse)"));
-  assert.match(coarse, /\.seg button \{ min-height: 44px; \}/);
+  assert.match(coarse, /\.seg button \{ min-height: 44px; min-width: 44px; \}/);
   assert.match(coarse, /\.swatches button \{ width: 44px; height: 44px; \}/);
   assert.match(coarse, /\.switch::before \{[^}]*inset: -7px 0/);
 });

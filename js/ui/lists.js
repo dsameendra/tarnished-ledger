@@ -14,7 +14,7 @@ const esc = (x) => String(x).replace(/<[^>]*>/g, "").replace(/"/g, "&quot;");
 function row({ done, name, sub, stepId, tog, lead, cls = "" }) {
   const jump = stepId ? ` · <button type="button" class="jump" data-jump="${stepId}" aria-label="Show step for ${esc(name)} in the route">Show step</button>` : "";
   const box = tog && stepId
-    ? `<button type="button" class="check" role="checkbox" aria-checked="${done}" aria-label="${esc(name)}">${tickSVG}</button>`
+    ? `<button type="button" class="check" aria-pressed="${done}" aria-label="Done: ${esc(name)}">${tickSVG}</button>`
     : `<span class="check" aria-hidden="true">${tickSVG}</span>`;
   return `<div class="row ${cls} ${done ? "checked" : ""}" ${tog && stepId ? `data-tog="${stepId}"` : ""}>
 ${box}${lead}
