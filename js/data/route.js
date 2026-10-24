@@ -3,12 +3,12 @@
 // options: tr = trophy key it completes, c = collectible id it grants.
 export const PHASES=[
 {id:"prep",n:"Before You Start",sub:"Setup for the whole run",s:[
-["tip","Choose a route now: one playthrough with save backups (Route A) or three playthroughs (Route B). Read the Endings & Saves tab."],
+["tip","Choose a route now: one playthrough with save backups (Route A) or three playthroughs (Route B). Read the Endings and Save backup sections in the Guide tab."],
 ["tip","Pick one weapon to upgrade all game. God-Slaying Armament needs a normal weapon at +25 or a special (somber) weapon at +10."],
 ["tip","Pick up every Stonesword Key you see. You will use them on: Night's Sacred Ground (Mimic Tear Ashes, 1), Golden Lineage Evergaol (Godfrey Icon), Sainted Hero's Grave (1 to 2), Cave of the Forlorn (2, for the Golden Order Greatsword) and the Marika's Soreseal gate. That is around 6 to 8 in total."],
 ["tip","Legendary Armaments and Talismans can be handed to you by another player in co-op. Legendary Ashen Remains and Spells cannot. Weapons from Remembrances don't count."],
 ["tip","You don't need every weapon, spell or boss. Only the items and bosses in this list count."],
-["go","Read the setup notes above, choose your route and your weapon, then tick this to start the run."]]},
+["go","Read the setup notes in Before You Start, choose your route and your weapon, then tick this to start the run."]]},
 {id:"limw",n:"West Limgrave",sub:"Margit and the Roundtable",s:[
 ["go","Leave the tutorial cave and ride north to the Gatefront grace."],
 ["quest","Rest at Gatefront and accept Melina's offer. This unlocks Torrent and levelling up at graces."],
@@ -193,13 +193,13 @@ export const PHASES=[
 ["boss","Defeat Mohg, the Omen at the Cathedral of the Forsaken.",{tr:"mohgomen"}],
 ["warn","Behind the altar is an illusory wall leading to the Three Fingers. Do not inherit the Frenzied Flame yet. Save it for your last ending."]]},
 {id:"fin",n:"Ashen Capital Finale",sub:"Last stretch",s:[
-["tip","Before going further: check the Legendaries tab is 9/9, 6/6, 7/7, 8/8 and make sure your weapon is fully upgraded."],
+["tip","Before going further: check the Legendary tab is 9/9, 6/6, 7/7, 8/8 and make sure your weapon is fully upgraded."],
 ["item","Upgrade one weapon to its maximum. A regular weapon to +25 needs 12 each of Smithing Stone [1] to [8] plus 1 Ancient Dragon Smithing Stone. A special weapon to +10 needs one each of Somber Smithing Stone [1] to [9] plus 1 Somber Ancient Dragon Smithing Stone.",{tr:"godslaying"}],
 ["go","From the grace you arrive at after Maliketh, head south to Erdtree Sanctuary, where you fought Godfrey's shade."],
 ["boss","Defeat Sir Gideon Ofnir, the All-Knowing."],
 ["boss","Defeat Godfrey, First Elden Lord / Hoarah Loux.",{tr:"hoarah"}],
 ["warn","Rest at the Elden Throne grace. Quit to the title screen and back up your save now (Route A)."]]},
-{id:"endg",n:"Endings",sub:"See the Endings & Saves tab",s:[
+{id:"endg",n:"Endings",sub:"See the Endings section of the Guide tab",s:[
 ["boss","Defeat Radagon of the Golden Order and the Elden Beast, then use Ranni's blue summon sign.",{tr:"stars"}],
 ["boss","Restore your backup (or start NG+). Beat the final boss again and mend the Elden Ring without using Ranni's sign.",{tr:"eldenlord"}],
 ["boss","Restore your backup (or start NG++). At the Cathedral of the Forsaken, break the wall behind the altar, drop to the bottom, remove all armour, open the door and inherit the Frenzied Flame. Beat the final boss.",{tr:"frenzy"}]]}

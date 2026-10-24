@@ -53,8 +53,8 @@ export function renderTrophies() { keepFocus(drawTrophies); }
 function drawTrophies() {
   const sc = scope();
   paintFilter(sc);
-  $("troTitle").textContent = sc === "dlc" ? "DLC goals" : trophiesWord();
-  $("troNote").textContent = sc === "dlc" ? NOTE_DLC : NOTE_TRO;
+  $("troTitle").textContent = sc === "dlc" ? "DLC goals" : sc === "both" ? `${trophiesWord()} and DLC goals` : trophiesWord();
+  $("troNote").textContent = sc === "dlc" ? NOTE_DLC : sc === "both" ? NOTE_TRO + " Shadow of the Erdtree has no trophies, so its goals are listed after them." : NOTE_TRO;
   $("troList").hidden = sc === "dlc";
   if (sc === "dlc") { $("troList").innerHTML = ""; drawGoals(); return; }
   drawGoals();
@@ -62,7 +62,7 @@ function drawTrophies() {
   const keep = (t) => filter === "all" || (filter === "done") === trophyDone(t[0]);
   const rowFor = (t) => {
     const step = byTrophy[t[0]];
-    const where = COLLECTIONS[t[0]] ? "Collect every item on the Legendaries tab" : step ? PHASES[step.pi].n : "Unlocks when all others are done";
+    const where = COLLECTIONS[t[0]] ? "Collect every item on the Legendary tab" : step ? PHASES[step.pi].n : "Unlocks when all others are done";
     return row({ done: trophyDone(t[0]), name: t[1], sub: `${t[2]} · ${where}`, stepId: step && step.id, tog: Boolean(step), lead: medal(t, grades), cls: "tr" });
   };
   let html = "";
