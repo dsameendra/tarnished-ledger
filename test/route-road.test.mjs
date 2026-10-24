@@ -28,6 +28,8 @@ test("the next missable row jumps to the next undone warn step", () => {
   assert.match(js, /s\.kind === "warn" && !store\.isDone\(s\.id\)/);
   assert.match(js, /data-missable="\$\{w\.id\}"/);
   assert.match(js, /jump\(mb\.dataset\.missable\)/);
+  // shown only from the phase before the missable until it is ticked
+  assert.match(js, /cur >= before/);
 });
 
 test("current phase is loud, upcoming phases are quiet stops joined by a line", () => {

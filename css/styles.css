@@ -218,7 +218,14 @@ section[hidden] { display: none; }
 }
 .jumpph { flex: none; }
 .jumpph select { width: 13rem; min-height: 44px; font: inherit; font-size: var(--fs-md); padding: 0 30px 0 12px; border-radius: var(--r-md); border: 1px solid var(--edge); background: var(--raised); color: var(--fg); cursor: pointer; max-width: 100%; }
-@media (max-width: 600px) { .jumpph { flex: 1 1 7rem; min-width: 0; } .jumpph select { width: 100%; } .toolbar .btn { white-space: nowrap; padding-inline: 12px; } }
+/* phone: search and Jump share the first row, the three toggles share the second */
+@media (max-width: 600px) {
+  #v-route .toolbar { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); }
+  #v-route .toolbar .search { grid-column: span 4; flex-basis: auto; }
+  #v-route .toolbar .jumpph { grid-column: span 2; min-width: 0; }
+  .jumpph select { width: 100%; }
+  #v-route .toolbar .btn { grid-column: span 2; white-space: nowrap; padding-inline: 8px; }
+}
 /* map toolbar on a phone: Go to, Find me, Maximize and Markers share one row (Find me and Maximize are icon-only) */
 @media (max-width: 699.98px) {
   .maptools #mapHere, .mapcard:not(.fs) .maptools #mapFs, .mapcard.fs .maptools #mapExit { flex: none; width: 44px; padding: 0; }

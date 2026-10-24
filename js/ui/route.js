@@ -128,7 +128,7 @@ export function updateRoute() {
   renderTrail(cur);
 }
 
-// One row for the run of finished phases at the top, and one line pointing at the next "Don't miss" step.
+// One row for the run of finished phases at the top, and one line pointing at the next "Don't miss" step once it is close.
 function renderTrail(cur) {
   const t = $("phases").querySelector(".trail");
   const m = $("phases").querySelector(".missable");
@@ -148,7 +148,10 @@ function renderTrail(cur) {
     t.querySelector(".trail-btn").setAttribute("aria-expanded", String(trailOpen));
     t.querySelector(".trail-verb").textContent = trailOpen ? "Hide" : "Show";
   }
-  const w = scopedSteps().find((s) => s.kind === "warn" && !store.isDone(s.id));
+  // Only when the player is within one phase of the missable (the phase before it or the phase itself), and until it is ticked.
+  const next = scopedSteps().find((s) => s.kind === "warn" && !store.isDone(s.id));
+  const before = next ? PHASES.map((p, pi) => pi).filter((pi) => inScope(pi) && pi < next.pi).pop() : undefined;
+  const w = next && (before === undefined || cur < 0 || cur >= before) ? next : null;
   m.hidden = !w;
   if (w) m.innerHTML = `<button type="button" class="missable-btn" data-missable="${w.id}"><b>Next missable:</b> Phase ${phaseLabel(w.pi)} · ${shortText(w.text)}</button>`;
 }
