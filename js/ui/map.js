@@ -256,6 +256,8 @@ function refreshItems() {
   const n = {};
   for (const m of D.byLayer[shown]) if (!(f.hideFound && doneOf(m))) n[m.cat] = (n[m.cat] || 0) + 1;
   $("mapPanel").querySelectorAll("[data-n]").forEach((e) => { e.textContent = n[e.dataset.n] || 0; });
+  const ln = $("mapLayerNote");
+  if (ln) ln.textContent = `Counts are for this layer: ${LAYER_NAME[shown]}.`;
   $("mapFilterCount").textContent = f.on ? `· ${list.length}` : "· off";
 }
 
@@ -272,6 +274,7 @@ function buildPanel() {
     `<label class="mp-row"><input type="checkbox" data-cat="${esc(c.id)}"><img src="${iconURL(c.glyph, c.color)}" alt="" width="22" height="22"><span>${esc(c.title)}</span><em data-n="${esc(c.id)}">0</em></label>`).join("");
   $("mapPanel").innerHTML = `
     <div class="mp-h"><b>Markers</b><button type="button" class="mp-x" data-close aria-label="Close marker filters">&times;</button></div>
+    <p class="note" id="mapLayerNote"></p>
     <label class="mp-row mp-sw"><input type="checkbox" data-f="on"><span>Show markers</span></label>
     <div class="seg" role="group" aria-label="Marker presets"><button type="button" data-preset="essentials">Essentials</button><button type="button" data-preset="guide">Guide</button><button type="button" data-preset="all">Everything</button><button type="button" data-preset="none">None</button></div>
     <label class="mp-row"><input type="checkbox" data-f="hideFound"><span>Hide completed</span></label>
@@ -413,6 +416,7 @@ let fsReturn = null, panelBefore = null, pushed = false;
 function setFs(on, fromHistory = false) {
   if (on === fs || (on && !map)) return;
   fs = on;
+  setLayers(false, false);
   const card = $("mapCard");
   document.documentElement.classList.toggle("map-fs", on);
   card.classList.toggle("fs", on);
@@ -448,7 +452,25 @@ function setFs(on, fromHistory = false) {
   }
 }
 
+// Maximized on a phone: World, Layer and Markers live in a bottom sheet behind the Layers button
+function setLayers(open, restore = true) {
+  const card = $("mapCard");
+  if (open === card.classList.contains("layers-open")) return;
+  card.classList.toggle("layers-open", open);
+  $("mapLayersBtn").setAttribute("aria-expanded", String(open));
+  $("mapScrim").hidden = !open;
+  $("mapTools").inert = open;
+  $("mapWrap").inert = open;
+  if (open) ($("mapLeft").querySelector('[aria-pressed="true"]') || $("mapLeft").querySelector("button")).focus();
+  else if (restore) $("mapLayersBtn").focus();
+}
+
 function wireFs() {
+  $("mapLayersBtn").addEventListener("click", () => setLayers(!$("mapCard").classList.contains("layers-open")));
+  $("mapLayersX").addEventListener("click", () => setLayers(false));
+  $("mapScrim").addEventListener("click", () => setLayers(false));
+  matchMedia("(max-width: 699.98px)").addEventListener("change", () => setLayers(false, false));
+  $("mapFilterBtn").addEventListener("click", () => setLayers(false, false));
   $("mapFs").addEventListener("click", () => ready().then(() => { if (map) setFs(true); }));
   $("mapExit").addEventListener("click", () => setFs(false));
   window.addEventListener("popstate", () => { if (fs) setFs(false, true); });
@@ -465,7 +487,8 @@ function wireFs() {
   document.addEventListener("keydown", (e) => {
     if (!visible() || e.ctrlKey || e.metaKey || e.altKey) return;
     const typing = /^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement?.tagName || "");
-    if (e.key === "Escape" && fs && $("mapSheet").hidden && $("mapResults").hidden) setFs(false);
+    if (e.key === "Escape" && fs && $("mapCard").classList.contains("layers-open")) { e.preventDefault(); setLayers(false); }
+    else if (e.key === "Escape" && fs && $("mapSheet").hidden && $("mapResults").hidden) setFs(false);
     else if (!typing && (e.key === "m" || e.key === "M") && map) setFs(!fs);
     else if (!typing && e.key === "/" && !$("mapSearch").disabled) { e.preventDefault(); $("mapSearch").focus(); }
   });
@@ -903,6 +926,14 @@ function syncChrome() {
   [...$("mapWorld").children].forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.v === w)));
   $("mapLayer").hidden = w === "dlc";
   [...$("mapLayer").children].forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.v === lay)));
+  // on a phone the chips scroll sideways: keep the chosen one in view
+  const ch = document.querySelector(".mt-chips");
+  const lb = $("mapLayer").querySelector('[aria-pressed="true"]');
+  if (ch.scrollWidth > ch.clientWidth && lb) {
+    const l = lb.offsetLeft + $("mapLayer").offsetLeft - ch.offsetLeft, r = l + lb.offsetWidth; // only scroll when the chosen chip is cut off
+    if (r > ch.scrollLeft + ch.clientWidth - 28) ch.scrollLeft = Math.max(0, l - 8);
+    else if (l < ch.scrollLeft) ch.scrollLeft = Math.max(0, l - 8);
+  }
 }
 
 function renderPhaseList() {

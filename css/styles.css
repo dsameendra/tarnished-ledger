@@ -416,16 +416,55 @@ button.jump::after { content: ""; position: absolute; inset: -12px -6px; }
   .mt-tools #mapHere, .mt-tools #mapFs, .mt-tools #mapExit { flex: none; width: 44px; padding: 0; }
   .mt-tools .lbl { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 }
-/* phones: the right cluster is the first row (Go to takes the free width), the left cluster stacks below it */
+/* phones: the right cluster (Go to, Find me, Maximize) is the first row. Markers sits beside it when the card is wide enough,
+   World + Layer are one row of chips under it. Maximized, those controls move into a bottom sheet behind a Layers button. */
+.mt-layers, .mt-sheet-h { display: none; }
+.mt-modes, .mt-chips { display: contents; }
+.mapcard { container-type: inline-size; }
+.mt-scrim { position: absolute; inset: 0; z-index: 1240; background: rgb(0 0 0 / .45); }
 @media (max-width: 699.98px) {
-  .maptools { grid-template-columns: minmax(0, 1fr); row-gap: 10px; }
+  .maptools { grid-template-columns: minmax(0, 1fr); row-gap: 8px; }
   .mt-tools { grid-column: 1; grid-row: 1; justify-self: stretch; gap: 6px; }
-  .mt-left { grid-column: 1; grid-row: 2; }
+  .mt-left { display: contents; }
+  .mt-modes { grid-column: 1; grid-row: 2; display: flex; flex-wrap: wrap; gap: 8px; min-width: 0; }
+  .mt-filter { grid-column: 1; grid-row: 3; justify-self: start; }
   .mt-go { flex: 1 1 0; min-width: 5rem; }
   .mt-go select { width: 100%; }
-  .mapcard #mapWorld, .mapcard #mapLayer { display: flex; flex: 1 1 100%; }
-  .mapcard #mapWorld button, .mapcard #mapLayer button { flex: 1; padding-inline: 6px; }
-  .mt-left #mapFilterBtn { flex: 1 1 auto; }
+  .mt-chips { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; max-width: 100%; }
+  .mt-chips::-webkit-scrollbar { display: none; }
+  .mt-chips:has(#mapWorld:not([hidden])) { -webkit-mask-image: linear-gradient(90deg, #000 calc(100% - 28px), transparent); mask-image: linear-gradient(90deg, #000 calc(100% - 28px), transparent); padding-right: 28px; }
+  .mapcard:not(.fs) .mt-chips .seg { flex: none; flex-wrap: nowrap; border: 0; background: none; gap: 6px; overflow: visible; }
+  .mapcard:not(.fs) .mt-chips .seg button { border: 1px solid var(--edge); border-radius: 999px; min-height: 36px; padding: 0 12px; background: var(--raised); white-space: nowrap; }
+  .mapcard:not(.fs) .mt-chips .seg button[aria-pressed="true"] { border-color: var(--accent); }
+  .mapcard:not(.fs) .mt-chips #mapWorld { padding-right: 6px; border-right: 1px solid var(--line); margin-right: 2px; }
+  .mapcard:not(.fs) .mapstage { height: calc(var(--mh, clamp(340px, calc(100svh - 250px), 780px)) + 56px); }
+  .mapcard:not(.fs) #map { top: 56px; }
+  .mapcard:not(.fs) .mapstage { background: var(--surface); }
+  .mapcard:not(.fs) .mapsearch { right: 10px; max-width: none; }
+  .mapcard:not(.fs) .mapctl { top: 66px; }
+  @container (min-width: 18.5rem) {
+    .maptools { grid-template-columns: auto minmax(0, 1fr); }
+    .mt-filter { grid-column: 1; grid-row: 1; justify-self: stretch; }
+    .mt-tools { grid-column: 2; grid-row: 1; }
+    .mt-modes { grid-column: 1 / -1; grid-row: 2; }
+  }
+  /* maximized: one row (Layers, then the cluster at the top right); the rest is a bottom sheet */
+  .mapcard.fs .maptools { grid-template-columns: auto minmax(0, 1fr); row-gap: 0; }
+  .mapcard.fs .mt-layers { display: inline-flex; align-items: center; gap: 8px; grid-column: 1; grid-row: 1; }
+  .mapcard.fs .mt-tools { grid-column: 2; grid-row: 1; }
+  @container (max-width: 21rem) { .mapcard.fs .mt-layers { width: 44px; padding: 0; justify-content: center; } .mapcard.fs .mt-layers span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; } }
+  .mapcard.fs .mt-left { display: none; }
+  .mapcard.fs.layers-open .mt-left { display: flex; flex-direction: column; gap: 12px; position: absolute; z-index: 1250; left: 0; right: 0; bottom: 0; max-height: 75%; overflow: auto; padding: 10px calc(16px + env(safe-area-inset-right, 0px)) calc(16px + env(safe-area-inset-bottom, 0px)) calc(16px + env(safe-area-inset-left, 0px)); background: var(--surface); border-top: 1px solid var(--line); border-radius: var(--r-lg) var(--r-lg) 0 0; box-shadow: 0 -8px 28px rgb(0 0 0 / .4); }
+  .mapcard.fs .mt-sheet-h { display: flex; align-items: center; justify-content: space-between; min-height: 44px; font-family: var(--display); }
+  .mapcard.fs .mt-sheet-h .mp-x { position: static; }
+  .mapcard.fs .mt-modes { display: grid; gap: 10px; }
+  .mapcard.fs .mt-chips { display: grid; gap: 10px; overflow: visible; mask-image: none; -webkit-mask-image: none; padding-right: 0; }
+  .mapcard.fs #mapWorld, .mapcard.fs #mapLayer { display: flex; }
+  .mapcard.fs #mapWorld[hidden], .mapcard.fs #mapLayer[hidden] { display: none; }
+  .mapcard.fs #mapWorld button, .mapcard.fs #mapLayer button, .mapcard.fs .mt-subs button { flex: 1 0 auto; padding-inline: 10px; white-space: nowrap; }
+  .mapcard.fs .mt-filter { justify-self: stretch; grid-column: auto; grid-row: auto; }
+  .mapcard.fs .mt-subs { border: 1px solid var(--edge); }
+  .mapcard.fs .mt-subs button { flex: 1; }
 }
 .mapsearch { position: absolute; z-index: 1050; top: 10px; left: 10px; right: 64px; max-width: 380px; }
 .mapsearch input { width: 100%; box-shadow: 0 2px 8px rgb(0 0 0 / .35); font: inherit; font-size: var(--fs-ui); padding: 10px 12px; border-radius: var(--r-md); border: 1px solid var(--line); background: var(--raised); color: var(--fg); min-height: 44px; }
@@ -656,9 +695,7 @@ html.map-fs, html.map-fs body { overflow: hidden; overscroll-behavior: none; }
 /* in the inline view on desktop the legend stays under the map */
 .linklike { background: none; border: 0; padding: 0; font: inherit; color: var(--accent); text-decoration: underline; cursor: pointer; min-height: 0; }
 .mappanel .note .linklike { padding: 10px 0; }
-.mapscale { position: absolute; z-index: 1000; right: 10px; top: 214px; width: 44px; text-align: center; font: 700 var(--fs-xs) var(--display); color: var(--fg); background: color-mix(in srgb, var(--raised) 88%, transparent); border: 1px solid var(--line); border-radius: var(--r-md); padding: 4px 0; pointer-events: none; font-variant-numeric: tabular-nums; }
-.mapcard.fs .mapscale { right: calc(10px + env(safe-area-inset-right, 0px)); }
-@media (max-width: 699.98px) { .mapcard.fs .mapscale { top: auto; bottom: calc(222px + env(safe-area-inset-bottom, 0px)); } .mapcard.fs .mapstage:has(.mapsheet:not([hidden])) .mapscale, .mapcard.fs .mapwrap.panel-open .mapscale { display: none; } }
+.mapscale { justify-self: stretch; text-align: center; font: 700 var(--fs-xs) var(--display); color: var(--fg); background: color-mix(in srgb, var(--raised) 88%, transparent); border: 1px solid var(--line); border-radius: var(--r-md); padding: 4px 0; pointer-events: none; font-variant-numeric: tabular-nums; }
 
 /* map: progress section under the map */
 .mapbelow { margin: 0 0 14px; border: 1px solid var(--line); border-radius: var(--r-lg); background: var(--surface); }
@@ -807,7 +844,7 @@ html.ios-pwa .shell { padding-top: calc(14px + var(--top-inset)); }
 }
 /* the Trophies / Legendary / DLC switch on phones, in Main game and DLC mode */
 @media (max-width: 979.98px) {
-  #v-tro[data-sub="dlc"] #troList, #v-tro[data-sub="tro"] #dlcGoals { display: none; }
+  #v-tro[data-sub="dlc"] #troList, #v-tro[data-sub="tro"] #dlcGoals, #v-tro[data-sub="dlc"] .view-h.sub { display: none; }
 }
 /* 360px and narrower (and Large text on a small phone): search takes a row, Jump and Compact share the next */
 @media (max-width: 360px) {
@@ -816,6 +853,7 @@ html.ios-pwa .shell { padding-top: calc(14px + var(--top-inset)); }
 }
 /* meta lines break after a middot, never before one */
 .row-where { overflow-wrap: anywhere; }
+.row-where .jump { white-space: nowrap; }
 
 /* Touch targets and reflow leftovers (44px hit areas for ticks, switches and standalone links; no layout change: the extra
    area comes from pseudo-element insets, or from padding cancelled by a negative margin). Keep this block last. */
