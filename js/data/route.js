@@ -5,7 +5,7 @@ export const PHASES=[
 {id:"prep",n:"Before You Start",sub:"Setup for the whole run",s:[
 ["tip","Choose a route now: one playthrough with save backups (Route A) or three playthroughs (Route B). Read the Endings and Save backup sections in the Guide tab."],
 ["tip","Pick one weapon to upgrade all game. God-Slaying Armament needs a normal weapon at +25 or a special (somber) weapon at +10."],
-["tip","Pick up every Stonesword Key you see. You will use them on: Night's Sacred Ground (Mimic Tear Ashes, 1), Golden Lineage Evergaol (Godfrey Icon), Sainted Hero's Grave (1 to 2), Cave of the Forlorn (2, for the Golden Order Greatsword) and the Marika's Soreseal gate. That is around 6 to 8 in total."],
+["tip","Pick up every Stonesword Key you see. You will use them on: Night's Sacred Ground (Mimic Tear Ashes, 1), Golden Lineage Evergaol (Godfrey Icon, 1), Cave of the Forlorn (2, for the Golden Order Greatsword) and the Marika's Soreseal gate (1). Sainted Hero's Grave needs none for the boss; its keys only open optional rooms. That is 5 in total for the legendary items. Spare keys are for optional treasure."],
 ["tip","Legendary Armaments and Talismans can be handed to you by another player in co-op. Legendary Ashen Remains and Spells cannot. Weapons from Remembrances don't count."],
 ["tip","You don't need every weapon, spell or boss. Only the items and bosses in this list count."],
 ["go","Read the setup notes in Before You Start, choose your route and your weapon, then tick this to start the run."]]},
@@ -87,7 +87,7 @@ export const PHASES=[
 ["boss","Golden Lineage Evergaol (behind an imp seal gate): beat Godefroy the Grafted for the Godfrey Icon.",{c:"tal3"}],
 ["go","Use the waygate to cross the broken bridge."],
 ["map","Map Fragment: Altus Plateau."],
-["go","Sainted Hero's Grave, west of Rampartside Path: a Black Knife Assassin waits at the entrance. Take the lift down, rest at the grace and open the fog gate with a Stonesword Key."],
+["go","Sainted Hero's Grave, west of Rampartside Path: a Black Knife Assassin waits at the entrance. Take the lift down, rest at the grace. The fog gates there need Stonesword Keys but only guard optional loot, so you can skip them."],
 ["boss","Lure the shadowy Grave Warden Duelist into a light circle to open the boss door. Defeat the Ancient Hero of Zamor for Ancient Dragon Knight Kristoff. Two Root Resins sit in the back corners.",{c:"ash4"}],
 ["boss","The Shaded Castle: defeat Elemer of the Briar. It drops the Marais Executioner's Sword.",{tr:"elemer",c:"arm4"}],
 ["tip","With two Great Runes, the Draconic Tree Sentinel's route into Leyndell is open. Hold off until after Volcano Manor."]]},
