@@ -57,7 +57,7 @@ export const PHASES=[
 ["go","Back at the fork, go straight and rest at Manor Upper Level."],
 ["boss","Defeat Royal Knight Loretta.",{tr:"rloretta"}],
 ["quest","Climb to Ranni's Rise and talk to Ranni. Agree to serve her. Also talk to Blaidd, Iji and Seluvis at the Three Sisters."],
-["warn","Never give Seluvis's Amber Draught (Seluvis's Potion) to Ranni. It angers her and halts her questline until you seek Absolution at the Church of Vows. Do not kill Seluvis either; that makes Blaidd hostile."],
+["warn","Do not give Seluvis's Amber Draught (Seluvis's Potion) to Ranni. It locks her questline, and with it the Dark Moon Greatsword. Do not talk to her again after trying, because she kills you on the third time. A Celestial Dew used at the Church of Vows (Atone) fixes it. Do not kill Seluvis either; that makes Blaidd hostile."],
 ["boss","Ruin-Strewn Precipice (ravine in north Liurnia): defeat Magma Wyrm Makar.",{tr:"makar"}],
 ["go","Take the lift past Makar and rest at the first Altus Plateau grace. This starts Radahn's Festival."]]},
 {id:"cael",n:"Caelid",sub:"Fort Faroth, Greyoll, Radahn",s:[

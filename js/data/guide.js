@@ -4,7 +4,7 @@ export const MISSABLES = [
   ["Elden Lord, Age of the Stars, Lord of the Frenzied Flame", "You get one ending per save. Back up your save before the final choice, or play three times."],
   ["Legendary Armaments", "Bolt of Gransax is in the Royal Capital, which is destroyed late in the game. Get it before you burn the Erdtree. Another player can also drop it for you in co-op."],
   ["Lichdragon Fortissax", "Never kill Fia. Without her you cannot enter the Deathbed Dream."],
-  ["Age of the Stars (Ranni)", "Never give Ranni the Amber Draught from Seluvis's questline. It ends her quest and the Dark Moon Greatsword."],
+  ["Age of the Stars (Ranni)", "Do not give Ranni the Amber Draught from Seluvis's questline. It locks her quest, and with it the Dark Moon Greatsword. Do not talk to her again after trying: three times and she kills you. You can undo it with a Celestial Dew: use Atone at the statue in the Church of Vows."],
   ["Lord of the Frenzied Flame", "Do not use Miquella's Needle in Dragonlord Placidusax's arena after inheriting the flame. It cancels the Frenzied Flame ending for good."],
 ];
 
