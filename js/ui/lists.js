@@ -121,7 +121,7 @@ function drawGoals() {
   const counters = COUNTERS.map((c) => `<div class="counter" data-counter="${c.id}">
 <div class="c-head"><b>${c.name}</b><span class="lvl" aria-live="polite"></span></div>
 <div class="c-ctl"><button type="button" class="btn dec" aria-label="One fewer ${c.name}">−</button><input type="number" inputmode="numeric" min="0" max="${c.max}" enterkeyhint="done" aria-label="${c.name} collected, out of ${c.max}"><span class="of">/ ${c.max}</span><button type="button" class="btn inc" aria-label="One more ${c.name}">+</button></div>
-<p class="note">${c.note} Ticking one on the map adds 1 here.</p><button type="button" class="maplink" data-mapcat="${c.id === "sf" ? 11317 : 11316}">Show on map</button></div>`).join("");
+<p class="note">${c.note} Ticking one on the map adds its quantity here (a pile marked x2 adds 2).</p><button type="button" class="maplink" data-mapcat="${c.id === "sf" ? 11317 : 11316}">Show on map</button></div>`).join("");
   box.innerHTML = `${sc === "both" ? '<h2 class="view-h sub">Shadow of the Erdtree</h2>' : ""}<div class="group counters" id="counters"><h3><span>Blessings</span></h3>${counters}</div><div id="goalGroups">${groups}</div>`;
   renderCounters();
 }
@@ -160,7 +160,11 @@ export function initLists() {
   };
   const step = (el, d) => store.setCounter(el.dataset.counter, store.counter(el.dataset.counter) + d);
   let hold = null, held = false;
-  const stop = () => { clearTimeout(hold); clearInterval(hold); hold = null; };
+  const stop = () => {
+    clearTimeout(hold); clearInterval(hold); hold = null;
+    // a release outside the button gives no click, so forget the hold shortly after (a release on it clicks first)
+    if (held) setTimeout(() => { held = false; }, 60);
+  };
   $("dlcGoals").addEventListener("pointerdown", (e) => {
     const b = e.target.closest(".inc, .dec");
     if (!b || e.button || b.disabled) return;
@@ -171,6 +175,7 @@ export function initLists() {
   });
   ["pointerup", "pointercancel", "pointerleave"].forEach((t) => $("dlcGoals").addEventListener(t, stop));
   document.addEventListener("pointerup", stop);
+  document.addEventListener("pointercancel", stop);
   $("dlcGoals").addEventListener("contextmenu", (e) => { if (e.target.closest(".inc, .dec")) e.preventDefault(); });
   $("troList").addEventListener("click", handle);
   $("dlcGoals").addEventListener("click", (e) => {

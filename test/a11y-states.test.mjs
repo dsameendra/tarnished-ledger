@@ -51,7 +51,7 @@ test("notifications are rare: single ticks and map ticks show no toast, only Mar
   assert.equal((route.match(/showToast\(/g) || []).length, 1); // togglePhase only
   assert.match(route, /Undo brings the previous phase back/);
   // a single tick is undone with Ctrl/Cmd+Z, and an earned trophy is a brief outline, not a message
-  assert.match(route, /lastTick = \(\) =>/);
+  assert.match(route, /lastTick = \{ fn: undo/);
   assert.match(route, /classList\.add\("earned"\)/);
   assert.match(css, /\.step\.earned \{/);
 });

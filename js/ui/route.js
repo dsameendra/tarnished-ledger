@@ -8,7 +8,7 @@ import { AREAS, DLC_AREAS } from "../data/map.js";
 import { trophyWord } from "../lib/labels.js";
 import { showToast } from "./toast.js";
 
-let programmatic = false;
+let userToggle = null; // the phase whose summary the player just pressed (only those changes are remembered)
 let query = "";
 let trailOpen = false; // the folded run of finished phases is expanded
 
@@ -82,6 +82,7 @@ export function renderRoute() {
   $("jumpPhase").innerHTML = '<option value="">Jump to…</option>' + PHASES.map((p, pi) => (inScope(pi) ? `<option value="${p.id}">${phaseLabel(pi)} · ${p.n}</option>` : "")).join("");
   applyView();
   updateRoute();
+  setQuery($("q").value); // the search box keeps its text across a re-render, so the filter has to follow
   foldLabel();
 }
 
@@ -117,7 +118,7 @@ export function updateRoute() {
     el.querySelector(".ph-bar i").style.width = (t ? (d / t) * 100 : 0) + "%";
     el.classList.toggle("done", t > 0 && d === t);
     const all = el.querySelector("[data-phaseall]");
-    if (all) { all.hidden = !t; all.textContent = d === t ? "Mark phase not done" : "Mark phase done"; all.setAttribute("aria-pressed", String(d === t)); }
+    if (all) { all.hidden = !t; all.textContent = d === t ? "Clear this phase" : "Mark phase done"; all.setAttribute("aria-pressed", String(d === t)); }
     el.classList.toggle("current", pi === cur);
     // The road: finished phases fold into one row, phases after the current one are quiet stops.
     const past = cur < 0 || pi < cur;
@@ -170,26 +171,52 @@ function unfold(ph) {
   updateRoute();
 }
 
+// The Up next card is updated in place, so the button keyboard focus is on survives a tick. Its handlers are
+// delegated from initRoute.
 function renderNext() {
   const n = scopedSteps().find((s) => !store.isDone(s.id));
   const el = $("next");
+  const hadFocus = el.contains(document.activeElement) && document.activeElement !== el;
   if (!n) {
-    el.innerHTML = '<div class="where">Every step is done</div><p>Nothing left to do in this route. Untick a step if you need to revisit it.</p>';
+    delete el.dataset.step;
+    el.innerHTML = '<div class="where">Every step is done</div><p>Nothing left to do in this route. Untick a step if you need to revisit it.</p><p class="ticked" id="nextTicked" role="status"></p>';
+    if (hadFocus) { el.tabIndex = -1; el.focus({ preventScroll: true }); }
     return;
   }
-  el.innerHTML = `<div class="where">Up next: ${PHASES[n.pi].n}<small>Phase ${phaseLabel(n.pi)}</small></div><p>${n.text}</p>
-<div class="acts"><button type="button" class="btn primary" id="nextDone">Mark done</button><button type="button" class="btn" id="nextShow">Show in route</button></div>`;
-  $("nextDone").onclick = () => toggle(n.id);
-  $("nextShow").onclick = () => jump(n.id);
+  if (!$("nextDone")) {
+    el.innerHTML = `<div class="where"></div><p class="next-text"></p>
+<div class="acts"><button type="button" class="btn primary" id="nextDone">Mark done</button><button type="button" class="btn" id="nextShow">Show in route</button></div><p class="ticked" id="nextTicked" role="status"></p>`;
+  }
+  el.dataset.step = n.id;
+  el.querySelector(".where").innerHTML = `Up next: ${PHASES[n.pi].n}<small>Phase ${phaseLabel(n.pi)}</small>`;
+  el.querySelector(".next-text").innerHTML = n.text;
+}
+
+let tickedTimer = 0;
+function clearTicked() {
+  clearTimeout(tickedTimer);
+  const t = $("nextTicked");
+  if (t) t.textContent = "";
+}
+
+// "Ticked: ... Undo" inside the Up next card for about 8 seconds, so a mistaken tap on a phone can be taken back right there.
+function showTicked(id, undo) {
+  const t = $("nextTicked");
+  const s = stepById.get(id);
+  if (!t || !s) return;
+  clearTimeout(tickedTimer);
+  t.textContent = "";
+  const b = Object.assign(document.createElement("button"), { type: "button", className: "ticked-undo", textContent: "Undo" });
+  b.addEventListener("click", () => { clearTicked(); undo(); $("nextDone")?.focus({ preventScroll: true }); });
+  t.append(`Ticked: ${short(plain(s.text).replace(/&quot;/g, '"'))} `, b);
+  tickedTimer = setTimeout(clearTicked, 8000);
 }
 
 export function ensureCurrentOpen() {
   const cur = currentPhase();
   if (!store.setting("autoopen") || query || cur < 0) return;
-  programmatic = true;
   const el = $("p-" + PHASES[cur].id);
   if (el) el.open = true;
-  programmatic = false;
 }
 
 // Tick or untick every step of a phase. A phase that is fully done is unticked, otherwise it is completed.
@@ -210,17 +237,16 @@ export function togglePhase(pid) {
     if (currentPhase() === before) moveOpen(after, before);
   });
   moveOpen(before, after);
+  if (!$("toast").hidden) $("toastUndo").focus({ preventScroll: true }); // keyboard focus lands on Undo instead of the top of the page
 }
 
 // Auto-open follows the current phase: close the one that was current and open the new one (and the same in reverse on Undo).
 function moveOpen(from, to) {
   if (!store.setting("autoopen") || from === to || to < 0 || query) return;
-  programmatic = true;
   const f = PHASES[from] && $("p-" + PHASES[from].id);
   const t = $("p-" + PHASES[to].id);
   if (f) f.open = false;
   if (t) t.open = true;
-  programmatic = false;
 }
 
 // What else a tick completed (a trophy, a legendary item, a DLC goal), so the cross-linking is visible when it happens.
@@ -233,9 +259,13 @@ function alsoTicked(step) {
   return out;
 }
 
-let lastTick = null;
+let lastUndo = null;
+let lastTick = null; // { fn, t }: what Ctrl/Cmd+Z undoes, for a few seconds and only on the Route tab
+export const clearLastTick = () => { lastTick = null; };
+const LAST_TICK_MS = 10000;
 
 export function toggle(id) {
+  clearTicked();
   const before = currentPhase();
   const prev = store.isDone(id);
   store.setDone(id, !prev);
@@ -243,7 +273,9 @@ export function toggle(id) {
   const after = currentPhase();
   // No message for a single tick (one tap reverses it); Ctrl/Cmd+Z undoes the last one. A step that also earned a
   // trophy, legendary item or goal gets a brief outline instead of a notice.
-  lastTick = () => { store.setDone(id, prev); if (currentPhase() === before) moveOpen(after, before); };
+  const undo = () => { store.setDone(id, prev); if (currentPhase() === before) moveOpen(after, before); };
+  lastTick = { fn: undo, t: Date.now() };
+  lastUndo = undo;
   const li = step && !prev && alsoTicked(step).length ? document.getElementById("s-" + id) : null;
   if (li) { li.classList.add("earned"); setTimeout(() => li.classList.remove("earned"), 1400); }
   moveOpen(before, after);
@@ -255,10 +287,8 @@ export function jump(id) {
   if (!s) return;
   if (query) { $("q").value = ""; setQuery(""); }
   if (store.setting("hide") && store.isDone(id)) store.setSetting("hide", false);
-  programmatic = true;
   const ph = $("p-" + PHASES[s.pi].id);
   if (ph) ph.open = true;
-  programmatic = false;
   unfold(ph);
   requestAnimationFrame(() => {
     const li = $("s-" + id);
@@ -273,9 +303,7 @@ function focusPhase(pid) {
   emit("tab", "route");
   const d = $("p-" + pid);
   if (!d) return;
-  programmatic = true;
   d.open = true;
-  programmatic = false;
   unfold(d);
   requestAnimationFrame(() => d.scrollIntoView({ behavior: smooth(), block: "start" }));
 }
@@ -291,7 +319,7 @@ function setQuery(q) {
       if (hit) hits++;
     });
     d.classList.toggle("nomatch", hits === 0);
-    if (query && hits) { programmatic = true; d.open = true; programmatic = false; }
+    if (query && hits) d.open = true;
     if (hits) any = true;
   });
   $("phases").classList.toggle("searching", Boolean(query));
@@ -310,6 +338,8 @@ function foldLabel() {
 export function initRoute() {
   const box = $("phases");
   box.addEventListener("click", (e) => {
+    const sm = e.target.closest("summary");
+    if (sm) userToggle = sm.parentElement.dataset.pid;
     if (e.target.closest("a")) return;
     const mo = e.target.closest("[data-more]");
     if (mo) {
@@ -335,16 +365,27 @@ export function initRoute() {
   box.addEventListener("toggle", (e) => {
     if (!e.target.matches("details.phase")) return;
     foldLabel();
-    if (programmatic) return;
-    if (!store.setting("autoopen")) store.setClosed(e.target.dataset.pid, !e.target.open);
+    // only a press on the summary is the player's choice; opens made by search, Jump or Expand all are not remembered
+    const mine = userToggle === e.target.dataset.pid;
+    userToggle = null;
+    if (mine && !store.setting("autoopen")) store.setClosed(e.target.dataset.pid, !e.target.open);
   }, true);
+  $("next").addEventListener("click", (e) => {
+    const id = $("next").dataset.step;
+    if (!id) return;
+    if (e.target.closest("#nextDone")) { toggle(id); showTicked(id, lastUndo); }
+    else if (e.target.closest("#nextShow")) jump(id);
+  });
+  on("shown", () => { lastTick = null; });
   $("q").addEventListener("input", (e) => setQuery(e.target.value));
   document.addEventListener("keydown", (e) => {
     if (!(e.ctrlKey || e.metaKey) || e.shiftKey || e.key.toLowerCase() !== "z" || !lastTick || !$("toast").hidden) return;
+    if (Date.now() - lastTick.t > LAST_TICK_MS || $("v-route").hidden) { lastTick = null; return; }
     if (/^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement?.tagName || "")) return;
     e.preventDefault();
-    const fn = lastTick;
+    const fn = lastTick.fn;
     lastTick = null;
+    clearTicked();
     fn();
   });
   $("jumpPhase").addEventListener("change", (e) => {
@@ -352,9 +393,7 @@ export function initRoute() {
     e.target.value = "";
     if (!el) return;
     if (query) { $("q").value = ""; setQuery(""); }
-    programmatic = true;
     el.open = true;
-    programmatic = false;
     el.scrollIntoView({ block: "start", behavior: "auto" });
     el.querySelector("summary").focus({ preventScroll: true });
   });
@@ -363,9 +402,7 @@ export function initRoute() {
   $("foldBtn").addEventListener("click", () => {
     const ds = $$("details.phase:not(.folded)");
     const anyOpen = ds.some((d) => d.open);
-    programmatic = true;
     ds.forEach((d) => { d.open = !anyOpen; });
-    programmatic = false;
     foldLabel();
   });
   $("q").addEventListener("keydown", (e) => { if (e.key === "Escape" && $("q").value) { $("q").value = ""; setQuery(""); } });

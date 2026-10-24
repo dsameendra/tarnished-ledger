@@ -789,3 +789,13 @@ html.ios-pwa .shell { padding-top: calc(14px + var(--top-inset)); }
 .icolist { grid-template-columns: repeat(auto-fill, minmax(min(210px, 100%), 1fr)); }
 /* maximized map on a tablet or laptop: the legend sits at the bottom centre, so the toast goes above it (on phones toast.js lifts it above the details sheet) */
 @media (min-width: 900px) { .map-fs .toast { bottom: calc(var(--safe-b) + 68px); } }
+
+/* Review fixes (code agent): update notice above the tab bar, and the Up next "Ticked ... Undo" line */
+.update-note { position: fixed; left: 12px; right: 12px; width: fit-content; margin-inline: auto; bottom: calc(var(--safe-b) + 70px); z-index: calc(var(--z-toast) - 1); display: flex; align-items: center; gap: 8px; max-width: min(520px, calc(100vw - 24px)); padding: 6px 6px 6px 14px; background: var(--raised); color: var(--fg); border: 1px solid var(--edge); border-radius: var(--r-lg); box-shadow: 0 4px 18px rgba(0, 0, 0, .25); font-size: var(--fs-md); white-space: nowrap; }
+.update-note span { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.update-note .btn { flex: none; }
+@media (min-width: 980px) { .update-note { bottom: 24px; } }
+.map-fs .update-note { z-index: 2900; bottom: calc(var(--safe-b) + 16px); }
+.next .ticked { margin: 10px 0 0; font-size: var(--fs-md); color: var(--muted); }
+.next .ticked:empty { display: none; }
+.ticked-undo { min-height: 44px; padding: 0 8px; border: 0; background: none; color: var(--fg); font: inherit; font-weight: 700; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }

@@ -54,7 +54,7 @@ test("snapshot carries found markers and map prefs; remoteCovers checks them", a
   store.setFound(3, true);
   store.setMapPrefs({ route: false });
   const snap = JSON.parse(JSON.stringify(store.snapshot()));
-  assert.equal(snap.v, 4);
+  assert.equal(snap.v, 5);
   assert.deepEqual(Object.keys(snap.found), ["3"]);
   assert.equal(snap.mapPrefs.route, false);
   assert.equal(store.remoteCovers(snap), true);

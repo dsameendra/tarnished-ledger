@@ -56,7 +56,7 @@ function onSetting(key) {
 function boot() {
   store.load();
   // The setup step in phase 0 is new: anyone who has already started the run has read the setup.
-  if (store.doneIds().length && !store.get().marks[PREP_STEP]) store.setDone(PREP_STEP, true);
+  if (store.doneIds().length && !store.get().marks[PREP_STEP]) store.seedDone(PREP_STEP); // stamped 1, so any real tick or untick elsewhere wins
   initNav();
   on("shown", (id) => { if (stale.delete(id)) LAZY[id](); });
   initRoute();
@@ -67,7 +67,12 @@ function boot() {
   initMap();
   initSettings();
   renderAll();
-  store.onChange((kind, detail) => (kind === "marks" ? onMarks() : kind === "counters" ? onCounters() : onSetting(detail)));
+  store.onChange((kind, detail) => {
+    if (kind === "marks") onMarks();
+    else if (kind === "counters") onCounters();
+    else if (kind === "settings") onSetting(detail);
+    // "found" and "mapprefs" are handled by the map itself
+  });
   sync.init({ validIds });
   wake.update(store.setting("awake"), paintWake);
   document.addEventListener("visibilitychange", () => wake.update(store.setting("awake"), paintWake));
