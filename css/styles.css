@@ -114,7 +114,7 @@ section[hidden] { display: none; }
 /* brand */
 .top { display: flex; align-items: center; gap: 12px; }
 .top img { width: 44px; height: 44px; border-radius: var(--r-md); flex: none; }
-.top h1 { font-family: var(--display); font-weight: 700; font-size: var(--fs-xl); line-height: 1.1; margin: 0; letter-spacing: .04em; min-width: 0; }
+.top h1 { font-family: var(--display); font-weight: 700; font-size: 1.18rem; line-height: 1.1; margin: 0; letter-spacing: .04em; min-width: 0; }
 .top h1 small { display: block; font-family: var(--body); font-weight: 400; font-size: var(--fs-sm); letter-spacing: 0; color: var(--muted); margin-top: 3px; }
 .pills { display: flex; flex-wrap: wrap; gap: 6px; margin: 12px 0 0; }
 .pill { display: inline-flex; align-items: center; gap: 6px; font-size: var(--fs-xs); padding: 3px 10px; border-radius: 999px; border: 1px solid var(--line); color: var(--muted); background: var(--surface); }
@@ -209,6 +209,8 @@ section[hidden] { display: none; }
   .maptools #mapHere, .mapcard:not(.fs) .maptools #mapFs, .mapcard.fs .maptools #mapExit { flex: none; width: 44px; padding: 0; }
   .maptools .lbl { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
   .mapcard:not(.fs) .maptools { gap: 10px 6px; }
+  .mapcard.fs #mapLayer { flex: 1 1 100%; }
+  .mapcard.fs #mapLayer button { flex: 1; }
   .mapcard:not(.fs) .maptools .mt-go, .mapcard.fs .maptools .mt-go { flex: 1 1 0; min-width: 5rem; max-width: none; }
   .mapcard .mt-go select { width: 100%; max-width: none; }
   .mapcard:not(.fs) .maptools > #mapFilterBtn { flex: 0 0 auto; }
