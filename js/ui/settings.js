@@ -44,7 +44,7 @@ export function paintStorage() {
 
 export function paintWake(state) {
   const pill = $("wakePill");
-  pill.hidden = state === "off" && !store.setting("awake");
+  pill.hidden = !(store.setting("awake") && (state === "blocked" || state === "unsupported"));
   pill.classList.toggle("on", state === "on");
   const text = { on: "Screen stays on", off: "Screen may dim", unsupported: "Keep-awake unsupported", blocked: "Keep-awake blocked" }[state];
   pill.querySelector("span").textContent = text;

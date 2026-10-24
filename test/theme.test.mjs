@@ -33,8 +33,21 @@ for (const accent of Object.keys(ACCENT)) {
       }
       assert.ok(ratio(t.muted, soft) >= 4.5, "muted on accent-soft");
       assert.ok(ratio(acc, soft) >= 4.5, "accent on accent-soft");
+      // text on an accent tint uses the stronger tokens (--accent-ink, --muted-ink): same formulas as the css
+      const ink = mix(acc, t.fg, 0.25), mutedInk = mix(t.muted, t.fg, 0.22);
+      assert.ok(ratio(ink, soft) >= 5.5, "accent-ink on accent-soft");
+      assert.ok(ratio(mutedInk, soft) >= 4.5, "muted-ink on accent-soft");
+      assert.ok(ratio(t.muted, t.raised) >= 4.5, "placeholder (muted) on raised");
+      assert.ok(ratio(t.edge, t.raised) >= 3, "control border on raised");
       assert.ok(ratio(t.edge, t.surface) >= 3, "control border on surface");
       assert.ok(ratio(t.edge, t.bg) >= 3, "control border on bg");
     });
   }
 }
+
+test("the css uses those tokens for tinted pairs and placeholders", () => {
+  assert.match(css, /--accent-ink: color-mix\(in srgb, var\(--accent\) 75%, var\(--fg\)\)/);
+  assert.match(css, /--muted-ink: color-mix\(in srgb, var\(--muted\) 78%, var\(--fg\)\)/);
+  assert.match(css, /::placeholder \{ color: var\(--muted\); opacity: 1; \}/);
+  for (const sel of [/\.chip\.trophy \{[^}]*color: var\(--accent-ink\)/, /\.toolbar \.btn\[aria-pressed="true"\] \{[^}]*var\(--accent-ink\)/, /\.step \.more\[aria-expanded="true"\] \{[^}]*var\(--accent-ink\)/, /\.next \.where small \{[^}]*var\(--muted-ink\)/]) assert.match(css, sel);
+});

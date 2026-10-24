@@ -8,8 +8,8 @@ const TABS = [
   ["tro", "Trophies", "crown"],
   ["col", "Legendary", "arm"],
   ["map", "Map", "map"],
-  ["guide", "Guide", "quest"],
-  ["set", "Settings", "hammer"],
+  ["guide", "Guide", "book"],
+  ["set", "Settings", "gear"],
 ];
 
 let current = "route";
@@ -18,7 +18,7 @@ let current = "route";
 // hash routes; "checklists" and "more" are only tab-bar aliases (CSS hides the opposite set per breakpoint).
 const PHONE = "(max-width: 979.98px)";
 const CK = ["tro", "col"], MORE = ["guide", "set"];
-let lastCk = "tro", sheet = null, opener = null;
+let lastCk = "tro", sheet = null, opener = null, ckSub = "tro"; // ckSub: which half of the Trophies tab the phone switch shows in Main game and DLC mode
 
 const hidden = (id) => id === "col" && scope() === "dlc";
 const label = (id, text) => (id === "tro" ? (scope() === "dlc" ? "Goals" : trophiesWord()) : text);
@@ -52,8 +52,9 @@ function markTabs(id) {
 // the Trophies | Legendary switch (phones) and the More sheet (Guide, Settings) are built once and reused
 function buildExtras() {
   const sw = $("ckSwitch");
-  if (!sw.onclick) sw.onclick = (e) => { const b = e.target.closest("button[data-ck]"); if (b && b.dataset.ck !== current) show(b.dataset.ck); };
-  sw.innerHTML = `<button type="button" data-ck="tro" aria-pressed="false">${label("tro", "Trophies")}</button><button type="button" data-ck="col" aria-pressed="false">Legendary</button>`;
+  if (!sw.onclick) sw.onclick = (e) => { const b = e.target.closest("button[data-ck]"); if (!b) return; const k = b.dataset.ck, sub = k === "dlc" ? "dlc" : "tro"; if (k === "col" ? current !== "col" : current !== "tro" || ckSub !== sub) { if (k !== "col") ckSub = sub; show(k === "col" ? "col" : "tro"); } };
+  sw.innerHTML = `<button type="button" data-ck="tro" aria-pressed="false">${label("tro", "Trophies")}</button><button type="button" data-ck="col" aria-pressed="false">Legendary</button>${scope() === "both" ? '<button type="button" data-ck="dlc" aria-pressed="false">DLC</button>' : ""}`;
+  if (scope() !== "both") ckSub = "tro";
   if (!sheet) {
     sheet = document.createElement("div");
     sheet.id = "moreSheet"; sheet.className = "moresheet"; sheet.hidden = true; sheet.setAttribute("role", "group"); sheet.setAttribute("aria-label", "More");
@@ -72,7 +73,8 @@ function paintExtras() {
   const sw = $("ckSwitch");
   if (sw) {
     sw.hidden = !(CK.includes(current) && !hidden("col"));
-    sw.querySelectorAll("button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.ck === current)));
+    sw.querySelectorAll("button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.ck === "col" ? current === "col" : current === "tro" && (b.dataset.ck === "dlc") === (ckSub === "dlc"))));
+    $("v-tro").dataset.sub = scope() === "both" ? ckSub : "";
   }
   sheet?.querySelectorAll(".more-row").forEach((r) => { if (r.dataset.go === current) r.setAttribute("aria-current", "page"); else r.removeAttribute("aria-current"); });
 }
