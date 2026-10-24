@@ -13,6 +13,23 @@ export function hideToast() {
   if (box) box.hidden = true;
 }
 
+// Shorten a name for a toast at a word boundary (never mid-word), at most `max` characters including the ellipsis.
+export function clip(text, max = 48) {
+  const s = String(text).replace(/\s+/g, " ").trim();
+  if (s.length <= max) return s;
+  let cut = s.slice(0, max - 1);
+  const sp = cut.lastIndexOf(" ");
+  if (sp >= max * 0.5) cut = cut.slice(0, sp);
+  return cut.replace(/[\s,;:.\-–—(·]+$/, "") + "…";
+}
+
+// On a phone with the map maximized, the details sheet fills the bottom: sit the toast just above it so Undo never covers its buttons.
+function lift(box) {
+  const sheet = document.documentElement.classList.contains("map-fs") && matchMedia("(max-width: 699.98px)").matches
+    ? document.querySelector(".mapcard.fs .mapsheet:not([hidden])") : null;
+  box.style.bottom = sheet ? `${Math.round(innerHeight - sheet.getBoundingClientRect().top + 8)}px` : "";
+}
+
 export function showToast(message, onUndo) {
   const box = $("toast");
   if (!box) return;
@@ -23,6 +40,7 @@ export function showToast(message, onUndo) {
   $("toastUndo").hidden = !undo;
   // a status region only announces text that changes while it is visible: toggle hidden first
   box.hidden = false;
+  lift(box);
   arm();
 }
 

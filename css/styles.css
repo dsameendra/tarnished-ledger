@@ -653,7 +653,7 @@ html.map-fs, html.map-fs body { overflow: hidden; overscroll-behavior: none; }
   .seg button { min-height: 44px; min-width: 44px; }
   .swatches { gap: 6px; }
   .swatches button { width: 44px; height: 44px; }
-  .switch::before { content: ""; position: absolute; inset: -7px 0; }
+  .switch::before { content: ""; position: absolute; inset: -8px 0; } /* 30px + 2 x 1px border inside the inset = 44px */
   .set a, .prose a { padding-block: 10px; }
 }
 /* A short landscape phone: leave room under the inline map so a swipe on the page can still scroll (Maximize is the way to explore). */
@@ -691,3 +691,22 @@ html.ios-pwa {
 }
 html.ios-pwa .shell { padding-top: calc(14px + var(--top-inset)); }
 @media (min-width: 980px) { html.ios-pwa .shell { padding-top: calc(28px + var(--top-inset)); } }
+
+/* Touch targets and reflow leftovers (44px hit areas for ticks, switches and standalone links; no layout change: the extra
+   area comes from pseudo-element insets, or from padding cancelled by a negative margin). Keep this block last. */
+@media (pointer: coarse) {
+  .row button.check::after { inset: -12px; }     /* 24px box + 2 x 2px border inside the inset = 44px */
+  .jump::after { content: ""; position: absolute; inset: -13px -6px; }
+  .ph-links a { padding-block: 12px; margin-block: -4px; }
+  .set a, .prose a, .note a, .hint a, .mapcredit a, #sources a { padding-block: 13px; }
+  .prose summary { padding-block: 9px; margin-block: -9px; }
+}
+/* 200% zoom on a phone (about 195px wide): the bottom tabs and the Goals counters wrap instead of pushing the page wider. */
+.nav button span { max-width: 100%; min-width: 0; overflow-wrap: anywhere; text-align: center; }
+.counter, .counter .c-head > * { min-width: 0; overflow-wrap: anywhere; }
+.counter .c-ctl { flex-wrap: wrap; }
+.links a, .ph-links a { min-width: 0; overflow-wrap: anywhere; }
+@media (max-width: 260px) { body { overflow-wrap: anywhere; } }
+.icolist { grid-template-columns: repeat(auto-fill, minmax(min(210px, 100%), 1fr)); }
+/* maximized map on a tablet or laptop: the legend sits at the bottom centre, so the toast goes above it (on phones toast.js lifts it above the details sheet) */
+@media (min-width: 900px) { .map-fs .toast { bottom: calc(var(--safe-b) + 68px); } }
