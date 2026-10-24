@@ -10,6 +10,7 @@ import { showToast, clip } from "./toast.js";
 
 let programmatic = false;
 let query = "";
+let trailOpen = false; // the folded run of finished phases is expanded
 
 const smooth = () => (matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth");
 const goalName = Object.fromEntries(goalList.map(([k, n]) => [k, n]));
@@ -77,7 +78,7 @@ ${area}<ol class="steps">${items}</ol></details>`;
 }
 
 export function renderRoute() {
-  $("phases").innerHTML = PHASES.map((p, pi) => (inScope(pi) ? phaseHTML(p, pi, currentPhase()) : "")).join("");
+  $("phases").innerHTML = '<div class="trail" id="trail" hidden></div><div class="missable" id="missable" hidden></div>' + PHASES.map((p, pi) => (inScope(pi) ? phaseHTML(p, pi, currentPhase()) : "")).join("");
   $("jumpPhase").innerHTML = '<option value="">Jump to…</option>' + PHASES.map((p, pi) => (inScope(pi) ? `<option value="${p.id}">${phaseLabel(pi)} · ${p.n}</option>` : "")).join("");
   applyView();
   updateRoute();
@@ -118,8 +119,52 @@ export function updateRoute() {
     const all = el.querySelector("[data-phaseall]");
     if (all) { all.hidden = !t; all.textContent = d === t ? "Mark phase not done" : "Mark phase done"; all.setAttribute("aria-pressed", String(d === t)); }
     el.classList.toggle("current", pi === cur);
+    // The road: finished phases fold into one row, phases after the current one are quiet stops.
+    const past = cur < 0 || pi < cur;
+    el.classList.toggle("ahead", !past && pi > cur);
+    el.classList.toggle("folded", past && !trailOpen);
   });
   renderNext();
+  renderTrail(cur);
+}
+
+// One row for the run of finished phases at the top, and one line pointing at the next "Don't miss" step.
+function renderTrail(cur) {
+  const t = $("phases").querySelector(".trail");
+  const m = $("phases").querySelector(".missable");
+  if (!t || !m) return;
+  const run = PHASES.map((p, pi) => pi).filter((pi) => inScope(pi) && (cur < 0 || pi < cur));
+  t.hidden = !run.length;
+  if (run.length) {
+    const set = new Set(run);
+    const n = tickSteps.filter((s) => set.has(s.pi)).length;
+    const first = phaseLabel(run[0]);
+    const label = run.length === 1 ? `Phase ${first} done` : `Phases ${first} to ${phaseLabel(run[run.length - 1])} done`;
+    const sig = run.length + ":" + first + ":" + n;
+    if (t.dataset.sig !== sig) {
+      t.dataset.sig = sig;
+      t.innerHTML = `<button type="button" class="trail-btn" aria-expanded="false" aria-controls="phases"><span class="trail-t"><b>${label}</b> · ${n} ${n === 1 ? "step" : "steps"}</span><span class="trail-act"><span class="trail-verb"></span><svg class="chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 10l5 5 5-5"/></svg></span><span class="trail-segs" aria-hidden="true">${"<i></i>".repeat(run.length)}</span></button>`;
+    }
+    t.querySelector(".trail-btn").setAttribute("aria-expanded", String(trailOpen));
+    t.querySelector(".trail-verb").textContent = trailOpen ? "Hide" : "Show";
+  }
+  const w = scopedSteps().find((s) => s.kind === "warn" && !store.isDone(s.id));
+  m.hidden = !w;
+  if (w) m.innerHTML = `<button type="button" class="missable-btn" data-missable="${w.id}"><b>Next missable:</b> Phase ${phaseLabel(w.pi)} · ${shortText(w.text)}</button>`;
+}
+
+// First sentence of a step, cut to a line or two for the "Next missable" row.
+function shortText(t) {
+  const p = plain(t);
+  const first = (p.match(/^.*?[.!?](?=\s|$)/) || [p])[0];
+  const cut = first.length > 100 ? first.slice(0, 100).replace(/\s+\S*$/, "") + "…" : first;
+  return cut;
+}
+
+function unfold(ph) {
+  if (!ph || !ph.classList.contains("folded")) return;
+  trailOpen = true;
+  updateRoute();
 }
 
 function renderNext() {
@@ -213,6 +258,7 @@ export function jump(id) {
   const ph = $("p-" + PHASES[s.pi].id);
   if (ph) ph.open = true;
   programmatic = false;
+  unfold(ph);
   requestAnimationFrame(() => {
     const li = $("s-" + id);
     if (!li) return;
@@ -229,6 +275,7 @@ function focusPhase(pid) {
   programmatic = true;
   d.open = true;
   programmatic = false;
+  unfold(d);
   requestAnimationFrame(() => d.scrollIntoView({ behavior: smooth(), block: "start" }));
 }
 
@@ -246,6 +293,7 @@ function setQuery(q) {
     if (query && hits) { programmatic = true; d.open = true; programmatic = false; }
     if (hits) any = true;
   });
+  $("phases").classList.toggle("searching", Boolean(query));
   $("noResults").hidden = any || !query;
   $("qClear").hidden = !query;
   const n = $$(".step[data-id]:not(.nomatch)").length;
@@ -255,7 +303,7 @@ function setQuery(q) {
 }
 
 function foldLabel() {
-  $("foldBtn").textContent = $$("details.phase").some((d) => d.open) ? "Collapse all" : "Expand all";
+  $("foldBtn").textContent = $$("details.phase:not(.folded)").some((d) => d.open) ? "Collapse all" : "Expand all";
 }
 
 export function initRoute() {
@@ -270,6 +318,9 @@ export function initRoute() {
       mo.setAttribute("aria-expanded", String(open));
       return;
     }
+    if (e.target.closest(".trail-btn")) { trailOpen = !trailOpen; updateRoute(); foldLabel(); return; }
+    const mb = e.target.closest("[data-missable]");
+    if (mb) { jump(mb.dataset.missable); return; }
     const pa = e.target.closest("[data-phaseall]");
     if (pa) { togglePhase(pa.dataset.phaseall); return; }
     const mp = e.target.closest("[data-mapphase]");
@@ -301,7 +352,7 @@ export function initRoute() {
   $("compactBtn").addEventListener("click", () => store.setSetting("compact", !store.setting("compact")));
   $("hideBtn").addEventListener("click", () => store.setSetting("hide", !store.setting("hide")));
   $("foldBtn").addEventListener("click", () => {
-    const ds = $$("details.phase");
+    const ds = $$("details.phase:not(.folded)");
     const anyOpen = ds.some((d) => d.open);
     programmatic = true;
     ds.forEach((d) => { d.open = !anyOpen; });
