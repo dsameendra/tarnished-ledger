@@ -452,9 +452,6 @@ button.jump::after { content: ""; position: absolute; inset: -12px -6px; }
   .mapcard:not(.fs) .mt-chips .seg button { border: 1px solid var(--edge); border-radius: 999px; min-height: 36px; padding: 0 12px; background: var(--raised); white-space: nowrap; }
   .mapcard:not(.fs) .mt-chips .seg button[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--onaccent); font-weight: 700; }
   .mapcard:not(.fs) .mt-chips #mapWorld { padding-right: 6px; border-right: 1px solid var(--line); margin-right: 2px; }
-  .mapcard:not(.fs) .mapstage { height: calc(var(--mh, clamp(340px, calc(100svh - 250px), 780px)) + 56px); }
-  .mapcard:not(.fs) #map { top: 56px; }
-  .mapcard:not(.fs) .mapstage { background: var(--surface); }
   .mapcard:not(.fs) .mapsearch { right: 10px; max-width: none; }
   .mapcard:not(.fs) .mapctl { top: 66px; }
   /* maximized: one row (Layers, then the cluster at the top right); the rest is a bottom sheet */
@@ -463,11 +460,11 @@ button.jump::after { content: ""; position: absolute; inset: -12px -6px; }
   .mapcard.fs .mt-tools { grid-column: 2; grid-row: 1; }
   @container (max-width: 21rem) { .mapcard.fs .mt-layers { width: 44px; padding: 0; justify-content: center; } .mapcard.fs .mt-layers span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; } }
   .mapcard.fs .mt-left { display: none; }
-  .mapcard.fs.layers-open .mt-left { display: flex; flex-direction: column; gap: 12px; position: absolute; z-index: 1250; left: 0; right: 0; bottom: 0; max-height: 75%; overflow: auto; padding: 10px calc(16px + env(safe-area-inset-right, 0px)) calc(16px + env(safe-area-inset-bottom, 0px)) calc(16px + env(safe-area-inset-left, 0px)); background: var(--surface); border-top: 1px solid var(--line); border-radius: var(--r-lg) var(--r-lg) 0 0; box-shadow: 0 -8px 28px rgb(0 0 0 / .4); }
+  .mapcard.fs.layers-open .mt-left { display: flex; flex-direction: column; align-items: stretch; gap: 12px; position: absolute; z-index: 1250; left: 0; right: 0; bottom: 0; max-height: 75%; overflow: auto; padding: 10px calc(16px + env(safe-area-inset-right, 0px)) calc(16px + env(safe-area-inset-bottom, 0px)) calc(16px + env(safe-area-inset-left, 0px)); background: var(--surface); border-top: 1px solid var(--line); border-radius: var(--r-lg) var(--r-lg) 0 0; box-shadow: 0 -8px 28px rgb(0 0 0 / .4); }
   .mapcard.fs .mt-sheet-h { display: flex; align-items: center; justify-content: space-between; min-height: 44px; font-family: var(--display); }
   .mapcard.fs .mt-sheet-h .mp-x { position: static; }
   .mapcard.fs .mt-modes { display: grid; gap: 10px; }
-  .mapcard.fs .mt-chips { display: grid; gap: 10px; overflow: visible; mask-image: none; -webkit-mask-image: none; padding-right: 0; }
+  .mapcard.fs .mt-chips, .mapcard.fs .mt-chips:has(#mapWorld:not([hidden])) { display: grid; gap: 10px; overflow: visible; mask-image: none; -webkit-mask-image: none; padding-right: 0; }
   .mapcard.fs #mapWorld, .mapcard.fs #mapLayer { display: flex; }
   .mapcard.fs #mapWorld[hidden], .mapcard.fs #mapLayer[hidden] { display: none; }
   .mapcard.fs #mapWorld button, .mapcard.fs #mapLayer button, .mapcard.fs .mt-subs button { flex: 1 0 auto; padding-inline: 10px; white-space: nowrap; }
