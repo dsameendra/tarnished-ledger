@@ -305,6 +305,8 @@ details.phase.current .num { background: var(--accent); border-color: var(--acce
 details.phase.current .ph-title h3 { font-size: 1.25rem; font-weight: 700; }
 details.phase.current .count { color: var(--fg); font-size: .95rem; font-weight: 700; }
 details.phase.ahead, details.phase.past { background: transparent; border-color: transparent; border-radius: 0; margin-bottom: 0; }
+/* collapsed stops have no border, so the road line runs unbroken from row to row and lines up with the folded row above */
+details.phase.ahead:not([open]), details.phase.past:not([open]) { border-width: 0; }
 details.phase.ahead[open], details.phase.past[open] { background: var(--surface); border-color: var(--line); border-radius: 12px; margin-block: 6px 10px; }
 details.phase.ahead > summary, details.phase.past > summary { position: relative; min-height: 52px; padding-block: 8px; }
 details.phase.ahead > summary:hover, details.phase.past > summary:hover { background: var(--surface); }
