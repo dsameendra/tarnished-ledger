@@ -161,6 +161,22 @@ section[hidden] { display: none; }
 .toast-undo:focus-visible { outline: 2px solid var(--bg); outline-offset: -3px; }
 @keyframes toastin { from { opacity: 0; transform: translateY(8px); } }
 .map-fs .toast { bottom: calc(var(--safe-b) + 16px); z-index: 3000; }
+/* phone navigation (A3): four tabs (Route, Checklists, Map, More); the six-item set shows from 980px up */
+.nav .tab-d { display: none; }
+.seg.ckswitch { display: flex; margin: 0 0 12px; }
+.seg.ckswitch button { min-height: 44px; flex: 1; font-size: var(--fs-ui); }
+.seg.ckswitch[hidden], .moresheet[hidden] { display: none; }
+.moresheet { position: fixed; inset: 0 0 var(--navh, 64px); z-index: 19; display: flex; flex-direction: column; justify-content: flex-end; }
+.more-scrim { position: absolute; inset: 0; background: rgb(0 0 0 / .45); }
+.more-list { position: relative; margin: 0 8px 8px; padding: 6px; display: grid; background: var(--raised); border: 1px solid var(--line); border-radius: var(--r-lg); box-shadow: 0 -8px 28px rgb(0 0 0 / .4); }
+.more-row { display: flex; align-items: center; gap: 14px; min-height: 52px; padding: 0 14px; border: 0; border-radius: var(--r-md); background: none; color: var(--fg); font: inherit; font-size: var(--fs-lg); text-align: left; cursor: pointer; }
+.more-row svg { width: 22px; height: 22px; stroke: currentColor; fill: none; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+.more-row[aria-current="page"] { background: var(--accent-soft); color: var(--accent); font-weight: 700; }
+.more-row:focus-visible { outline: 2px solid var(--accent); outline-offset: -3px; }
+@media (min-width: 980px) {
+  .nav .tab-d { display: flex; }
+  .nav .tab-m, .ckswitch, .moresheet { display: none !important; }
+}
 
 /* wide screens */
 @media (min-width: 980px) {

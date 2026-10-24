@@ -20,6 +20,8 @@ export const PATHS = {
   rune: '<circle cx="12" cy="12" r="8"/><path d="M12 5v14M8 9l4 3 4-3M9 16l3-2 3 2"/>',
   tree: '<path d="M12 21V6M12 15l-5-4M12 15l5-4M12 10l-4-3.5M12 10l4-3.5M9 21h6"/><circle cx="12" cy="4.5" r="1.5"/>',
   hammer: '<path d="M14 4l6 6-3 3-6-6zM11 7L3 15l3 3 8-8"/>',
+  list: '<path d="M4 6.5l1.5 1.5L8 5.5M4 12.5l1.5 1.5L8 11.5M4 18.5l1.5 1.5L8 17.5M11 7h9M11 13h9M11 19h9"/>',
+  more: '<circle cx="5" cy="12" r="1.3"/><circle cx="12" cy="12" r="1.3"/><circle cx="19" cy="12" r="1.3"/>',
   search: '<circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/>',
 };
 

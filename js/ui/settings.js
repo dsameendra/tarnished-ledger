@@ -134,15 +134,24 @@ function dismissWelcome() {
 
 function tabPanels() {
   const tabs = () => $$("#tabs button");
+  const phone = matchMedia("(max-width: 979.98px)");
+  // on phones the Checklists / More aliases label the panels they stand for; elsewhere each view has its own tab
+  const owner = (view) => {
+    const own = tabs().find((b) => b.dataset.tab === view);
+    const alias = phone.matches && tabs().find((b) => (b.dataset.views || "").split(" ").includes(view));
+    return alias || own;
+  };
   const wire = () => {
-    tabs().forEach((b) => {
-      b.id = "tab-" + b.dataset.tab;
-      const panel = $("v-" + b.dataset.tab);
+    tabs().forEach((b) => { b.id = "tab-" + b.dataset.tab; });
+    ["route", "tro", "col", "map", "guide", "set"].forEach((view) => {
+      const b = owner(view);
+      const panel = $("v-" + view);
       panel.setAttribute("role", "tabpanel");
-      panel.setAttribute("aria-labelledby", b.id);
+      if (b) panel.setAttribute("aria-labelledby", b.id); else panel.removeAttribute("aria-labelledby");
     });
   };
   new MutationObserver(wire).observe($("tabs"), { childList: true, subtree: true, attributeFilter: ["aria-selected"] });
+  phone.addEventListener("change", wire);
   wire();
 }
 
