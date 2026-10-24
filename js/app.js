@@ -1,6 +1,7 @@
 import * as store from "./lib/store.js";
 import * as sync from "./lib/sync.js";
 import * as wake from "./lib/wake.js";
+import { initUpdates } from "./lib/update.js";
 import { validIds } from "./lib/model.js";
 import { renderRail, initRail } from "./ui/rail.js";
 import { initToast } from "./ui/toast.js";
@@ -71,9 +72,7 @@ function boot() {
   wake.update(store.setting("awake"), paintWake);
   document.addEventListener("visibilitychange", () => wake.update(store.setting("awake"), paintWake));
   if (navigator.storage?.persist) navigator.storage.persist().catch(() => {});
-  if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {
-    navigator.serviceWorker.register("sw.js").catch(() => {});
-  }
+  initUpdates();
 }
 
 boot();

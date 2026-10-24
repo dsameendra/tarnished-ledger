@@ -9,6 +9,7 @@ import { TROPHIES, COLLECTIONS } from "../js/data/trophies.js";
 import { CATS } from "../js/data/map-categories.js";
 import { STEP_LOCS, PHASE_FOCUS, TROPHY_LOCS, COLLECT_LOCS, GOAL_LOCS } from "../js/data/map-guide.js";
 import { PINS, DLC_PINS, DLC_EDGES, DLC_AREAS, AREAS } from "../js/data/map.js";
+import { parseSw, shellHash } from "./shell-hash.mjs";
 import { COUNTER_MAX } from "../js/lib/store.js";
 
 const errors = [];
@@ -88,6 +89,7 @@ const lazy = (f) => f.startsWith("assets/map/tiles/") || mapPack.includes(f);
 for (const f of walk("assets/map")) if (!f.startsWith("assets/map/tiles/") && !f.endsWith(".DS_Store") && !mapPack.includes(f)) err(`${f} ships but is not in the sw.js MAP_PACK`);
 const shipped = ["js", "css", "assets", "vendor"].flatMap(walk).filter((f) => !f.endsWith(".DS_Store") && !f.endsWith("LICENSE") && !lazy(f));
 for (const f of [...shipped, "manifest.webmanifest"]) if (!shellSet.has(f)) err(`${f} ships but is not in the sw.js SHELL`);
+if (parseSw(swSrc).hash !== shellHash(swSrc)) err("files the service worker serves cache-first changed since the last bump: run `npm run bump`");
 if (!/const CACHE = PREFIX \+ "v\d+"/.test(swSrc)) err('sw.js CACHE must be PREFIX + "v<number>"');
 
 // index.html: local links exist, ids are unique, and every id the code looks up by name is present.

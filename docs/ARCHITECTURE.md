@@ -7,7 +7,7 @@ A static site with no build step: ES modules, `localStorage`, a service worker.
 - `js/lib/`: `store.js` (state under `tarnished-ledger:v2`, validation and merge logic), `sync.js` (gist sync), `model.js` (merged phases, scope logic, derived counts), `icons.js`, `wake.js` (screen wake lock, calls are queued), `dom.js` (event bus), `labels.js`.
 - `js/ui/`: one module per tab, plus `rail.js` and `nav.js`. The map only draws while its tab is visible.
 - `js/data/`: route, trophies, map, links, guide, and the DLC files `dlc-route.js` and `dlc-goals.js`.
-- `sw.js`: network-first cache of same-origin files and Google Fonts. Never touches api.github.com. Details below.
+- `sw.js`: cache-first of same-origin files and Google Fonts. Never touches api.github.com. Details below.
 
 ## State and safety
 - `store.load()` rebuilds state from `localStorage`. Marks, counters and settings are validated on load and on every merge or import (shape, known ids, value ranges), so a hand-edited save or a bad remote file cannot break rendering. An unreadable save is copied to `tarnished-ledger:v2:corrupt` before anything overwrites it.
@@ -15,10 +15,12 @@ A static site with no build step: ES modules, `localStorage`, a service worker.
 - A failed write (quota, private mode) sets a flag that shows "Not saving" in the UI; the next successful write clears it.
 
 ## Service worker
-- Network first with `cache: "no-cache"`, so a deploy shows up on the next load even though GitHub Pages sends `max-age=600`. After 6 seconds without an answer a cached copy is used, and when offline the cache is used straight away.
+- Cache first from the versioned cache (`CACHE`), no background revalidation, so startup never waits on the network and all files of one page load come from one version (the map loads modules lazily, so mixing would be possible otherwise). Measured with 6 s of injected latency: first step rendered after 30 s with the old network-first worker, 56 ms now. Files not in the cache (first use of a font) go to the network and are kept.
+- Updates arrive through `sw.js` itself. A new worker installs its cache and waits (no `skipWaiting` on install, so a running page is never switched under its own lazy imports). `js/lib/update.js` shows "A new version is ready" with a button that sends `skipWaiting` and reloads on `controllerchange`; ignoring it is safe, the new version starts once all windows are closed. Navigations use `ignoreSearch`.
+- `SHELL_HASH` in `sw.js` is a content hash of `SHELL` and `MAP_PACK` (`scripts/shell-hash.mjs`). `npm run bump` updates it and increments `CACHE`; `npm run check` and `test/sw.test.mjs` fail when it is stale.
 - Only caches whose name starts with `tarnished-ledger-` are deleted on activate, because every project site under `github.io` shares one origin.
 - Opaque (no-CORS) responses are kept for the font hosts only.
-- Add new files to `SHELL` and bump `CACHE` on each release. `npm run check` fails if `SHELL` and the shipped files differ.
+- Add new files to `SHELL` and run `npm run bump` on each release. `npm run check` fails if `SHELL` and the shipped files differ.
 - All paths are relative, so the app works under `/tarnished-ledger/`.
 
 ## Scope
