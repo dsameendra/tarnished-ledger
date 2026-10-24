@@ -264,6 +264,15 @@ export function setDone(id, value) {
 }
 
 // Set several steps at once (a whole phase): one save and one update instead of one per step.
+// A tick that carries timestamp 1: it fills a gap but loses to any real decision, on this or another device.
+export function seedDone(id) {
+  if (state.marks[id]) return;
+  state.marks[id] = [1, 1];
+  for (const t of twinOf(id)) if (!state.marks[t]) state.marks[t] = [1, 1];
+  write();
+  emit("marks");
+}
+
 export function setDoneMany(ids, value) {
   for (const id of new Set([...ids, ...ids.flatMap(twinOf)])) state.marks[id] = [value ? 1 : 0, stamp(state.marks[id])];
   write();

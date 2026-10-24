@@ -31,7 +31,6 @@ let picked = ms.filter.world || null;
 let lay = ms.filter.lay || (ms.filter.under ? "under" : "base"); // which map of the base game: base | under | hub
 let selected = null; // { m } or { phase }
 let enabled = new Set();
-let dirty = false;
 let restoring = false;
 let statusTimer = 0;
 const mq = (q) => matchMedia(q).matches;
@@ -482,9 +481,11 @@ let breaksShown = [];
 
 function getRoute() {
   const w = world();
-  if (routeCache.key !== w) {
+  // keyed on the loaded layers too: a route built before its layers arrived (a sync changed the scope) must be rebuilt
+  const key = w + ":" + [...D.loaded].sort().join();
+  if (routeCache.key !== key) {
     const phases = PHASES.filter((p) => Boolean(p.dlc) === (w === "dlc"));
-    routeCache = { key: w, route: buildRoute({ byId: D.byId, stepLocs: D.stepLocs }, phases, allSteps, (p) => PHASES.indexOf(p)) };
+    routeCache = { key, route: buildRoute({ byId: D.byId, stepLocs: D.stepLocs }, phases, allSteps, (p) => PHASES.indexOf(p)) };
   }
   return routeCache.route;
 }
@@ -748,14 +749,23 @@ function setMarkerDone(m, on) {
   const was = ms.isFound(m.id);
   ms.setFound(m.id, on);
   const cid = COUNTER_OF[m.cat];
+  let msg = "";
   if (cid && was !== on) {
     const c = cid === "sf" ? ["Scadutree Fragments", 50] : ["Revered Spirit Ashes", 25];
-    status(`${c[0]}: ${store.counter(cid)} of ${c[1]} on the Goals counter.`);
+    msg = `${c[0]}: ${store.counter(cid)} of ${c[1]} on the Goals counter.`;
+    status(msg);
   }
+  // only steps in the current phase or earlier follow a marker: a find far ahead must not tick a later phase
+  const cur = currentPhase();
+  let n = 0;
   for (const id of D.stepsOf.get(m.id) || []) {
     const s = stepById.get(id);
-    if (s && s.kind !== "tip" && D.stepLocs[id]?.length === 1 && store.isDone(id) !== on) store.setDone(id, on);
+    if (!s || s.kind === "tip" || D.stepLocs[id]?.length !== 1 || store.isDone(id) === on) continue;
+    if (cur >= 0 && s.pi > cur) continue;
+    store.setDone(id, on);
+    n++;
   }
+  if (n) status(`${msg ? msg + " " : ""}Also ${on ? "ticked" : "cleared"} ${n} route step${n === 1 ? "" : "s"}.`);
 }
 
 // ---- progress section below the map ----
@@ -919,7 +929,7 @@ export function renderMap() {
   renderPhaseList();
   scheduleBelow();
   if (!D || !map) return;
-  if (!visible()) { dirty = true; return; }
+  if (!visible()) return;
   if (layersFor(scope()).some((l) => !D.loaded.has(l))) { ready().then(() => visible() && layersFor(scope()).every((l) => D.loaded.has(l)) && renderMap()); return; }
   if (selected?.phase && Boolean(PHASES.find((p) => p.id === selected.phase)?.dlc) !== (world() === "dlc")) selected = null;
   if (mode() !== shown) setMode(mode());
@@ -1109,7 +1119,6 @@ export function initMap() {
       sizeStage();
       map.invalidateSize({ animate: false });
       scheduleBelow();
-      dirty = false;
     });
   };
   on("shown", (id) => { if (id === "map") shown_(); else if (fs) setFs(false); });

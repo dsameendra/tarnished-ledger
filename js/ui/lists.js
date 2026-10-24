@@ -160,7 +160,11 @@ export function initLists() {
   };
   const step = (el, d) => store.setCounter(el.dataset.counter, store.counter(el.dataset.counter) + d);
   let hold = null, held = false;
-  const stop = () => { clearTimeout(hold); clearInterval(hold); hold = null; };
+  const stop = () => {
+    clearTimeout(hold); clearInterval(hold); hold = null;
+    // a release outside the button gives no click, so forget the hold shortly after (a release on it clicks first)
+    if (held) setTimeout(() => { held = false; }, 60);
+  };
   $("dlcGoals").addEventListener("pointerdown", (e) => {
     const b = e.target.closest(".inc, .dec");
     if (!b || e.button || b.disabled) return;
@@ -171,6 +175,7 @@ export function initLists() {
   });
   ["pointerup", "pointercancel", "pointerleave"].forEach((t) => $("dlcGoals").addEventListener(t, stop));
   document.addEventListener("pointerup", stop);
+  document.addEventListener("pointercancel", stop);
   $("dlcGoals").addEventListener("contextmenu", (e) => { if (e.target.closest(".inc, .dec")) e.preventDefault(); });
   $("troList").addEventListener("click", handle);
   $("dlcGoals").addEventListener("click", (e) => {

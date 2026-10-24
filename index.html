@@ -231,19 +231,23 @@
       <div class="group">
         <h3>Backup and restore</h3>
         <div class="set stack">
+          <div class="callout" id="corruptNote" hidden role="alert"><p style="margin:0 0 8px"><b>Your saved progress could not be read.</b> This device started a fresh run, but a copy of the unreadable data was kept. Download it before you tick anything else if you want to recover it, or turn on sync to bring your progress back.</p><div class="acts" style="margin-top:0"><button type="button" class="btn primary" data-corrupt-download>Download the unreadable copy</button><button type="button" class="btn" data-corrupt-dismiss>Dismiss</button></div></div>
           <span class="hint" id="backupHint">Download a file you can keep anywhere, or copy a short code.</span>
           <div class="acts"><button type="button" class="btn" id="exportFile">Download backup</button><button type="button" class="btn" id="importFileBtn">Restore from file</button><input type="file" id="importFile" accept="application/json,.json" hidden></div>
           <label class="lbl" for="exportBox">Your progress code</label>
           <textarea id="exportBox" readonly></textarea>
           <div class="acts"><button type="button" class="btn" id="copyBtn">Copy code</button></div>
           <label class="lbl" for="importBox">Restore from a code</label>
-          <textarea id="importBox" placeholder="Paste a progress code here"></textarea>
+          <textarea id="importBox" placeholder="Paste a progress code here" aria-describedby="importHint"></textarea>
+          <span class="hint" id="importHint">A progress code carries done steps only. Found map markers and blessing counters stay as they are; a backup file restores those too.</span>
           <div class="acts"><button type="button" class="btn" id="importBtn">Restore code</button></div>
           <div class="callout" id="restoreConfirm" hidden role="alertdialog" aria-labelledby="restoreText">
             <p id="restoreText" style="margin:0 0 8px"></p>
             <div class="acts" style="margin-top:0"><button type="button" class="btn danger" id="restoreYes">Replace my progress</button><button type="button" class="btn" id="restoreNo">Cancel</button></div>
           </div>
           <div class="msg" id="ioMsg" role="status"></div>
+          <div class="acts" id="undoRow" hidden><button type="button" class="btn" id="undoLast">Undo last reset or restore</button></div>
+          <span class="hint" id="undoHint" hidden></span>
         </div>
       </div>
 
@@ -253,6 +257,7 @@
           <span class="hint" id="storeStatus">Every tick saves instantly in this browser.</span>
           <span class="hint">An installed home-screen app on iPhone has its own storage, separate from Safari. Use sync or a backup to bring your progress across.</span>
         </div>
+        <div class="set stack"><span class="lbl">Undo a tick</span><span class="hint">On a computer, Ctrl or Cmd+Z undoes the last tick on the Route tab. On a phone, use Undo in the Up next card right after you tick.</span></div>
         <div class="set"><span class="lbl" id="l-awake">Keep screen on</span><button type="button" class="switch" role="switch" data-sw="awake" aria-labelledby="l-awake" aria-describedby="wakeHint"></button><span class="hint" id="wakeHint">Stops the screen dimming while this page is open.</span></div>
         <div class="set stack" id="installRow"><span class="lbl">Install as an app</span>
           <span class="hint" id="installHint">On iPhone: open this page in Safari, tap Share, then Add to Home Screen. On Android or desktop Chrome: use the browser menu, then Install app.</span>
@@ -262,7 +267,7 @@
 
       <div class="group danger-zone">
         <h3>Reset</h3>
-        <div class="set stack"><span class="hint">Clears every tick, both blessing counters and your map progress on this device. Appearance and other settings stay. If sync is on, the reset syncs to your other devices too, so download a backup first if you might want it back.</span>
+        <div class="set stack"><span class="hint">Clears every tick, both blessing counters and your map progress on this device. Appearance and other settings stay. If sync is on, the reset syncs to your other devices too, so download a backup first if you might want it back. Reset keeps a copy you can bring back with Undo in Backup and restore. Synced progress can also be recovered from your gist's Revisions tab on GitHub for a while.</span>
           <div class="acts"><button type="button" class="btn danger" id="resetBtn">Reset progress…</button></div>
           <div class="callout" id="resetConfirm" hidden role="alertdialog" aria-labelledby="resetText">
             <p id="resetText" style="margin:0 0 8px"></p>
