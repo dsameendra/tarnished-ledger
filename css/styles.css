@@ -277,18 +277,23 @@ details.phase > summary::-webkit-details-marker { display: none; }
 .ph-links a { font-size: var(--fs-sm); display: inline-block; padding: 8px 0; }
 ol.steps { list-style: none; margin: 0; padding: 0 10px 10px; display: flex; flex-direction: column; gap: 6px; }
 
-/* route as a road: finished phases fold into one trail row, the current phase is the loud one,
-   upcoming phases are quiet stops joined by a thin line through their number discs */
-.trail { margin: 0 0 10px; }
+/* route as a road: finished phases are quiet green stops, the current phase is the loud one, upcoming phases are quiet
+   stops; all of them joined by a thin line through their number discs. A long run of finished stops folds into one row. */
+.trail { margin: 0; }
 .trail[hidden], .missable[hidden] { display: none; }
-.trail-btn { width: 100%; display: grid; grid-template-columns: 1fr auto; gap: 8px 10px; align-items: center; text-align: left; font: inherit; color: var(--fg); background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 11px 14px; min-height: 56px; cursor: pointer; }
-.trail-t b { font-family: var(--display); font-weight: 500; }
-.trail-t { font-variant-numeric: tabular-nums; }
-.trail-act { display: flex; align-items: center; gap: 4px; color: var(--muted); font-size: .84rem; }
+.trail-btn { width: 100%; display: grid; grid-template-columns: 2.4rem 1fr auto auto; gap: 10px; align-items: center; text-align: left; font: inherit; color: var(--fg); background: transparent; border: 0; border-radius: 12px; padding: 8px 14px; min-height: 52px; cursor: pointer; position: relative; }
+.trail-btn:hover { background: var(--surface); }
+.trail-btn .num { position: relative; z-index: 1; justify-self: center; width: 1.9rem; height: 1.9rem; border-width: 1px; background: var(--ok); border-color: var(--ok); color: var(--surface); }
+.trail-btn .num svg { width: 16px; height: 16px; stroke: currentColor; stroke-width: 3; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+.trail-btn .ph-title { display: block; }
+.trail-btn .ph-t { display: block; font-family: var(--display); font-weight: 400; font-size: .95rem; line-height: 1.25; }
+.trail-btn .ph-title small { display: block; }
+.trail-btn .ph-bar { display: block; }
+.trail-btn .ph-bar i { width: 100%; background: var(--ok); }
+.trail-btn .count { color: var(--ok); }
 .trail-btn[aria-expanded="true"] .chev { transform: rotate(180deg); }
 .trail-btn:hover .chev { stroke: var(--accent); }
-.trail-segs { grid-column: 1 / -1; display: flex; gap: 2px; height: 4px; }
-.trail-segs i { flex: 1; min-width: 0; background: var(--ok); border-radius: 2px; }
+.trail-btn::before { content: ""; position: absolute; left: calc(14px + 1.2rem - 1px); top: 50%; bottom: 0; width: 2px; background: color-mix(in srgb, var(--ok) 55%, transparent); }
 .phase.folded { display: none; }
 .searching .phase.folded:not(.nomatch) { display: block; }
 .searching .trail, .searching .missable, .hide-done .trail { display: none; }
@@ -299,15 +304,23 @@ details.phase.current > summary { padding-block: 16px; }
 details.phase.current .num { background: var(--accent); border-color: var(--accent); color: var(--onaccent); width: 2.4rem; height: 2.4rem; font-size: 1.05rem; }
 details.phase.current .ph-title h3 { font-size: 1.25rem; font-weight: 700; }
 details.phase.current .count { color: var(--fg); font-size: .95rem; font-weight: 700; }
-details.phase.ahead { background: transparent; border-color: transparent; border-radius: 0; margin-bottom: 0; }
-details.phase.ahead[open] { background: var(--surface); border-color: var(--line); border-radius: 12px; margin-block: 6px 10px; }
-details.phase.ahead > summary { position: relative; min-height: 52px; padding-block: 8px; }
-details.phase.ahead > summary:hover { background: var(--surface); }
+details.phase.ahead, details.phase.past { background: transparent; border-color: transparent; border-radius: 0; margin-bottom: 0; }
+details.phase.ahead[open], details.phase.past[open] { background: var(--surface); border-color: var(--line); border-radius: 12px; margin-block: 6px 10px; }
+details.phase.ahead > summary, details.phase.past > summary { position: relative; min-height: 52px; padding-block: 8px; }
+details.phase.ahead > summary:hover, details.phase.past > summary:hover { background: var(--surface); }
 details.phase.ahead .num { position: relative; z-index: 1; justify-self: center; width: 1.9rem; height: 1.9rem; font-size: .8rem; border-width: 1px; border-color: var(--edge); color: var(--muted); background: var(--bg); }
-details.phase.ahead .ph-title h3 { font-size: .95rem; font-weight: 400; }
+details.phase.ahead .ph-title h3, details.phase.past .ph-title h3 { font-size: .95rem; font-weight: 400; }
 details.phase.ahead .ph-bar { display: none; }
+details.phase.past .num { position: relative; z-index: 1; justify-self: center; width: 1.9rem; height: 1.9rem; font-size: .8rem; border-width: 1px; border-color: var(--ok); color: var(--ok); background: var(--bg); }
+details.phase.past.done .num { background: var(--ok); color: var(--surface); }
+details.phase.past .ph-bar i { background: var(--ok); }
+details.phase.past .count { color: var(--ok); }
 details.phase.ahead:not([open]) > summary::before { content: ""; position: absolute; left: calc(14px + 1.2rem - 1px); top: 0; bottom: 0; width: 2px; background: color-mix(in srgb, var(--edge) 55%, transparent); }
 details.phase.ahead:not([open]):last-of-type > summary::before { bottom: 50%; }
+details.phase.past:not([open]) > summary::before { content: ""; position: absolute; left: calc(14px + 1.2rem - 1px); top: 0; bottom: 0; width: 2px; background: color-mix(in srgb, var(--ok) 55%, transparent); }
+details.phase.past:not([open]):first-of-type > summary::before { top: 50%; }
+.trail:not([hidden]) ~ details.phase.past:not([open]):first-of-type > summary::before { top: 0; }
+details.phase.past:not([open]):last-of-type > summary::before { bottom: 50%; }
 
 .step { display: grid; grid-template-columns: auto auto 1fr; gap: 12px; align-items: start; background: var(--raised); border: 1px solid var(--line); border-radius: var(--r-md); padding: 11px 12px; cursor: pointer; transition: background .25s; }
 .step.tip { grid-template-columns: auto 1fr; background: transparent; border-style: dashed; cursor: default; }
@@ -446,7 +459,7 @@ button.jump::after { content: ""; position: absolute; inset: -12px -6px; }
   .mapcard:not(.fs) .mapctl { top: 66px; }
   /* maximized: one row (Layers, then the cluster at the top right); the rest is a bottom sheet */
   .mapcard.fs .maptools { grid-template-columns: auto minmax(0, 1fr); row-gap: 0; }
-  .mapcard.fs .mt-layers { display: inline-flex; align-items: center; gap: 8px; grid-column: 1; grid-row: 1; }
+  .mapcard.fs .mt-layers { display: inline-flex; align-items: center; justify-content: center; gap: 8px; grid-column: 1; grid-row: 1; }
   .mapcard.fs .mt-tools { grid-column: 2; grid-row: 1; }
   @container (max-width: 21rem) { .mapcard.fs .mt-layers { width: 44px; padding: 0; justify-content: center; } .mapcard.fs .mt-layers span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; } }
   .mapcard.fs .mt-left { display: none; }
@@ -644,7 +657,7 @@ button:focus-visible, .phaselist button:focus-visible, .swatches button:focus-vi
 .mapgo select:disabled { opacity: .55; cursor: default; }
 .mapfs, #mapHere { display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
 .mapexit { font-weight: 700; }
-.mapexit { display: inline-flex; align-items: center; gap: 8px; }
+.mapexit { display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
 .minimap { position: absolute; z-index: 1000; left: 10px; bottom: 10px; touch-action: none; cursor: crosshair; border: 2px solid var(--edge); border-radius: var(--r-md); overflow: hidden; background: #0b0a08; box-shadow: 0 2px 10px rgb(0 0 0 / .5); }
 .minimap[hidden] { display: none; }
 .minimap canvas { display: block; }

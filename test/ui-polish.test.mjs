@@ -112,3 +112,10 @@ test("small css fixes: link underline, legend swatch, narrow toolbar, gutter, sw
   assert.match(css, /\.seg\.ckswitch \{ display: flex; margin: 12px 0; \}/);
   assert.match(css, /\.ph-links \.maplink\[data-phaseall\] \{[^}]*border: 0/);
 });
+
+test("icon-only map buttons (Find me, Maximize, Restore, Layers) centre their icon in a 44px square", () => {
+  assert.match(css, /\.mapfs, #mapHere \{ display: inline-flex; align-items: center; justify-content: center;/);
+  assert.match(css, /\.mapexit \{ display: inline-flex; align-items: center; justify-content: center;/);
+  assert.match(css, /\.mapcard\.fs \.mt-layers \{ display: inline-flex; align-items: center; justify-content: center;/);
+  assert.match(css, /\.mt-tools #mapHere, \.mt-tools #mapFs, \.mt-tools #mapExit \{ flex: none; width: 44px; padding: 0; \}/);
+});

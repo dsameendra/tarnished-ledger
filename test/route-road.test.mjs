@@ -5,10 +5,16 @@ import { readFileSync } from "node:fs";
 const js = readFileSync(new URL("../js/ui/route.js", import.meta.url), "utf8");
 const css = readFileSync(new URL("../css/styles.css", import.meta.url), "utf8");
 
-test("finished phases fold into one trail row with an expandable button", () => {
-  assert.match(js, /class="trail-btn" aria-expanded="false" aria-controls="phases"/);
+test("finished phases are green road stops; a long run folds into one row styled like them", () => {
+  assert.match(js, /class="trail-btn" aria-expanded="false" aria-controls="phases"><span class="num">/);
   assert.match(js, /Phases \$\{first\} to \$\{phaseLabel\(run\[run\.length - 1\]\)\} done/);
-  assert.match(js, /classList\.toggle\("folded", past && !trailOpen\)/);
+  assert.match(js, /classList\.toggle\("past", past\)/);
+  assert.match(js, /classList\.toggle\("folded", past && fold\)/);
+  assert.match(js, /const FOLD_AFTER = 3/);
+  assert.match(css, /details\.phase\.past \.num/);
+  assert.match(css, /details\.phase\.past\.done \.num \{ background: var\(--ok\)/);
+  assert.match(css, /details\.phase\.past:not\(\[open\]\) > summary::before/);
+  assert.match(css, /\.trail-btn \.num \{[^}]*background: var\(--ok\)/);
   assert.match(js, /classList\.toggle\("ahead", !past && pi > cur\)/);
   assert.match(css, /\.phase\.folded \{ display: none; \}/);
 });
