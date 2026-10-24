@@ -19,7 +19,7 @@ export const STONESWORD = [
 export const UPGRADE = [
   ["Regular weapon to +25", "12 each of Smithing Stone [1] to [8] (96 stones) plus 1 Ancient Dragon Smithing Stone. Each +3 tier uses 2, 4 and 6 stones."],
   ["Special weapon to +10", "1 each of Somber Smithing Stone [1] to [9] plus 1 Somber Ancient Dragon Smithing Stone."],
-  ["Where to get them", "Smithing Stones turn up in mines and tunnels across the Lands Between. Smithing-Stone Miner's Bell Bearings [1] to [4] let the Twin Maiden Husks sell them without limit. The Ancient Dragon Smithing Stone is a hidden treasure in Crumbling Farum Azula."],
+  ["Where to get them", "Smithing Stones turn up in mines and tunnels across the Lands Between. Smithing-Stone Miner's Bell Bearings [1] to [4] let the Twin Maiden Husks sell them without limit. There are 13 Ancient Dragon Smithing Stones in the base game. Several drop from dragons in Crumbling Farum Azula, one is in a chest in the Haligtree after Loretta, and others are in the Consecrated Snowfield, so you may already hold one. A regular +25 needs only one. The Somber Ancient Dragon Smithing Stone is rarer: one sits in the gazebo behind the plaza dragon in Crumbling Farum Azula."],
   ["Which weapon", "Pick one you enjoy and upgrade it as you go. Any armament counts for the trophy."],
 ];
 
@@ -52,14 +52,14 @@ export const ENDINGS = {
   intro: "Three ending trophies are needed: Age of the Stars, Elden Lord and Lord of the Frenzied Flame. You get one ending per playthrough.",
   routeA: [
     "Follow the route to the end of the Ashen Capital phase with Ranni's quest finished and Mohg, the Omen defeated. Do not inherit the Frenzied Flame yet.",
-    "After Godfrey / Hoarah Loux, rest at the Elden Throne grace, quit to the title screen and back up your save.",
-    "Beat Radagon and the Elden Beast, then use Ranni's blue summon sign for <b>Age of the Stars</b>.",
-    "Restore the backup. Beat the final bosses again and interact with the statue without using Ranni's sign for <b>Elden Lord</b>.",
+    "After Godfrey / Hoarah Loux, rest at the Elden Throne grace and go on to Radagon. Do not touch the statue yet.",
+    "Beat Radagon and the Elden Beast. At the grace by Marika's statue, quit to the title screen and back up your save. Then use Ranni's blue summon sign for <b>Age of the Stars</b>.",
+    "Restore the backup. Go to the statue and mend the Elden Ring without using Ranni's sign for <b>Elden Lord</b>.",
     "Restore again. Warp to the Cathedral of the Forsaken (Mohg, the Omen), break the illusory wall behind the altar, drop to the bottom, remove all your armour and open the scorched door to inherit the Frenzied Flame from the Three Fingers. Beat the final bosses for <b>Lord of the Frenzied Flame</b>.",
   ],
   routeB: [
     "Get two Great Runes (Godrick and Rennala are easiest).",
-    "Reach Leyndell via the Grand Lift of Dectus (both medallion halves) or the Ruin-Strewn Precipice. Or kill Radahn, go through Nokron, Siofra Aqueduct and Deeproot Depths, beat Fia's Champions and take the teleporter to Leyndell.",
+    "Reach Altus Plateau via the Grand Lift of Dectus (both medallion halves) or the Ruin-Strewn Precipice, then go on to Leyndell.",
     "Beat Godfrey's shade and Morgott to remove the seal on the Forbidden Lands.",
     "Beat the Fire Giant and burn the Erdtree.",
     "Beat the Godskin Duo and Maliketh in Crumbling Farum Azula.",

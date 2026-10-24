@@ -41,7 +41,7 @@ export const PHASES=[
 ["boss","Malefactor's Evergaol: beat Adan, Thief of Fire for Flame of the Fell God.",{c:"sp1"}],
 ["key","Village of the Albinaurics (west, under the large plateau): before the big bridge, hit the pot that is really Albus and talk to him. He gives the Haligtree Secret Medallion (Right)."],
 ["map","Map Fragment: Liurnia, North."],
-["key","North-west: grab the Academy Glintstone Key on the ledge guarded by Glintstone Dragon Smarag. You can sneak it without fighting."],
+["key","Find Glintstone Dragon Smarag and grab the Academy Glintstone Key on the ledge he guards. You can sneak it without fighting."],
 ["go","Return to the South Raya Lucaria Gate, open it with the key, and rest at Main Academy Gate."]]},
 {id:"acad",n:"Raya Lucaria Academy",sub:"Second Great Rune",s:[
 ["go","Take the lift and stairs into the Church of the Cuckoo. The grace is through the doorway on the left."],
@@ -56,8 +56,8 @@ export const PHASES=[
 ["item","Sword of Night and Flame: on the upper walkways, go left at the fork and drop down onto the building to the north. It's in the chest inside.",{c:"arm2"}],
 ["go","Back at the fork, go straight and rest at Manor Upper Level."],
 ["boss","Defeat Royal Knight Loretta.",{tr:"rloretta"}],
-["quest","Climb to Ranni's Rise and talk to Ranni. Agree to serve her. Also talk to Blaidd, Iji and Seluvis at the Three Sisters."],
-["warn","Do not give Seluvis's Amber Draught (Seluvis's Potion) to Ranni. It locks her questline, and with it the Dark Moon Greatsword. Do not talk to her again after trying, because she kills you on the third time. A Celestial Dew used at the Church of Vows (Atone) fixes it. Do not kill Seluvis either; that makes Blaidd hostile."],
+["quest","Climb to Ranni's Rise and talk to Ranni. Agree to serve her. Then talk to Blaidd, Iji and Seluvis at the Three Sisters and go back to Ranni. Do this before you kill Radahn."],
+["warn","Do not give Seluvis's Amber Draught (Seluvis's Potion) to Ranni. It locks her questline, and with it the Dark Moon Greatsword. Do not talk to her again after trying, because she kills you on the third time. A Celestial Dew used at the Church of Vows (Atone) fixes it. Do not attack Seluvis either: that makes Ranni, Iji, Blaidd and Seluvis disappear until you use a Celestial Dew at the Church of Vows."],
 ["boss","Ruin-Strewn Precipice (ravine in north Liurnia): defeat Magma Wyrm Makar.",{tr:"makar"}],
 ["go","Take the lift past Makar and rest at the first Altus Plateau grace. This starts Radahn's Festival."]]},
 {id:"cael",n:"Caelid",sub:"Fort Faroth, Greyoll, Radahn",s:[
@@ -65,21 +65,21 @@ export const PHASES=[
 ["key","Fort Faroth: Dectus Medallion (Right) at the top of the eastern tower."],
 ["item","Radagon's Soreseal: from the roof, drop into the central opening and follow the wooden walkways to the corpse.",{c:"tal2"}],
 ["boss","Kill Elder Dragon Greyoll, the sleeping dragon near Fort Faroth in Dragonbarrow. Bleed weapons are the quickest way. Greyoll must be dead before you can buy Greyoll's Roar."],
-["item","Collect 3 Dragon Hearts in total. Greyoll drops one. Other dragons drop more, for example Flying Dragon Agheel at Agheel Lake in Limgrave and Glintstone Dragon Smarag in Liurnia."],
+["item","Greyoll's Roar costs 3 Dragon Hearts. Greyoll drops at least one. If you hold fewer than 3 after killing him, kill another dragon, for example Flying Dragon Agheel at Agheel Lake in Limgrave and Glintstone Dragon Smarag in Liurnia."],
 ["item","Cathedral of Dragon Communion (Caelid): at the Dragon Communion Altar, trade 3 Dragon Hearts for Greyoll's Roar.",{c:"sp2"}],
 ["boss","Redmane Castle during the festival: defeat Starscourge Radahn. Use the NPC summon signs.",{tr:"radahn"}],
 ["go","North-east corner of Radahn's arena, by the ocean: open the double doors to War-Dead Catacombs. Hop through a window onto the ledge below and find the lever that opens the boss doors. Rest at the grace at the entrance first."],
 ["boss","War-Dead Catacombs: defeat the Putrid Tree Spirit for Redmane Knight Ogha.",{c:"ash2"}],
-["quest","Once the festival is over, return to the church at Redmane Castle and talk to the old man in the chair until his dialogue ends. Warp away and come back."],
+["quest","Once the festival is over, return to the church at Redmane Castle and talk to Jerren, the old man in the chair, until his dialogue ends. Warp away and come back."],
 ["boss","Go through the yellow mist gate at Redmane Castle and defeat the Misbegotten Warrior and Crucible Knight for the Ruins Greatsword.",{c:"arm3"}]]},
 {id:"nok",n:"Siofra River & Nokron",sub:"Underground cities",s:[
 ["go","Enter Siofra River Well in Limgrave, below the Minor Erdtree area."],
 ["go","Light all 8 Hallowhorn obelisks around Siofra River, then interact with the deer carcass at the back of the temple to open the boss arena."],
 ["boss","Defeat the Ancestor Spirit.",{tr:"ancestor"}],
-["go","After Radahn, a meteor crater appears south-west of the Minor Erdtree in Mistwood. Climb down the rocks into Nokron, Eternal City."],
+["go","After Radahn, a meteor crater appears in southern Mistwood, west of Fort Haight. Climb down the rocks into Nokron, Eternal City."],
 ["boss","Defeat the Mimic Tear.",{tr:"mimic"}],
 ["item","Night's Sacred Ground: cross the church, go around the altar to the locked area and open it with a Stonesword Key (1). Take the Mimic Tear Ashes from the chest.",{c:"ash3"}],
-["quest","Night's Sacred Ground: take the Fingerslayer Blade from its chest for Ranni."],
+["quest","Night's Sacred Ground: take the Fingerslayer Blade from its chest for Ranni. The chest only opens once you have agreed to serve her."],
 ["boss","Light the 6 Hallowhorn obelisks in Nokron and defeat the Regal Ancestor Spirit.",{tr:"regal"}],
 ["boss","Siofra Aqueduct: defeat the Valiant Gargoyles.",{tr:"gargoyle"}],
 ["go","Lie in the coffin past the Gargoyles to reach Deeproot Depths. Touch the grace; you'll come back later."]]},
@@ -105,7 +105,7 @@ export const PHASES=[
 ["warn","Back at Volcano Manor, find Bernahl (left-side doors near Tanith's dining room) and exhaust his dialogue. He'll invade in Farum Azula and drop the Devourer's Scepter."]]},
 {id:"sel",n:"Sellen's Quest",sub:"Stars of Ruin",s:[
 ["quest","Show Comet Azur to Sellen at Waypoint Ruins. Pick the dialogue options about Azur's sorcery, her story, journeying together and asking a favour to receive the Sellian Sealbreaker."],
-["go","From the Church of the Plague grace in Caelid, go north up the hill, pass under the wooden arch and find the small graveyard with one sorcerer enemy. Hit the illusory wall behind the main headstone along the cliffside. It leads to Sellia Hideaway."],
+["go","Reach the Church of the Plague in Caelid and touch its grace (go southwest from Fort Faroth and take the spiritspring down, or light the three braziers in Sellia, Town of Sorcery). From there go north up the hill, pass under the wooden arch and find the small graveyard with one sorcerer enemy. Hit the illusory wall behind the main headstone along the cliffside. It leads to Sellia Hideaway."],
 ["item","At the end of the tunnel, drop from the purple crystals to the blue magic seal door. Open it with the Sealbreaker and talk to Master Lusat for Stars of Ruin.",{c:"sp4"}]]},
 {id:"ley",n:"Leyndell, Royal Capital",sub:"Godfrey shade and Morgott",s:[
 ["go","From Capital Rampart, follow the path to East Capital Rampart."],
@@ -116,9 +116,9 @@ export const PHASES=[
 ["boss","Defeat Morgott, the Omen King.",{tr:"morgott"}],
 ["go","Walk up to the Erdtree trunk, inspect the thorn seal, then rest at the grace. Talk to Melina there: she gives you the Rold Medallion for the Grand Lift of Rold."]]},
 {id:"ran2",n:"Ranni's Quest, Part 2",sub:"Cursemark of Death",s:[
-["quest","Give Ranni the Fingerslayer Blade. She gives you the Carian Inverted Statue."],
+["quest","Give Ranni the Fingerslayer Blade. She gives you the Carian Inverted Statue. Giving her the blade ends Seluvis's quest, so get the Magic Scorpion Charm from him first if you want it (it is not needed for any trophy)."],
 ["go","Carian Study Hall (east Liurnia): place the statue on the altar near the entrance to flip the tower, then climb it to the Divine Tower of Liurnia."],
-["key","Take the Cursemark of Death at the top. You need it for Fortissax and Ranni."]]},
+["key","Take the Cursemark of Death at the top. You will give it to Fia in Deeproot Depths to reach Lichdragon Fortissax."]]},
 {id:"ain",n:"Ainsel River & Lake of Rot",sub:"Nokstella, Dragonkin, Astel",s:[
 ["quest","Go to Renna's Rise at the Three Sisters, take the waygate to Ainsel River Main, and pick up the Miniature Ranni."],
 ["quest","Rest at a grace and talk to the doll repeatedly until Ranni answers. She asks you to hunt the Baleful Shadow."],
@@ -144,7 +144,7 @@ export const PHASES=[
 ["quest","Cathedral of Manus Celes: go underground, find Ranni and give her the Dark Moon Ring. Pick up the Dark Moon Greatsword after she leaves.",{c:"arm9"}],
 ["boss","Ringleader's Evergaol: beat Alecto for Black Knife Tiche.",{c:"ash5"}],
 ["go","Chelona's Rise: the tower is sealed. Kill the three Giant Ghostly Turtles (the great wise beasts) spread across the plateau and the seal lifts. Do not fast travel or rest at a grace while hunting them, or the ones left will despawn."],
-["boss","Kill the three turtles: one to the right of the tower on the cliff wall, one on a cliff north-east of the tower and one north-west, reached with a wind gust. If they don't appear, wait for night."],
+["boss","Kill the three turtles. The first hangs from the cliff just west of the tower. The second sits at a cliff edge far south-east of the Moonlight Altar. The third hovers north-west of the Altar, south-west of Ringleader's Evergaol, and needs a spiritspring to reach."],
 ["item","Climb Chelona's Rise and take Ranni's Dark Moon from the top.",{c:"sp6"}]]},
 {id:"mtn",n:"Forbidden Lands & Mountaintops",sub:"Castle Sol, Fire Giant",s:[
 ["go","From Avenue Balcony, take the main road east and the stairs to the giant lift. Cross the bridges and ride down into the Forbidden Lands."],
@@ -162,7 +162,7 @@ export const PHASES=[
 ["go","Ordina, Liturgical Town: enter the Evergaol, light the 4 statue torches to break the seal, and take the waygate to the Haligtree. Touch the first grace."],
 ["go","Back in the Snowfield, take the portal to Mohgwyn Palace (it stays inactive until you kill the Sanguine Noble invader) and touch the first grace."]]},
 {id:"mohg",n:"Mohgwyn Palace",sub:"Mohg, Lord of Blood",s:[
-["map","Map Fragment: Mohgwyn Palace. From Palace Approach Ledge-Road follow the path down the slope (the guide says keep to the right wall) to the blood lake, then head north-north-west past the three hunting-horn Albinaurics and west to a stone ruin. The map is on a sitting corpse in the middle of the ruin, next to the Dynasty Mausoleum Entrance grace."],
+["map","Map Fragment: Mohgwyn Palace. It is on a corpse in the ruins near the Dynasty Mausoleum Entrance grace. Sources differ on the exact spot, so check the map if you do not see it."],
 ["go","From the Dynasty Mausoleum Entrance grace go up the south-west stairs, follow the linear path to the dark cave doorway (Sanguine Nobles ambush you inside, bring a light source) and rest at Dynasty Mausoleum Midpoint on the far side."],
 ["boss","Defeat Mohg, Lord of Blood. A Purifying Crystal Tear in your flask helps in phase 2.",{tr:"mohg"}]]},
 {id:"hal",n:"Elphael, Brace of the Haligtree",sub:"Malenia",s:[
@@ -173,15 +173,15 @@ export const PHASES=[
 ["item","Cleanrot Knight Finlay: from Prayer Room go north to a gazebo platform with a crimson scarab. The chest is in the room next to it.",{c:"ash6"}],
 ["item","Marika's Soreseal: from Prayer Room go down to the bottom area, near the patrolling Putrid Avatar and Royal Revenants. Open the imp seal gate with a Stonesword Key. The talisman is on an altar inside.",{c:"tal5"}],
 ["go","Go north past the Putrid Avatar guarding a doorway and the ballistas to the next grace (ponkberry's guide calls it Haligtree Roots; in game it is Elphael Inner Wall), then take the hallway across the center of the tree, through the scarlet rot pools, to Drainage Channel."],
-["item","Dragoncrest Greatshield Talisman: from Drainage Channel follow the branch to the building to the north, climb onto its roof, drop through the square hole into the rafters and open the chest.",{c:"tal6"}],
+["item","Dragoncrest Greatshield Talisman: from Drainage Channel leave by the eastern exit, follow the branches and beams to the roof of the large north-east building, drop through one of the two holes onto the rafters (Pests attack, so raise your shield) and open the chest at the west end of the room.",{c:"tal6"}],
 ["boss","Go down to the bottom floor of the building (south-west doorway) and take the elevator down to the Haligtree Roots grace. Continue forward through the fog wall and defeat Malenia, Blade of Miquella.",{tr:"malenia"}]]},
-{id:"far",n:"Crumbling Farum Azula",sub:"Do everything here before Maliketh",s:[
+{id:"far",n:"Crumbling Farum Azula",sub:"Finish here, then fight Maliketh",s:[
 ["go","Drop down and head west through the graces: Crumbling Beast Grave, Crumbling Beast Grave Depths, Tempest-Facing Balcony, Dragon Temple."],
 ["boss","Defeat the Godskin Duo.",{tr:"gduo"}],
 ["go","Go north down the stairs, through the ruins and the small doorway on the right. Pass the Crucible Knight and drop off the ledge to Dragon Temple Rooftop."],
 ["go","Cross the rooftops past the dragon, use the fallen gazebo as a bridge, and take the elevator up to Beside the Great Bridge."],
-["item","Go up the stairs to the broken end of the bridge, down the steps and ladder. Bernahl invades here: kill him for the Devourer's Scepter. (He only invades after Rykard is dead and you have finished his dialogue at Volcano Manor. If you skipped that, go back to the Manor and talk to him first.)",{c:"arm8"}],
-["item","Old Lord's Talisman: in the chest inside the tower across that bridge.",{c:"tal7"}],
+["item","From Beside the Great Bridge go north into the building, out to the balcony on the right and down the ladder to the walkway. Bernahl invades along here: kill him for the Devourer's Scepter. (He only invades after Rykard is dead and you have finished his dialogue at Volcano Manor. If you skipped that, go back to the Manor and talk to him first. If he still does not appear, check the other lone tower near the Dragon Temple.)",{c:"arm8"}],
+["item","Old Lord's Talisman: in a chest in the rounded tower at the end of that walkway, guarded by Beastmen. Sources differ a little on the exact tower, so check the map if you do not find it.",{c:"tal7"}],
 ["go","From Beside the Great Bridge take the elevator down, go to the west end of the platform and drop off the south side. Follow it to the bottom and lie down in the flat circle where a statue stood."],
 ["boss","Defeat Dragonlord Placidusax.",{tr:"placidusax"}],
 ["warn","If you have inherited the Frenzied Flame, do not use Miquella's Needle in this arena unless you are giving up that ending."],
@@ -198,9 +198,9 @@ export const PHASES=[
 ["go","From the grace you arrive at after Maliketh, head south to Erdtree Sanctuary, where you fought Godfrey's shade."],
 ["boss","Defeat Sir Gideon Ofnir, the All-Knowing."],
 ["boss","Defeat Godfrey, First Elden Lord / Hoarah Loux.",{tr:"hoarah"}],
-["warn","Rest at the Elden Throne grace. Quit to the title screen and back up your save now (Route A)."]]},
+["warn","Rest at the Elden Throne grace and go on to Radagon. Do not touch the statue yet. Your save backup (Route A) comes after the Elden Beast."]]},
 {id:"endg",n:"Endings",sub:"See the Endings section of the Guide tab",s:[
-["boss","Defeat Radagon of the Golden Order and the Elden Beast, then use Ranni's blue summon sign.",{tr:"stars"}],
-["boss","Restore your backup (or start NG+). Beat the final boss again and mend the Elden Ring without using Ranni's sign.",{tr:"eldenlord"}],
+["boss","Defeat Radagon of the Golden Order and the Elden Beast. At the grace by Marika's statue, quit to the title screen and back up your save (Route A). Then use Ranni's blue summon sign.",{tr:"stars"}],
+["boss","Restore your backup (or start NG+ and beat Radagon and the Elden Beast again). At the statue, mend the Elden Ring without using Ranni's sign.",{tr:"eldenlord"}],
 ["boss","Restore your backup (or start NG++). At the Cathedral of the Forsaken, break the wall behind the altar, drop to the bottom, remove all armour, open the door and inherit the Frenzied Flame. Beat the final boss.",{tr:"frenzy"}]]}
 ];
