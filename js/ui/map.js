@@ -778,13 +778,11 @@ function setMarkerDone(m, on) {
     msg = `${c[0]}: ${store.counter(cid)} of ${c[1]} on the Goals counter.`;
     status(msg);
   }
-  // only steps in the current phase or earlier follow a marker: a find far ahead must not tick a later phase
-  const cur = currentPhase();
+  // Route steps that have only this marker follow it (one record: ticking a boss here ticks it in the route and the twin steps), and the map says so
   let n = 0;
   for (const id of D.stepsOf.get(m.id) || []) {
     const s = stepById.get(id);
     if (!s || s.kind === "tip" || D.stepLocs[id]?.length !== 1 || store.isDone(id) === on) continue;
-    if (cur >= 0 && s.pi > cur) continue;
     store.setDone(id, on);
     n++;
   }
