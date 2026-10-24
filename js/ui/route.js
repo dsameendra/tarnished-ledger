@@ -11,6 +11,7 @@ import { showToast } from "./toast.js";
 let userToggle = null; // the phase whose summary the player just pressed (only those changes are remembered)
 let query = "";
 let trailOpen = false; // the folded run of finished phases is expanded
+const FOLD_AFTER = 3; // up to this many finished phases stay as their own green rows; a longer run folds into one row
 
 const smooth = () => (matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth");
 const goalName = Object.fromEntries(goalList.map(([k, n]) => [k, n]));
@@ -110,6 +111,7 @@ export function updateRoute() {
   $$(".step.cur").forEach((li) => li.classList.remove("cur"));
   const nowLi = now && $("s-" + now.id);
   if (nowLi) nowLi.classList.add("cur");
+  const fold = pastRun(cur).length > FOLD_AFTER && !trailOpen;
   PHASES.forEach((p, pi) => {
     const [d, t] = phaseCounts(pi);
     const el = $("p-" + p.id);
@@ -121,23 +123,27 @@ export function updateRoute() {
     const all = el.querySelector("[data-phaseall]");
     if (all) { all.hidden = !t; all.textContent = d === t ? "Clear this phase" : "Mark phase done"; all.setAttribute("aria-pressed", String(d === t)); }
     el.classList.toggle("current", pi === cur);
-    // The road: finished phases fold into one row, phases after the current one are quiet stops.
+    // The road: finished phases are green stops (a long run folds into one row), phases after the current one are quiet stops.
     const past = cur < 0 || pi < cur;
+    el.classList.toggle("past", past);
     el.classList.toggle("ahead", !past && pi > cur);
-    el.classList.toggle("folded", past && !trailOpen);
+    el.classList.toggle("folded", past && fold);
   });
   renderNext();
   renderTrail(cur);
 }
 
-// One row for the run of finished phases at the top, and one line pointing at the next "Don't miss" step once it is close.
+const pastRun = (cur) => PHASES.map((p, pi) => pi).filter((pi) => inScope(pi) && (cur < 0 || pi < cur));
+const CHECK_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
+
+// One row for a long run of finished phases at the top, and one line pointing at the next "Don't miss" step once it is close.
 function renderTrail(cur) {
   const t = $("phases").querySelector(".trail");
   const m = $("phases").querySelector(".missable");
   if (!t || !m) return;
-  const run = PHASES.map((p, pi) => pi).filter((pi) => inScope(pi) && (cur < 0 || pi < cur));
-  t.hidden = !run.length;
-  if (run.length) {
+  const run = pastRun(cur);
+  t.hidden = run.length <= FOLD_AFTER;
+  if (!t.hidden) {
     const set = new Set(run);
     const n = tickSteps.filter((s) => set.has(s.pi)).length;
     const first = phaseLabel(run[0]);
@@ -145,7 +151,7 @@ function renderTrail(cur) {
     const sig = run.length + ":" + first + ":" + n;
     if (t.dataset.sig !== sig) {
       t.dataset.sig = sig;
-      t.innerHTML = `<button type="button" class="trail-btn" aria-expanded="false" aria-controls="phases"><span class="trail-t"><b>${label}</b> · ${n} ${n === 1 ? "step" : "steps"}</span><span class="trail-act"><span class="trail-verb"></span><svg class="chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 10l5 5 5-5"/></svg></span><span class="trail-segs" aria-hidden="true">${"<i></i>".repeat(run.length)}</span></button>`;
+      t.innerHTML = `<button type="button" class="trail-btn" aria-expanded="false" aria-controls="phases"><span class="num">${CHECK_SVG}</span><span class="ph-title"><b class="ph-t">${label}</b><small>${n} ${n === 1 ? "step" : "steps"}</small><span class="ph-bar"><i></i></span></span><span class="count trail-verb"></span><svg class="chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 10l5 5 5-5"/></svg></button>`;
     }
     t.querySelector(".trail-btn").setAttribute("aria-expanded", String(trailOpen));
     t.querySelector(".trail-verb").textContent = trailOpen ? "Hide" : "Show";
