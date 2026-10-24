@@ -46,7 +46,7 @@ Shadow of the Erdtree can be switched on in Settings. The DLC has no trophies, s
     <td width="50%"><img src="docs/screenshots/goals-phone-light.webp" alt="Shadow of the Erdtree goals and blessing counters on a phone, light theme"></td>
   </tr>
   <tr>
-    <td align="center"><sub>Route: finished, half-done and untouched phases at a glance</sub></td>
+    <td align="center"><sub>Route on a phone: finished phases fold into one row, the current phase leads</sub></td>
     <td align="center"><sub>Shadow of the Erdtree goals and counters</sub></td>
   </tr>
 </table>
