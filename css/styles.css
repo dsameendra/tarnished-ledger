@@ -408,6 +408,9 @@ button.jump::after { content: ""; position: absolute; inset: -12px -6px; }
 .mapcard:not(.fs) .mt-subs { flex-basis: 100%; border: 0; background: none; gap: 6px; overflow: visible; }
 .mapcard:not(.fs) .mt-subs button { border: 1px solid var(--edge); border-radius: 999px; min-height: 36px; padding: 0 14px; background: var(--raised); }
 .mapcard:not(.fs) .mt-subs button[aria-pressed="true"] { border-color: var(--accent); }
+.mapgo, .jumpph { position: relative; }
+.mapgo::after, .jumpph::after { content: ""; position: absolute; right: 16px; top: 50%; width: 8px; height: 8px; border-right: 2px solid var(--muted); border-bottom: 2px solid var(--muted); transform: translateY(-70%) rotate(45deg); pointer-events: none; }
+.mapgo select, .jumpph select { -webkit-appearance: none; appearance: none; padding-right: 40px; text-overflow: ellipsis; }
 .mt-go { flex: none; }
 .mt-go select { width: 12rem; max-width: 100%; }
 .mt-tools .btn { white-space: nowrap; }
@@ -427,7 +430,6 @@ button.jump::after { content: ""; position: absolute; inset: -12px -6px; }
   .mt-tools { grid-column: 1; grid-row: 1; justify-self: stretch; gap: 6px; }
   .mt-left { display: contents; }
   .mt-modes { grid-column: 1; grid-row: 2; display: flex; flex-wrap: wrap; gap: 8px; min-width: 0; }
-  .mt-filter { grid-column: 1; grid-row: 3; justify-self: start; }
   .mt-go { flex: 1 1 0; min-width: 5rem; }
   .mt-go select { width: 100%; }
   .mt-chips { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; max-width: 100%; }
@@ -442,12 +444,6 @@ button.jump::after { content: ""; position: absolute; inset: -12px -6px; }
   .mapcard:not(.fs) .mapstage { background: var(--surface); }
   .mapcard:not(.fs) .mapsearch { right: 10px; max-width: none; }
   .mapcard:not(.fs) .mapctl { top: 66px; }
-  @container (min-width: 18.5rem) {
-    .maptools { grid-template-columns: auto minmax(0, 1fr); }
-    .mt-filter { grid-column: 1; grid-row: 1; justify-self: stretch; }
-    .mt-tools { grid-column: 2; grid-row: 1; }
-    .mt-modes { grid-column: 1 / -1; grid-row: 2; }
-  }
   /* maximized: one row (Layers, then the cluster at the top right); the rest is a bottom sheet */
   .mapcard.fs .maptools { grid-template-columns: auto minmax(0, 1fr); row-gap: 0; }
   .mapcard.fs .mt-layers { display: inline-flex; align-items: center; gap: 8px; grid-column: 1; grid-row: 1; }
@@ -462,7 +458,6 @@ button.jump::after { content: ""; position: absolute; inset: -12px -6px; }
   .mapcard.fs #mapWorld, .mapcard.fs #mapLayer { display: flex; }
   .mapcard.fs #mapWorld[hidden], .mapcard.fs #mapLayer[hidden] { display: none; }
   .mapcard.fs #mapWorld button, .mapcard.fs #mapLayer button, .mapcard.fs .mt-subs button { flex: 1 0 auto; padding-inline: 10px; white-space: nowrap; }
-  .mapcard.fs .mt-filter { justify-self: stretch; grid-column: auto; grid-row: auto; }
   .mapcard.fs .mt-subs { border: 1px solid var(--edge); }
   .mapcard.fs .mt-subs button { flex: 1; }
 }
@@ -763,6 +758,13 @@ html.map-fs, html.map-fs body { overflow: hidden; overscroll-behavior: none; }
 @media (min-width: 900px) { .phasecard .ps-list { grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 10px; } }
 .phasecard .ps-l { cursor: pointer; }
 .mapcard.fs .mapsheet.phase { max-height: calc(100% - 20px); }
+/* phones, maximized: the route steps are a half-height sheet like the marker details; the list scrolls inside it */
+@media (max-width: 699.98px) {
+  .mapcard.fs .mapsheet.phase { max-height: 50%; display: flex; flex-direction: column; overflow: hidden; }
+  .mapcard.fs .mapsheet.phase .ps-list { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; }
+  .mapcard.fs .mapsheet.phase .ms-h, .mapcard.fs .mapsheet.phase .pg-bar, .mapcard.fs .mapsheet.phase .ms-act { flex: none; }
+}
+.mapctl .mc-filter[aria-expanded="true"] { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); }
 @media (min-width: 900px) { .mapcard.fs .mapsheet.phase { width: 400px; top: 66px; max-height: calc(100% - 84px); } }
 .maplink { display: inline-flex; align-items: center; min-height: 36px; padding: 0 12px; margin-top: 2px; border: 1px solid var(--edge); border-radius: 999px; background: var(--raised); color: var(--accent); font: inherit; font-size: var(--fs-sm); font-weight: 700; cursor: pointer; }
 .maplink:hover, .maplink:focus-visible { background: var(--accent-soft); }

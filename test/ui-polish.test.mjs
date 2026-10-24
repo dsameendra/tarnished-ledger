@@ -19,7 +19,26 @@ test("phone map: Layers button opens a bottom sheet (aria-expanded, Escape, focu
 test("map toolbar keeps Go to, Find me and Maximize together at the top right on phones", () => {
   assert.match(css, /\.mt-tools \{ grid-column: 1; grid-row: 1; justify-self: stretch/);
   assert.match(css, /\.mapcard\.fs \.mt-tools \{ grid-column: 2; grid-row: 1; \}/);
-  assert.match(css, /@container \(min-width: 18\.5rem\)/);
+});
+
+test("Markers is a map control (not a toolbar button), the panel starts closed, and the select arrows are one themed chevron", () => {
+  const map = readFileSync(new URL("../js/ui/map.js", import.meta.url), "utf8");
+  const stack = html.slice(html.indexOf('id="mapZoom"'), html.indexOf('id="mapMini"'));
+  assert.ok(stack.includes('id="mapFilterBtn"'));
+  assert.ok(!html.slice(html.indexOf('class="maptools"'), html.indexOf('id="mapZoom"')).includes("mapFilterBtn"));
+  assert.match(map, /setPanel\(ms\.filter\.panel === true, false\)/);
+  assert.match(css, /\.mapgo::after, \.jumpph::after \{[^}]*pointer-events: none/);
+  assert.match(css, /\.mapgo select, \.jumpph select \{ -webkit-appearance: none; appearance: none;/);
+});
+
+test("phone map: sheets half the height, map aims above the sheet, route steps open at the next step", () => {
+  const map = readFileSync(new URL("../js/ui/map.js", import.meta.url), "utf8");
+  assert.match(css, /\.mapcard\.fs \.mapsheet\.phase \{ max-height: 50%; display: flex;/);
+  assert.match(map, /function coveredBottom\(/);
+  assert.match(map, /function aim\(/);
+  assert.match(map, /const ll = aim\(\[-m\.y, m\.x\], z, pending\)/);
+  assert.match(map, /function nextStepIntoView\(/);
+  assert.match(map, /li\.ps:not\(\.done\):not\(\.tip\)/);
 });
 
 test("zoom stack: fit is an SVG, the scale pill lives in the stack", () => {

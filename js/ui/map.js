@@ -258,6 +258,7 @@ function refreshItems() {
   const ln = $("mapLayerNote");
   if (ln) ln.textContent = `Counts are for this layer: ${LAYER_NAME[shown]}.`;
   $("mapFilterCount").textContent = f.on ? `· ${list.length}` : "· off";
+  $("mapFilterBtn").title = `Marker filters ${f.on ? `(${list.length} shown)` : "(off)"}`;
 }
 
 function setCats(ids) {
@@ -282,7 +283,7 @@ function buildPanel() {
     <p class="note" id="mapSaveNote"></p>`;
   paintSaveNote();
   syncPanel();
-  setPanel(ms.filter.panel ?? mq("(min-width: 900px)"), false);
+  setPanel(ms.filter.panel === true, false);
 }
 
 function paintSaveNote() {
@@ -344,8 +345,9 @@ function goPlace(v) {
   const p = (PLACES[shown] || [])[Number(v)];
   if (!p) return;
   const z = Math.min(map.getMaxZoom(), fitZ + 1.9);
-  if (mq("(prefers-reduced-motion: reduce)")) map.setView([-p[2], p[1]], z, { animate: false });
-  else map.flyTo([-p[2], p[1]], z, { duration: 0.8 });
+  const at = aim([-p[2], p[1]], z);
+  if (mq("(prefers-reduced-motion: reduce)")) map.setView(at, z, { animate: false });
+  else map.flyTo(at, z, { duration: 0.8 });
 }
 
 // The overview is a small copy of the art with a box showing what the main map displays.
@@ -605,19 +607,35 @@ function refreshPins() {
 function closeSheet() {
   selected = null;
   $("mapSheet").hidden = true;
+  $("mapSheet").dataset.phaseShown = "";
   if (cv) cv.setSelected(null);
   paintPhaseCard();
   refreshExtra();
   if (map) refreshPins();
 }
 
+// A route checklist opens at the next step to do: the ticked ones are above it, out of the way.
+function nextStepIntoView(box) {
+  const list = box.querySelector(".ps-list");
+  const li = list?.querySelector("li.ps:not(.done):not(.tip)");
+  if (!list) return;
+  requestAnimationFrame(() => {
+    const inner = list.scrollHeight > list.clientHeight + 1 && getComputedStyle(list).overflowY !== "visible";
+    const sc = inner ? list : box;
+    sc.scrollTop = li ? Math.max(0, li.offsetTop - (inner ? list.offsetTop : 0) - (inner ? 6 : 90)) : 0;
+  });
+}
+
 function showSheet(sel, keep = false) {
   selected = sel;
   const box = $("mapSheet");
+  const fresh = Boolean(sel.phase) && box.dataset.phaseShown !== sel.phase;
+  box.dataset.phaseShown = sel.phase || "";
   const active = document.activeElement?.closest?.("#mapSheet") ? document.activeElement.dataset.pstep : null;
   const scrolled = box.querySelector(".ps-list")?.scrollTop || 0;
   try { renderSheet(sel, box); } finally {
     if (box.querySelector(".ps-list")) box.querySelector(".ps-list").scrollTop = scrolled;
+    if (fresh && fs) nextStepIntoView(box);
     if (active) box.querySelector(`[data-pstep="${CSS.escape(active)}"]`)?.focus({ preventScroll: true });
   }
 }
@@ -740,7 +758,7 @@ function focusStep(stepId) {
   if (list.length === 1 || list.some((m) => m.layer !== first.layer)) { goTo(first); selectMarker(first, from); return; }
   if (first.layer !== shown) { if (first.layer !== "dlc") lay = first.layer; saveLayer(); syncChrome(); setMode(mode()); }
   const ll = list.map((m) => [-m.y, m.x]);
-  const o = { padding: [70, 70], maxZoom: Math.min(map.getMaxZoom(), fitZ + 3), animate: !mq("(prefers-reduced-motion: reduce)"), duration: 0.7 };
+  const o = { paddingTopLeft: [70, 70], paddingBottomRight: [70, 70 + coveredBottom()], maxZoom: Math.min(map.getMaxZoom(), fitZ + 3), animate: !mq("(prefers-reduced-motion: reduce)"), duration: 0.7 };
   map.flyToBounds(ll, o);
   status(`${list.length} places for this step, ringed on the map.`);
 }
@@ -879,14 +897,36 @@ function wireBelow() {
 
 // ---- navigation ----
 
-function goTo(m, rel = 3) {
+// On a phone the details sheet, the route steps and the filters rise from the bottom and hide the lower part of the map.
+// `coveredBottom` is how many pixels of the map they hide (or half the map when a sheet is about to open), and `aim`
+// moves the centre so the place lands in the middle of what is still visible, a bit above the true centre.
+function coveredBottom(pending = false) {
+  const st = document.querySelector(".mapstage");
+  if (!st) return 0;
+  const s = st.getBoundingClientRect();
+  let c = 0;
+  for (const el of document.querySelectorAll(".mapsheet:not([hidden]), .mappanel:not([hidden])")) {
+    const r = el.getBoundingClientRect();
+    if (!r.height || r.width < s.width * 0.6 || r.top < s.top + s.height * 0.25) continue;
+    c = Math.max(c, Math.min(s.bottom, r.bottom) - Math.max(s.top, r.top));
+  }
+  if (!c && pending && mq("(max-width: 699.98px)")) c = s.height * 0.5;
+  return c;
+}
+function aim(ll, z, pending = false) {
+  const c = coveredBottom(pending);
+  const at = L.latLng(ll);
+  return c ? map.unproject(map.project(at, z).add([0, c / 2]), z) : at;
+}
+
+function goTo(m, rel = 3, pending = true) {
   if (scope() === "both") picked = m.layer === "dlc" ? "dlc" : "base";
   if (m.layer !== "dlc") lay = m.layer;
   saveLayer();
   syncChrome();
   if (mode() !== shown) setMode(mode());
   const z = Math.min(map.getMaxZoom(), map.getMinZoom() + 0.3 + rel);
-  const ll = [-m.y, m.x];
+  const ll = aim([-m.y, m.x], z, pending);
   if (mq("(prefers-reduced-motion: reduce)")) map.setView(ll, z, { animate: false });
   else map.flyTo(ll, z, { duration: 0.8 });
 }
@@ -1168,7 +1208,7 @@ export function initMap() {
     map.invalidateSize({ animate: false });
     if (!enabled.has(String(cat))) setCats([...enabled, String(cat)]);
     if (!ms.prefs().on) { ms.setPref({ on: true }); syncPanel(); refreshItems(); }
-    goTo(list[0], 0);
+    goTo(list[0], 0, false);
     status(`${list.length} on the map. ${list.filter(doneOf).length} found.`);
   });
   on("locate", async (stepId) => {
