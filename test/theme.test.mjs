@@ -51,3 +51,22 @@ test("the css uses those tokens for tinted pairs and placeholders", () => {
   assert.match(css, /::placeholder \{ color: var\(--muted\); opacity: 1; \}/);
   for (const sel of [/\.chip\.trophy \{[^}]*color: var\(--accent-ink\)/, /\.toolbar \.btn\[aria-pressed="true"\] \{[^}]*var\(--accent-ink\)/, /\.step \.more\[aria-expanded="true"\] \{[^}]*var\(--accent-ink\)/, /\.next \.where small \{[^}]*var\(--muted-ink\)/]) assert.match(css, sel);
 });
+
+// Selected segmented controls and chips: accent fill + --onaccent text in every accent and theme (light #fffdf6, dark #14130e)
+for (const accent of Object.keys(ACCENT)) {
+  for (const [mode, i, onaccent] of [["light", 0, "#fffdf6"], ["dark", 1, "#14130e"]]) {
+    test(`${accent} ${mode}: selected control text (--onaccent) on the accent fill is >= 4.5:1; hover text on accent-soft too`, () => {
+      assert.ok(ratio(onaccent, ACCENT[accent][i]) >= 4.5, "onaccent on accent");
+      const t = tokens(accent)[mode];
+      assert.ok(ratio(t.fg, mix(t.surface, ACCENT[accent][i], 0.16)) >= 4.5, "fg on accent-soft (hover)");
+    });
+  }
+}
+
+test("css: every selected map chip/segment is accent-filled with --onaccent text; Go to / Jump selects fill their wrapper", () => {
+  for (const sel of [/\.mapcard:not\(\.fs\) \.mt-subs button\[aria-pressed="true"\] \{[^}]*background: var\(--accent\)[^}]*color: var\(--onaccent\)/, /\.mapcard:not\(\.fs\) \.mt-chips \.seg button\[aria-pressed="true"\] \{[^}]*background: var\(--accent\)[^}]*color: var\(--onaccent\)/, /\n\.seg button\[aria-pressed="true"\] \{ background: var\(--accent\); color: var\(--onaccent\)/]) assert.match(css, sel);
+  assert.match(css, /\.mapgo select, \.jumpph select \{[^}]*appearance: none[^}]*width: 100%[^}]*max-width: none/);
+  assert.match(css, /\.mapgo, \.jumpph \{ position: relative; display: block/);
+  assert.ok(!/\.mapgo select \{[^}]*max-width/.test(css), "no later max-width may shrink the select inside its wrapper");
+  assert.ok(!/\.mt-go select \{/.test(css), "the wrapper (.mt-go) sizes the control, not the select");
+});
