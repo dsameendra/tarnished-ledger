@@ -54,6 +54,9 @@ export function initNav() {
     b.focus();
   });
   on("tab", (id) => show(id));
-  window.addEventListener("hashchange", () => show(location.hash.slice(1), false));
+  // #map and #guide are also element ids on the page, so the browser scrolls to them after we have shown the tab: scroll back to the top.
+  const top = () => requestAnimationFrame(() => window.scrollTo({ top: 0 }));
+  window.addEventListener("hashchange", () => { show(location.hash.slice(1), false); top(); });
+  window.addEventListener("load", top, { once: true });
   show(location.hash.slice(1) || "route", false);
 }

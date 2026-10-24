@@ -161,7 +161,7 @@ section[hidden] { display: none; }
 .toast-undo { flex: none; min-height: 44px; padding: 0 16px; border: 0; border-radius: var(--r-md); background: none; color: inherit; font: inherit; font-weight: 700; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
 .toast-undo:focus-visible { outline: 2px solid var(--bg); outline-offset: -3px; }
 @keyframes toastin { from { opacity: 0; transform: translateY(8px); } }
-.map-fs .toast { bottom: calc(var(--safe-b) + 16px); }
+.map-fs .toast { bottom: calc(var(--safe-b) + 16px); z-index: 3000; }
 
 /* wide screens */
 @media (min-width: 980px) {
@@ -197,6 +197,7 @@ section[hidden] { display: none; }
   .hero .minis { grid-column: 1 / -1; padding-bottom: 6px; }
 }
 @media (max-width: 699.98px) {
+  .step.checked .chips, .step.checked .links { display: none; }
   .step[data-kind="go"] { grid-template-columns: auto 1fr; }
   .step[data-kind="go"] .ico { display: none; }
 }
@@ -215,7 +216,7 @@ section[hidden] { display: none; }
 
 /* up next */
 .next { margin: 12px 0 14px; padding: 14px 16px; border-radius: var(--r-lg); background: var(--accent-soft); border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent); }
-.next .where small { font: var(--fs-sm) var(--body); color: var(--muted); margin-left: 10px; letter-spacing: 0; }
+.next .where small { font: var(--fs-sm) var(--display); color: var(--muted); margin-left: 10px; letter-spacing: 0; }
 .next .where { font-family: var(--display); font-size: var(--fs-lg); margin: 0 0 6px; }
 .next p { margin: 0 0 12px; max-width: 70ch; }
 .acts { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
@@ -274,7 +275,7 @@ ol.steps { list-style: none; margin: 0; padding: 0 10px 10px; display: flex; fle
 .hide-done .step.checked, .hide-done .phase.done, .no-tips .step.tip, .step.nomatch, .phase.nomatch { display: none; }
 
 .check { position: relative; width: 28px; height: 28px; border: 2px solid var(--muted); border-radius: var(--r-sm); display: grid; place-items: center; background: transparent; padding: 0; cursor: pointer; flex: none; }
-.step .check::after { content: ""; position: absolute; inset: -8px; }
+.step .check::after { content: ""; position: absolute; inset: -10px; }
 .step.checked .check, .row.checked .check { background: var(--ok); border-color: var(--ok); }
 .check svg { width: 17px; height: 17px; stroke: var(--surface); stroke-width: 3; fill: none; opacity: 0; }
 .step.checked .check svg, .row.checked .check svg { opacity: 1; }
@@ -454,7 +455,7 @@ code { font-size: .85em; background: var(--raised); border: 1px solid var(--line
 .seg-filter button { min-height: 44px; padding-inline: 16px; }
 .seg-filter button i { font-style: normal; font-variant-numeric: tabular-nums; margin-left: 2px; }
 .seg button[aria-pressed="true"] { background: var(--accent); color: var(--onaccent); font-weight: 700; }
-.swatches { display: flex; gap: 10px; }
+.swatches { display: flex; flex-wrap: wrap; gap: 10px; }
 .swatches button { width: 34px; height: 34px; border-radius: 50%; border: 2px solid var(--edge); cursor: pointer; padding: 0; }
 .swatches button[aria-pressed="true"] { outline: 2px solid var(--fg); outline-offset: 2px; }
 .switch { width: 52px; height: 30px; border-radius: 999px; border: 1px solid var(--edge); background: var(--raised); position: relative; cursor: pointer; padding: 0; flex: none; }
