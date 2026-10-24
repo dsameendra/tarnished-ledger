@@ -217,14 +217,14 @@ section[hidden] { display: none; }
   .step[data-kind="go"] { grid-template-columns: auto 1fr; }
   .step[data-kind="go"] .ico { display: none; }
 }
-.jumpph { flex: none; }
+.jumpph { flex: none; width: 13rem; }
 .jumpph select { width: 13rem; min-height: 44px; font: inherit; font-size: var(--fs-md); padding: 0 30px 0 12px; border-radius: var(--r-md); border: 1px solid var(--edge); background: var(--raised); color: var(--fg); cursor: pointer; max-width: 100%; }
 /* phone: search and Jump share the first row, the three toggles share the second */
 @media (max-width: 600px) {
   #v-route .toolbar { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); }
   #v-route .toolbar .search { grid-column: span 4; flex-basis: auto; }
   #v-route .toolbar .jumpph { grid-column: span 2; min-width: 0; }
-  .jumpph select { width: 100%; }
+  .jumpph { width: auto; }
   #v-route .toolbar .btn { grid-column: span 2; white-space: nowrap; padding-inline: 8px; }
 }
 
@@ -420,12 +420,11 @@ button.jump::after { content: ""; position: absolute; inset: -12px -6px; }
 .mapcard .seg button, .mapcard .btn { min-height: 44px; }
 .mapcard:not(.fs) .mt-subs { flex-basis: 100%; border: 0; background: none; gap: 6px; overflow: visible; }
 .mapcard:not(.fs) .mt-subs button { border: 1px solid var(--edge); border-radius: 999px; min-height: 36px; padding: 0 14px; background: var(--raised); }
-.mapcard:not(.fs) .mt-subs button[aria-pressed="true"] { border-color: var(--accent); }
-.mapgo, .jumpph { position: relative; }
-.mapgo::after, .jumpph::after { content: ""; position: absolute; right: 16px; top: 50%; width: 8px; height: 8px; border-right: 2px solid var(--muted); border-bottom: 2px solid var(--muted); transform: translateY(-70%) rotate(45deg); pointer-events: none; }
-.mapgo select, .jumpph select { -webkit-appearance: none; appearance: none; padding-right: 40px; text-overflow: ellipsis; }
-.mt-go { flex: none; }
-.mt-go select { width: 12rem; max-width: 100%; }
+.mapcard:not(.fs) .mt-subs button[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--onaccent); font-weight: 700; }
+.mapgo, .jumpph { position: relative; display: block; max-width: 100%; }
+.mapgo::after, .jumpph::after { content: ""; position: absolute; right: 11px; top: 50%; width: 8px; height: 8px; border-right: 2px solid var(--muted); border-bottom: 2px solid var(--muted); transform: translateY(-70%) rotate(45deg); pointer-events: none; }
+.mapgo select, .jumpph select { -webkit-appearance: none; appearance: none; display: block; width: 100%; min-width: 0; max-width: none; padding-right: 40px; text-overflow: ellipsis; }
+.mt-go { flex: none; width: 12rem; }
 .mt-tools .btn { white-space: nowrap; }
 /* narrower than a laptop: Find me and Maximize shrink to icons so the right cluster stays compact */
 @media (max-width: 1100px) {
@@ -443,14 +442,13 @@ button.jump::after { content: ""; position: absolute; inset: -12px -6px; }
   .mt-tools { grid-column: 1; grid-row: 1; justify-self: stretch; gap: 6px; }
   .mt-left { display: contents; }
   .mt-modes { grid-column: 1; grid-row: 2; display: flex; flex-wrap: wrap; gap: 8px; min-width: 0; }
-  .mt-go { flex: 1 1 0; min-width: 5rem; }
-  .mt-go select { width: 100%; }
+  .mt-go { flex: 1 1 0; width: auto; min-width: 5rem; }
   .mt-chips { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; max-width: 100%; }
   .mt-chips::-webkit-scrollbar { display: none; }
   .mt-chips:has(#mapWorld:not([hidden])) { -webkit-mask-image: linear-gradient(90deg, #000 calc(100% - 28px), transparent); mask-image: linear-gradient(90deg, #000 calc(100% - 28px), transparent); padding-right: 28px; }
   .mapcard:not(.fs) .mt-chips .seg { flex: none; flex-wrap: nowrap; border: 0; background: none; gap: 6px; overflow: visible; }
   .mapcard:not(.fs) .mt-chips .seg button { border: 1px solid var(--edge); border-radius: 999px; min-height: 36px; padding: 0 12px; background: var(--raised); white-space: nowrap; }
-  .mapcard:not(.fs) .mt-chips .seg button[aria-pressed="true"] { border-color: var(--accent); }
+  .mapcard:not(.fs) .mt-chips .seg button[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--onaccent); font-weight: 700; }
   .mapcard:not(.fs) .mt-chips #mapWorld { padding-right: 6px; border-right: 1px solid var(--line); margin-right: 2px; }
   .mapcard:not(.fs) .mapstage { height: calc(var(--mh, clamp(340px, calc(100svh - 250px), 780px)) + 56px); }
   .mapcard:not(.fs) #map { top: 56px; }
@@ -589,6 +587,7 @@ code { font-size: .85em; background: var(--raised); border: 1px solid var(--line
 .seg-filter button { min-height: 44px; padding-inline: 16px; }
 .seg-filter button i { font-style: normal; font-variant-numeric: tabular-nums; margin-left: 2px; }
 .seg button[aria-pressed="true"] { background: var(--accent); color: var(--onaccent); font-weight: 700; }
+@media (hover: hover) { .seg button:not([aria-pressed="true"]):hover { color: var(--fg); background: var(--accent-soft); } .mapcard:not(.fs) .seg button:not([aria-pressed="true"]):hover { border-color: var(--accent); } }
 .swatches { display: flex; flex-wrap: wrap; gap: 10px; }
 .swatches button { width: 34px; height: 34px; border-radius: 50%; border: 2px solid var(--edge); cursor: pointer; padding: 0; }
 .swatches button[aria-pressed="true"] { outline: 2px solid var(--fg); outline-offset: 2px; }
@@ -653,7 +652,7 @@ button:focus-visible, .phaselist button:focus-visible, .swatches button:focus-vi
 }
 
 /* map: navigation aids, place names and the maximized view */
-.mapgo select { min-height: 44px; max-width: 11rem; font: inherit; font-size: var(--fs-md); padding: 0 30px 0 12px; border-radius: var(--r-md); border: 1px solid var(--edge); background: var(--raised); color: var(--fg); cursor: pointer; }
+.mapgo select { min-height: 44px; font: inherit; font-size: var(--fs-md); padding: 0 30px 0 12px; border-radius: var(--r-md); border: 1px solid var(--edge); background: var(--raised); color: var(--fg); cursor: pointer; }
 .mapgo select:disabled { opacity: .55; cursor: default; }
 .mapfs, #mapHere { display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
 .mapexit { font-weight: 700; }
