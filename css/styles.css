@@ -226,17 +226,6 @@ section[hidden] { display: none; }
   .jumpph select { width: 100%; }
   #v-route .toolbar .btn { grid-column: span 2; white-space: nowrap; padding-inline: 8px; }
 }
-/* map toolbar on a phone: Go to, Find me, Maximize and Markers share one row (Find me and Maximize are icon-only) */
-@media (max-width: 699.98px) {
-  .maptools #mapHere, .mapcard:not(.fs) .maptools #mapFs, .mapcard.fs .maptools #mapExit { flex: none; width: 44px; padding: 0; }
-  .maptools .lbl { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
-  .mapcard:not(.fs) .maptools { gap: 10px 6px; }
-  .mapcard.fs #mapLayer { flex: 1 1 100%; }
-  .mapcard.fs #mapLayer button { flex: 1; }
-  .mapcard:not(.fs) .maptools .mt-go, .mapcard.fs .maptools .mt-go { flex: 1 1 0; min-width: 5rem; max-width: none; }
-  .mapcard .mt-go select { width: 100%; max-width: none; }
-  .mapcard:not(.fs) .maptools > #mapFilterBtn { flex: 0 0 auto; }
-}
 
 /* up next */
 .next { margin: 12px 0 14px; padding: 14px 16px; border-radius: var(--r-lg); background: var(--accent-soft); border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent); }
@@ -408,19 +397,33 @@ button.jump::after { content: ""; position: absolute; inset: -12px -6px; }
 
 /* map */
 .mapcard { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-lg); padding: 10px; margin-bottom: 14px; }
-.maptools { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; padding: 2px 0 8px; }
+/* Map toolbar. The right cluster (Go to, Find me, Maximize or Restore) is always the top-right of the map card: beside the left
+   cluster (world, map, region, markers) on wide screens, above it on phones. The left cluster wraps; the right one never moves. */
+.maptools { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: start; gap: 8px 12px; padding: 2px 0 8px; }
+.mt-left { grid-column: 1; grid-row: 1; display: flex; flex-wrap: wrap; align-items: center; gap: 8px; min-width: 0; }
+.mt-tools { grid-column: 2; grid-row: 1; display: flex; align-items: center; gap: 8px; justify-self: end; }
 .mapcard .seg button, .mapcard .btn { min-height: 44px; }
-/* Top bar, not maximized: what you are looking at (world, map, region) on top, what you can do (go to, find me, markers, maximize) below. */
-.mapcard:not(.fs) .maptools { row-gap: 10px; }
 .mapcard:not(.fs) .mt-subs { flex-basis: 100%; border: 0; background: none; gap: 6px; overflow: visible; }
 .mapcard:not(.fs) .mt-subs button { border: 1px solid var(--edge); border-radius: 999px; min-height: 36px; padding: 0 14px; background: var(--raised); }
 .mapcard:not(.fs) .mt-subs button[aria-pressed="true"] { border-color: var(--accent); }
-.mapcard:not(.fs) .mt-go { flex: 1 1 11rem; max-width: 20rem; }
-.mapcard:not(.fs) .mt-go select { width: 100%; max-width: none; }
-@media (max-width: 520px) {
-  .mapcard:not(.fs) #mapWorld, .mapcard:not(.fs) #mapLayer { display: flex; flex: 1 1 100%; }
-  .mapcard:not(.fs) #mapWorld button, .mapcard:not(.fs) #mapLayer button { flex: 1; padding-inline: 6px; }
-  .mapcard:not(.fs) .maptools > .btn { padding-inline: 10px; white-space: nowrap; }
+.mt-go { flex: none; }
+.mt-go select { width: 12rem; max-width: 100%; }
+.mt-tools .btn { white-space: nowrap; }
+/* narrower than a laptop: Find me and Maximize shrink to icons so the right cluster stays compact */
+@media (max-width: 1100px) {
+  .mt-tools #mapHere, .mt-tools #mapFs, .mt-tools #mapExit { flex: none; width: 44px; padding: 0; }
+  .mt-tools .lbl { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+}
+/* phones: the right cluster is the first row (Go to takes the free width), the left cluster stacks below it */
+@media (max-width: 699.98px) {
+  .maptools { grid-template-columns: minmax(0, 1fr); row-gap: 10px; }
+  .mt-tools { grid-column: 1; grid-row: 1; justify-self: stretch; gap: 6px; }
+  .mt-left { grid-column: 1; grid-row: 2; }
+  .mt-go { flex: 1 1 0; min-width: 5rem; }
+  .mt-go select { width: 100%; }
+  .mapcard #mapWorld, .mapcard #mapLayer { display: flex; flex: 1 1 100%; }
+  .mapcard #mapWorld button, .mapcard #mapLayer button { flex: 1; padding-inline: 6px; }
+  .mt-left #mapFilterBtn { flex: 1 1 auto; }
 }
 .mapsearch { position: absolute; z-index: 1050; top: 10px; left: 10px; right: 64px; max-width: 380px; }
 .mapsearch input { width: 100%; box-shadow: 0 2px 8px rgb(0 0 0 / .35); font: inherit; font-size: var(--fs-ui); padding: 10px 12px; border-radius: var(--r-md); border: 1px solid var(--line); background: var(--raised); color: var(--fg); min-height: 44px; }
@@ -620,9 +623,7 @@ button:focus-visible, .phaselist button:focus-visible, .swatches button:focus-vi
 
 html.map-fs, html.map-fs body { overflow: hidden; overscroll-behavior: none; }
 .mapcard.fs { position: fixed; inset: 0; z-index: 2000; margin: 0; padding: 0; border: 0; border-radius: 0; background: var(--bg); display: flex; flex-direction: column; }
-.mapcard.fs .maptools { flex: none; flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; gap: 8px; padding: calc(8px + var(--top-inset)) calc(10px + env(safe-area-inset-right, 0px)) 8px calc(10px + env(safe-area-inset-left, 0px)); background: var(--surface); border-bottom: 1px solid var(--line); }
-.mapcard.fs .maptools::-webkit-scrollbar { display: none; }
-.mapcard.fs .maptools > * { flex: none; }
+.mapcard.fs .maptools { flex: none; padding: calc(8px + var(--top-inset)) calc(10px + env(safe-area-inset-right, 0px)) 8px calc(10px + env(safe-area-inset-left, 0px)); background: var(--surface); border-bottom: 1px solid var(--line); }
 .mapcard.fs .mapfs { display: none; }
 .mapcard.fs .mapwrap { flex: 1 1 auto; min-height: 0; grid-template-rows: minmax(0, 1fr); gap: 0; }
 .mapcard.fs .mapstage { height: auto; min-height: 0; border: 0; border-radius: 0; }
@@ -636,9 +637,6 @@ html.map-fs, html.map-fs body { overflow: hidden; overscroll-behavior: none; }
 .mapcard.fs .maplegend { display: none; }
 /* phones: the sheet and the filters take the bottom, so the overview steps aside */
 @media (max-width: 699.98px) {
-  .mapcard.fs .maptools { flex-wrap: wrap; overflow: visible; row-gap: 6px; }
-  .mapcard.fs .maptools > * { flex: 0 1 auto; }
-  .mapcard.fs .mapgo select { max-width: 9.5rem; }
   .mapcard.fs .mapstage:has(.mapsheet:not([hidden])) .minimap, .mapcard.fs .mapwrap.panel-open .minimap { display: none; }
   .mapcard.fs .mapctl button { width: 48px; height: 48px; }
   .mapcard.fs .mapstage .mapctl { top: auto; bottom: calc(10px + env(safe-area-inset-bottom, 0px)); }

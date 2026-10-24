@@ -76,13 +76,16 @@ test("an accidental tick is recoverable: Undo for bulk ticks, and on touch only 
   assert.match(lists, /matchMedia\("\(pointer: coarse\)"\)\.matches \|\| e\.target\.closest\("\.check"\)/);
 });
 
-test("phone layout: one-line progress card with a toggle, jump-to-phase, and a one-row map toolbar", () => {
+test("phone layout: one-line progress card with a toggle, jump-to-phase, and a map toolbar whose three tools stay together", () => {
   const route = readFileSync(new URL("../js/ui/route.js", import.meta.url), "utf8");
   assert.match(html, /id="heroSum"[^>]*aria-expanded="false"[^>]*aria-controls="minis"/);
   assert.match(html, /id="jumpPhase"/);
   assert.match(css, /\.hero:not\(\.open\) \.minis \{ display: none; \}/);
   assert.match(css, /#savePill:not\(\.err\) \{ display: none; \}/);
-  assert.match(css, /\.maptools #mapHere[^{]*\{ flex: none; width: 44px;/);
+  assert.match(css, /\.mt-tools #mapHere[^{]*\{ flex: none; width: 44px;/);
+  // Go to, Find me and Maximize/Restore are one cluster that stays at the top right of the map card
+  assert.match(html, /<div class="mt-tools" id="mapTools"[^>]*>\s*<label class="mapgo mt-go">[\s\S]*id="mapHere"[\s\S]*id="mapFs"[\s\S]*id="mapExit"/);
+  assert.match(css, /\.mt-tools \{ grid-column: 2; grid-row: 1;/);
   // icon-only buttons keep a text name for screen readers
   assert.match(html, /id="mapHere"><svg[^>]*aria-hidden="true">.*<span class="lbl">Find me<\/span>/s);
   // the Up next card names itself in its heading instead of a kicker above it
