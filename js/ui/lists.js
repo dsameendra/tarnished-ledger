@@ -151,7 +151,7 @@ export function initLists() {
     const j = e.target.closest("[data-jump]");
     if (j) { e.stopPropagation(); emit("jump", j.dataset.jump); return; }
     const r = e.target.closest("[data-tog]");
-    if (r) toggle(r.dataset.tog);
+    if (r && (!matchMedia("(pointer: coarse)").matches || e.target.closest(".check"))) toggle(r.dataset.tog);
   };
   const setFilter = (v) => {
     filter = v;

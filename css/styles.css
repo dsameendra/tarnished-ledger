@@ -145,8 +145,18 @@ section[hidden] { display: none; }
 .nav svg { width: 22px; height: 22px; stroke: currentColor; fill: none; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
 .nav button[aria-selected="true"] { color: var(--accent); font-weight: 700; }
 
+/* undo toast */
+.toast { position: fixed; left: 12px; right: 12px; width: fit-content; margin-inline: auto; bottom: calc(var(--safe-b) + 70px); z-index: 40; display: flex; align-items: center; gap: 4px 12px; max-width: 520px; padding: 6px 6px 6px 16px; border-radius: 12px; background: var(--fg); color: var(--bg); box-shadow: 0 6px 20px rgba(0, 0, 0, .3); font-size: .92rem; animation: toastin .22s cubic-bezier(.16, 1, .3, 1); }
+.toast[hidden] { display: none; }
+.toast span { min-width: 0; padding-block: 8px; }
+.toast-undo { flex: none; min-height: 44px; padding: 0 16px; border: 0; border-radius: 9px; background: none; color: inherit; font: inherit; font-weight: 700; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+.toast-undo:focus-visible { outline: 2px solid var(--bg); outline-offset: -3px; }
+@keyframes toastin { from { opacity: 0; transform: translateY(8px); } }
+.map-fs .toast { bottom: calc(var(--safe-b) + 16px); }
+
 /* wide screens */
 @media (min-width: 980px) {
+  .toast { bottom: 24px; }
   .shell { grid-template-columns: 300px minmax(0, 1fr); column-gap: 36px; padding-block: 28px 56px; }
   .rail { position: sticky; top: calc(28px + var(--top-inset)); align-self: start; max-height: calc(100vh - 56px); overflow-y: auto; scrollbar-width: thin; }
   .hero { grid-template-columns: 1fr; justify-items: center; text-align: left; margin-top: 18px; }

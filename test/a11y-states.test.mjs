@@ -35,3 +35,13 @@ test("the map explains how to reach markers without a pointer, and can be skippe
 test("on a short landscape phone the inline map leaves room to scroll the page", () => {
   assert.match(css, /@media \(orientation: landscape\) and \(max-height: 500px\) \{ \.mapcard:not\(\.fs\) \.mapstage \{ height: clamp\(200px, 55svh, 340px\); \} \}/);
 });
+
+test("an accidental tick is recoverable: a toast with Undo, and on touch only the tick box ticks", () => {
+  const route = readFileSync(new URL("../js/ui/route.js", import.meta.url), "utf8");
+  const lists = readFileSync(new URL("../js/ui/lists.js", import.meta.url), "utf8");
+  assert.match(html, /id="toast"[^>]*role="status"/);
+  assert.match(html, /id="toastUndo"/);
+  assert.match(route, /showToast\(/);
+  assert.match(route, /matchMedia\("\(pointer: coarse\)"\)\.matches \|\| e\.target\.closest\("\.check"\)/);
+  assert.match(lists, /matchMedia\("\(pointer: coarse\)"\)\.matches \|\| e\.target\.closest\("\.check"\)/);
+});

@@ -3,6 +3,7 @@ import * as sync from "./lib/sync.js";
 import * as wake from "./lib/wake.js";
 import { validIds } from "./lib/model.js";
 import { renderRail } from "./ui/rail.js";
+import { initToast } from "./ui/toast.js";
 import { renderRoute, applyView, updateRoute, ensureCurrentOpen, initRoute } from "./ui/route.js";
 import { renderTrophies, renderCollect, renderCounters, initLists } from "./ui/lists.js";
 import { renderMap, initMap } from "./ui/map.js";
@@ -51,6 +52,7 @@ function boot() {
   if (store.doneIds().length && !store.get().marks[PREP_STEP]) store.setDone(PREP_STEP, true);
   initNav();
   initRoute();
+  initToast();
   initLists();
   initGuide();
   initMap();

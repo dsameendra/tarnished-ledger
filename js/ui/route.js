@@ -1,11 +1,12 @@
 import * as store from "../lib/store.js";
 import { $, $$, emit, on } from "../lib/dom.js";
-import { PHASES, steps, tickSteps, scopedSteps, inScope, phaseLabel, stepById, currentPhase, phaseCounts, collectibleName, collectibleGroup, trophyName, wikiUrl, goalList } from "../lib/model.js";
+import { PHASES, steps, tickSteps, scopedSteps, inScope, phaseLabel, stepById, currentPhase, phaseCounts, collectibleName, collectibleGroup, trophyName, trophyDone, goalDone, wikiUrl, goalList } from "../lib/model.js";
 import { ico, tickSVG, COLLECTION_ICON } from "../lib/icons.js";
 import { BOSS_TERMS } from "../data/links.js";
 import { STEP_LOCS } from "../data/map-guide.js";
 import { AREAS, DLC_AREAS } from "../data/map.js";
 import { trophyWord } from "../lib/labels.js";
+import { showToast } from "./toast.js";
 
 let programmatic = false;
 let query = "";
@@ -127,7 +128,14 @@ export function togglePhase(pid) {
   const ids = tickSteps.filter((s) => s.pi === pi).map((s) => s.id);
   if (!ids.length) return;
   const before = currentPhase();
-  store.setDoneMany(ids, !ids.every((id) => store.isDone(id)));
+  const prev = ids.map((id) => store.isDone(id));
+  const value = !prev.every(Boolean);
+  store.setDoneMany(ids, value);
+  const changed = prev.filter((d) => d !== value).length;
+  showToast(`${value ? "Ticked" : "Cleared"} ${changed} step${changed === 1 ? "" : "s"} in ${PHASES[pi].n}`, () => {
+    store.setDoneMany(ids.filter((_, i) => prev[i]), true);
+    store.setDoneMany(ids.filter((_, i) => !prev[i]), false);
+  });
   const after = currentPhase();
   if (store.setting("autoopen") && after !== before && after >= 0 && !query) {
     programmatic = true;
@@ -139,9 +147,26 @@ export function togglePhase(pid) {
   }
 }
 
+// What else a tick completed (a trophy, a legendary item, a DLC goal), so the cross-linking is visible when it happens.
+function alsoTicked(step) {
+  const o = step.opts, out = [];
+  if (o.tr && trophyDone(o.tr)) out.push(`${trophyWord().toLowerCase()} ${trophyName[o.tr]}`);
+  if (o.c && collectibleName[o.c]) out.push(collectibleName[o.c]);
+  const goal = o.g && goalDone(o.g) ? goalList.find((g) => g[0] === o.g) : null;
+  if (goal) out.push(`goal ${goal[1]}`);
+  return out;
+}
+
 export function toggle(id) {
   const before = currentPhase();
-  store.setDone(id, !store.isDone(id));
+  const prev = store.isDone(id);
+  store.setDone(id, !prev);
+  const step = stepById.get(id);
+  if (step) {
+    const text = step.text.length > 48 ? step.text.slice(0, 47).trimEnd() + "…" : step.text;
+    const extra = !prev ? alsoTicked(step) : [];
+    showToast(`${prev ? "Unticked" : "Ticked"}: ${text}${extra.length ? ` · also ticked ${extra.join(", ")}` : ""}`, () => store.setDone(id, prev));
+  }
   const after = currentPhase();
   if (store.setting("autoopen") && after !== before && after >= 0 && !query) {
     programmatic = true;
@@ -219,7 +244,8 @@ export function initRoute() {
     const loc = e.target.closest("[data-locate]");
     if (loc) { emit("locate", loc.dataset.locate); return; }
     const li = e.target.closest(".step[data-id]");
-    if (li) toggle(li.dataset.id);
+    // on a touch screen only the tick box ticks, so a scroll flick or a stray tap on the text cannot
+    if (li && (!matchMedia("(pointer: coarse)").matches || e.target.closest(".check"))) toggle(li.dataset.id);
   });
   box.addEventListener("toggle", (e) => {
     if (!e.target.matches("details.phase")) return;
