@@ -59,3 +59,12 @@ test("phone layout: one-line progress card with a toggle, jump-to-phase, and a o
   assert.doesNotMatch(route, /class="eyebrow"/);
   assert.match(route, /Up next: \$\{PHASES\[n\.pi\]\.n\}/);
 });
+
+test("fonts are self-hosted: no request to a third-party font host", () => {
+  const sw = readFileSync(new URL("../sw.js", import.meta.url), "utf8");
+  assert.doesNotMatch(html, /fonts\.(googleapis|gstatic)\.com/);
+  assert.doesNotMatch(css, /fonts\.(googleapis|gstatic)\.com/);
+  assert.doesNotMatch(sw, /fonts\.(googleapis|gstatic)\.com/);
+  assert.match(css, /@font-face \{ font-family: "Cinzel"; [^}]*assets\/fonts\/Cinzel\.woff2/);
+  assert.match(css, /@font-face \{ font-family: "Alegreya Sans"; [^}]*font-weight: 700;/);
+});

@@ -1,8 +1,8 @@
-// Offline cache for the app shell. Same-origin files and the Google Fonts hosts only:
+// Offline cache for the app shell. Same-origin files only:
 // calls to api.github.com (sync) are never intercepted or cached.
 // Keep SHELL in step with the files in the repo: `npm run check` fails when they drift apart.
 const PREFIX = "tarnished-ledger-";
-const CACHE = PREFIX + "v31";
+const CACHE = PREFIX + "v32";
 // Map tiles never change under the same name, so they live in their own cache that survives updates.
 const TILES = PREFIX + "tiles";
 const SHELL = [
@@ -11,6 +11,7 @@ const SHELL = [
   "js/lib/store.js", "js/lib/sync.js", "js/lib/icons.js", "js/lib/wake.js", "js/lib/dom.js", "js/lib/labels.js", "js/lib/model.js",
   "js/ui/nav.js", "js/ui/rail.js", "js/ui/route.js", "js/ui/lists.js", "js/ui/map.js", "js/ui/map-canvas.js", "js/ui/map-data.js", "js/ui/map-glyphs.js", "js/ui/map-state.js",
   "vendor/leaflet/leaflet.js", "vendor/leaflet/leaflet.css", "js/ui/guide.js", "js/ui/settings.js",
+  "assets/fonts/AlegreyaSans-400.woff2", "assets/fonts/AlegreyaSans-400i.woff2", "assets/fonts/AlegreyaSans-500.woff2", "assets/fonts/AlegreyaSans-700.woff2", "assets/fonts/Cinzel.woff2", "assets/fonts/OFL-AlegreyaSans.txt", "assets/fonts/OFL-Cinzel.txt",
   "assets/icons/icon-64.png", "assets/icons/icon-180.png", "assets/icons/icon-192.png", "assets/icons/icon-512.png", "assets/icons/icon-maskable-512.png",
 ];
 // The map pack (about 2.5 MB): images and marker data for every map. Fetched after the app itself is installed and
@@ -19,8 +20,7 @@ const MAP_PACK = [
   "assets/map/surface.webp", "assets/map/underground.webp", "assets/map/dlc.webp", "assets/map/hub.svg",
   "assets/map/data/base.json", "assets/map/data/under.json", "assets/map/data/dlc.json", "assets/map/data/hub.json",
 ];
-const FONT_HOSTS = ["fonts.googleapis.com", "fonts.gstatic.com"];
-const NETWORK_WAIT_MS = 6000;
+const NETWORK_WAIT_MS = 2500;
 
 self.addEventListener("install", (e) => {
   // "reload" skips the HTTP cache, so a new version never precaches files that are still cached from the old one.
@@ -43,8 +43,7 @@ self.addEventListener("fetch", (e) => {
   const req = e.request;
   if (req.method !== "GET") return;
   const url = new URL(req.url);
-  const font = FONT_HOSTS.includes(url.hostname);
-  if (url.origin !== location.origin && !font) return;
+  if (url.origin !== location.origin) return;
 
   // Map tiles never change under the same name and there are hundreds of them: serve from the cache first.
   if (url.pathname.includes("/assets/map/tiles/")) {
@@ -53,9 +52,8 @@ self.addEventListener("fetch", (e) => {
   }
   // Network first so a new deploy shows up on the next load. "no-cache" revalidates instead of trusting the
   // HTTP cache (GitHub Pages sends max-age=600). If the network is slow, a cached copy is used after a short wait.
-  const network = fetch(req, font ? undefined : { cache: "no-cache" }).then((res) => {
-    // Font stylesheets and files are loaded without CORS, so they come back opaque (ok is false); keep those too.
-    if (res.status === 200 || (font && res.type === "opaque")) {
+  const network = fetch(req, { cache: "no-cache" }).then((res) => {
+    if (res.status === 200) {
       const copy = res.clone();
       e.waitUntil(caches.open(CACHE).then((c) => c.put(req, copy)).catch(() => {}));
     }
