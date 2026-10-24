@@ -76,7 +76,7 @@ export const PHASES=[
 ["go","Enter Siofra River Well in Limgrave, below the Minor Erdtree area."],
 ["go","Light all 8 Hallowhorn obelisks around Siofra River, then interact with the deer carcass at the back of the temple to open the boss arena."],
 ["boss","Defeat the Ancestor Spirit.",{tr:"ancestor"}],
-["go","After Radahn, a meteor crater appears in southern Mistwood, west of Fort Haight. Climb down the rocks into Nokron, Eternal City."],
+["go","After Radahn, a meteor crater appears in southern Mistwood, near Fort Haight. Climb down the rocks into Nokron, Eternal City."],
 ["boss","Defeat the Mimic Tear.",{tr:"mimic"}],
 ["item","Night's Sacred Ground: cross the church, go around the altar to the locked area and open it with a Stonesword Key (1). Take the Mimic Tear Ashes from the chest.",{c:"ash3"}],
 ["quest","Night's Sacred Ground: take the Fingerslayer Blade from its chest for Ranni. The chest only opens once you have agreed to serve her."],
