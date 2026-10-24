@@ -2,7 +2,7 @@ import * as store from "./lib/store.js";
 import * as sync from "./lib/sync.js";
 import * as wake from "./lib/wake.js";
 import { validIds } from "./lib/model.js";
-import { renderRail } from "./ui/rail.js";
+import { renderRail, initRail } from "./ui/rail.js";
 import { initToast } from "./ui/toast.js";
 import { renderRoute, applyView, updateRoute, ensureCurrentOpen, initRoute } from "./ui/route.js";
 import { renderTrophies, renderCollect, renderCounters, initLists } from "./ui/lists.js";
@@ -53,6 +53,7 @@ function boot() {
   initNav();
   initRoute();
   initToast();
+  initRail();
   initLists();
   initGuide();
   initMap();

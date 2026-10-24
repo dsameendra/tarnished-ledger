@@ -141,7 +141,7 @@ section[hidden] { display: none; }
   padding-right: max(4px, var(--safe-r));
 }
 .nav [role="tablist"] { max-width: 760px; margin: 0 auto; display: grid; grid-template-columns: repeat(auto-fit, minmax(0, 1fr)); }
-.nav button { background: none; border: 0; padding: 8px 0 7px; display: flex; flex-direction: column; align-items: center; gap: 3px; font-size: .7rem; letter-spacing: 0; color: var(--muted); cursor: pointer; min-height: 54px; min-width: 0; }
+.nav button { background: none; border: 0; padding: 8px 0 7px; display: flex; flex-direction: column; align-items: center; gap: 3px; font-size: .75rem; letter-spacing: 0; color: var(--muted); cursor: pointer; min-height: 54px; min-width: 0; }
 .nav svg { width: 22px; height: 22px; stroke: currentColor; fill: none; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
 .nav button[aria-selected="true"] { color: var(--accent); font-weight: 700; }
 
@@ -170,10 +170,44 @@ section[hidden] { display: none; }
 @media (min-width: 1200px) { main { padding-right: 8px; } }
 @media (max-width: 380px) { .hero { grid-template-columns: 1fr; justify-items: center; } .minis { width: 100%; } }
 
+
+/* phone: the progress card is one line (tap to open the bars), the brand row stays, and the "Saved" pill only shows when something is wrong */
+.hero-sum { display: none; }
+@media (max-width: 979.98px) {
+  #savePill:not(.err) { display: none; }
+  .pills { margin-top: 8px; }
+  .pills:not(:has(.pill:not([hidden]):not(#savePill))):not(:has(#savePill.err)) { display: none; }
+  .hero { grid-template-columns: auto 1fr; gap: 6px 14px; margin: 12px 0 2px; padding: 8px 12px 8px 10px; justify-items: stretch; }
+  .hero .ring { width: 52px; height: 52px; }
+  .hero .ring b { font-size: .9rem; }
+  .hero .ring b span { display: none; }
+  .hero-sum { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 44px; padding: 0 4px; background: none; border: 0; color: var(--fg); font: inherit; font-size: .95rem; font-variant-numeric: tabular-nums; text-align: left; cursor: pointer; border-radius: 9px; }
+  .hero-sum .chev { flex: none; color: var(--muted); transition: transform .2s; }
+  .hero.open .hero-sum .chev { transform: rotate(180deg); }
+  .hero:not(.open) .minis { display: none; }
+  .hero .minis { grid-column: 1 / -1; padding-bottom: 6px; }
+}
+@media (max-width: 699.98px) {
+  .step[data-kind="go"] { grid-template-columns: auto 1fr; }
+  .step[data-kind="go"] .ico { display: none; }
+}
+.jumpph { flex: none; }
+.jumpph select { width: 13rem; min-height: 44px; font: inherit; font-size: .9rem; padding: 0 30px 0 12px; border-radius: 9px; border: 1px solid var(--edge); background: var(--raised); color: var(--fg); cursor: pointer; max-width: 100%; }
+@media (max-width: 600px) { .jumpph { flex: 1 1 7rem; min-width: 0; } .jumpph select { width: 100%; } .toolbar .btn { white-space: nowrap; padding-inline: 12px; } }
+/* map toolbar on a phone: Go to, Find me, Maximize and Markers share one row (Find me and Maximize are icon-only) */
+@media (max-width: 699.98px) {
+  .maptools #mapHere, .mapcard:not(.fs) .maptools #mapFs, .mapcard.fs .maptools #mapExit { flex: none; width: 44px; padding: 0; }
+  .maptools .lbl { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  .mapcard:not(.fs) .maptools { gap: 10px 6px; }
+  .mapcard:not(.fs) .maptools .mt-go, .mapcard.fs .maptools .mt-go { flex: 1 1 0; min-width: 5rem; max-width: none; }
+  .mapcard .mt-go select { width: 100%; max-width: none; }
+  .mapcard:not(.fs) .maptools > #mapFilterBtn { flex: 0 0 auto; }
+}
+
 /* up next */
 .next { margin: 12px 0 14px; padding: 14px 16px; border-radius: 14px; background: var(--accent-soft); border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent); }
-.next .eyebrow { font-size: .72rem; letter-spacing: .14em; text-transform: uppercase; color: var(--accent); font-weight: 700; }
-.next .where { font-family: var(--display); font-size: 1rem; margin: 2px 0 6px; }
+.next .where small { font: .82rem var(--body); color: var(--muted); margin-left: 10px; letter-spacing: 0; }
+.next .where { font-family: var(--display); font-size: 1.05rem; margin: 0 0 6px; }
 .next p { margin: 0 0 12px; max-width: 70ch; }
 .acts { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
 .next .acts { margin-top: 0; }
@@ -294,8 +328,7 @@ button.jump::after { content: ""; position: absolute; inset: -12px -6px; }
 @media (max-width: 520px) {
   .mapcard:not(.fs) #mapWorld, .mapcard:not(.fs) #mapLayer { display: flex; flex: 1 1 100%; }
   .mapcard:not(.fs) #mapWorld button, .mapcard:not(.fs) #mapLayer button { flex: 1; padding-inline: 6px; }
-  .mapcard:not(.fs) .mt-go { flex-basis: 100%; max-width: none; }
-  .mapcard:not(.fs) .maptools > .btn { flex: 1 1 auto; padding-inline: 10px; white-space: nowrap; }
+  .mapcard:not(.fs) .maptools > .btn { padding-inline: 10px; white-space: nowrap; }
 }
 .mapsearch { position: absolute; z-index: 1050; top: 10px; left: 10px; right: 64px; max-width: 380px; }
 .mapsearch input { width: 100%; box-shadow: 0 2px 8px rgb(0 0 0 / .35); font: inherit; font-size: .95rem; padding: 10px 12px; border-radius: 9px; border: 1px solid var(--line); background: var(--raised); color: var(--fg); min-height: 44px; }
@@ -479,7 +512,7 @@ button:focus-visible, .phaselist button:focus-visible, .swatches button:focus-vi
 /* map: navigation aids, place names and the maximized view */
 .mapgo select { min-height: 44px; max-width: 11rem; font: inherit; font-size: .9rem; padding: 0 30px 0 12px; border-radius: 9px; border: 1px solid var(--edge); background: var(--raised); color: var(--fg); cursor: pointer; }
 .mapgo select:disabled { opacity: .55; cursor: default; }
-.mapfs { display: inline-flex; align-items: center; gap: 8px; }
+.mapfs, #mapHere { display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
 .mapexit { font-weight: 700; }
 .mapexit { display: inline-flex; align-items: center; gap: 8px; }
 .minimap { position: absolute; z-index: 1000; left: 10px; bottom: 10px; touch-action: none; cursor: crosshair; border: 2px solid var(--edge); border-radius: 9px; overflow: hidden; background: #0b0a08; box-shadow: 0 2px 10px rgb(0 0 0 / .5); }

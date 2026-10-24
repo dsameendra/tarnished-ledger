@@ -41,7 +41,7 @@ function links(s) {
 function stepHTML(s) {
   if (s.kind === "tip") return `<li class="step tip" data-text="${attr(s.text)}"><span class="tipmark" aria-hidden="true">✦</span><div class="txt"><p>${s.text}</p></div></li>`;
   const done = store.isDone(s.id);
-  return `<li class="step ${s.kind === "warn" ? "warn" : ""} ${done ? "checked" : ""}" data-id="${s.id}" id="s-${s.id}" data-text="${attr(s.text)}">
+  return `<li class="step ${s.kind === "warn" ? "warn" : ""} ${done ? "checked" : ""}" data-kind="${s.kind}" data-id="${s.id}" id="s-${s.id}" data-text="${attr(s.text)}">
 <button type="button" class="check" aria-label="${plain(s.text)}" aria-pressed="${done}">${tickSVG}</button>
 <span class="ico" aria-hidden="true">${ico(stepIcon(s))}</span>
 <div class="txt"><p>${s.text}</p>${chips(s)}${links(s)}</div></li>`;
@@ -62,6 +62,7 @@ ${area}<ol class="steps">${items}</ol></details>`;
 
 export function renderRoute() {
   $("phases").innerHTML = PHASES.map((p, pi) => (inScope(pi) ? phaseHTML(p, pi, currentPhase()) : "")).join("");
+  $("jumpPhase").innerHTML = '<option value="">Jump to…</option>' + PHASES.map((p, pi) => (inScope(pi) ? `<option value="${p.id}">${phaseLabel(pi)} · ${p.n}</option>` : "")).join("");
   applyView();
   updateRoute();
   foldLabel();
@@ -104,10 +105,10 @@ function renderNext() {
   const n = scopedSteps().find((s) => !store.isDone(s.id));
   const el = $("next");
   if (!n) {
-    el.innerHTML = '<div class="eyebrow">Complete</div><div class="where">Every step is done</div><p>Nothing left to do in this route. Untick a step if you need to revisit it.</p>';
+    el.innerHTML = '<div class="where">Every step is done</div><p>Nothing left to do in this route. Untick a step if you need to revisit it.</p>';
     return;
   }
-  el.innerHTML = `<div class="eyebrow">Up next · Phase ${phaseLabel(n.pi)}</div><div class="where">${PHASES[n.pi].n}</div><p>${n.text}</p>
+  el.innerHTML = `<div class="where">Up next: ${PHASES[n.pi].n}<small>Phase ${phaseLabel(n.pi)}</small></div><p>${n.text}</p>
 <div class="acts"><button type="button" class="btn primary" id="nextDone">Mark done</button><button type="button" class="btn" id="nextShow">Show in route</button></div>`;
   $("nextDone").onclick = () => toggle(n.id);
   $("nextShow").onclick = () => jump(n.id);
@@ -254,6 +255,17 @@ export function initRoute() {
     if (!store.setting("autoopen")) store.setClosed(e.target.dataset.pid, !e.target.open);
   }, true);
   $("q").addEventListener("input", (e) => setQuery(e.target.value));
+  $("jumpPhase").addEventListener("change", (e) => {
+    const el = $("p-" + e.target.value);
+    e.target.value = "";
+    if (!el) return;
+    if (query) { $("q").value = ""; setQuery(""); }
+    programmatic = true;
+    el.open = true;
+    programmatic = false;
+    el.scrollIntoView({ block: "start", behavior: "auto" });
+    el.querySelector("summary").focus({ preventScroll: true });
+  });
   $("hideBtn").addEventListener("click", () => store.setSetting("hide", !store.setting("hide")));
   $("foldBtn").addEventListener("click", () => {
     const ds = $$("details.phase");

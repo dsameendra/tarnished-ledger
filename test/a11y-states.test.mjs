@@ -45,3 +45,17 @@ test("an accidental tick is recoverable: a toast with Undo, and on touch only th
   assert.match(route, /matchMedia\("\(pointer: coarse\)"\)\.matches \|\| e\.target\.closest\("\.check"\)/);
   assert.match(lists, /matchMedia\("\(pointer: coarse\)"\)\.matches \|\| e\.target\.closest\("\.check"\)/);
 });
+
+test("phone layout: one-line progress card with a toggle, jump-to-phase, and a one-row map toolbar", () => {
+  const route = readFileSync(new URL("../js/ui/route.js", import.meta.url), "utf8");
+  assert.match(html, /id="heroSum"[^>]*aria-expanded="false"[^>]*aria-controls="minis"/);
+  assert.match(html, /id="jumpPhase"/);
+  assert.match(css, /\.hero:not\(\.open\) \.minis \{ display: none; \}/);
+  assert.match(css, /#savePill:not\(\.err\) \{ display: none; \}/);
+  assert.match(css, /\.maptools #mapHere[^{]*\{ flex: none; width: 44px;/);
+  // icon-only buttons keep a text name for screen readers
+  assert.match(html, /id="mapHere"><svg[^>]*aria-hidden="true">.*<span class="lbl">Find me<\/span>/s);
+  // the Up next card names itself in its heading instead of a kicker above it
+  assert.doesNotMatch(route, /class="eyebrow"/);
+  assert.match(route, /Up next: \$\{PHASES\[n\.pi\]\.n\}/);
+});
