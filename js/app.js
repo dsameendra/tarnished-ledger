@@ -8,17 +8,25 @@ import { renderRoute, applyView, updateRoute, ensureCurrentOpen, initRoute } fro
 import { renderTrophies, renderCollect, renderCounters, initLists } from "./ui/lists.js";
 import { renderMap, initMap } from "./ui/map.js";
 import { renderGuide, initGuide } from "./ui/guide.js";
-import { initNav, renderNav } from "./ui/nav.js";
+import { initNav, renderNav, currentTab } from "./ui/nav.js";
+import { on } from "./lib/dom.js";
 import { initSettings, paintSettings, paintStorage, paintWake, refreshBackup } from "./ui/settings.js";
 
 const PREP_STEP = "prep.5";
 
+// Trophies, Legendary and the map are only drawn while their tab is showing. A change made elsewhere marks them
+// stale, and the "shown" event from the nav draws them the moment the tab opens.
+const LAZY = { tro: renderTrophies, col: renderCollect, map: renderMap };
+const stale = new Set();
+function renderTab(id) {
+  if (currentTab() === id) { stale.delete(id); LAZY[id](); } else stale.add(id);
+}
+function renderLazy() { for (const id of Object.keys(LAZY)) renderTab(id); }
+
 function renderAll() {
   renderRail();
   renderRoute();
-  renderTrophies();
-  renderCollect();
-  renderMap();
+  renderLazy();
   renderGuide();
   ensureCurrentOpen();
 }
@@ -26,9 +34,7 @@ function renderAll() {
 function onMarks() {
   renderRail();
   updateRoute();
-  renderTrophies();
-  renderCollect();
-  renderMap();
+  renderLazy();
   paintStorage();
   refreshBackup();
 }
@@ -51,6 +57,7 @@ function boot() {
   // The setup step in phase 0 is new: anyone who has already started the run has read the setup.
   if (store.doneIds().length && !store.get().marks[PREP_STEP]) store.setDone(PREP_STEP, true);
   initNav();
+  on("shown", (id) => { if (stale.delete(id)) LAZY[id](); });
   initRoute();
   initToast();
   initRail();

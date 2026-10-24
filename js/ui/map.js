@@ -98,8 +98,15 @@ function ensureMap() {
   return boot;
 }
 
+// Resolves when the map is up and holds every marker layer the current scope can show. Layers outside the scope
+// (the Realm of Shadow for a base-game run, the base maps for a DLC-only run) are fetched the first time the scope needs them.
+function ready() {
+  return ensureMap().then(() => (D && map ? D.ensure(layersFor(scope())) : null))
+    .catch((e) => { console.warn("Markers failed to load", e); status("Some markers could not be loaded. Check your connection, then try again."); });
+}
+
 async function start() {
-  [, D] = await Promise.all([loadLeaflet(), loadMapData()]);
+  [, D] = await Promise.all([loadLeaflet(), loadMapData(layersFor(scope()))]);
   L = window.L;
   const calm = mq("(prefers-reduced-motion: reduce)");
   map = L.map("map", {
@@ -442,7 +449,7 @@ function setFs(on, fromHistory = false) {
 }
 
 function wireFs() {
-  $("mapFs").addEventListener("click", () => ensureMap().then(() => { if (map) setFs(true); }));
+  $("mapFs").addEventListener("click", () => ready().then(() => { if (map) setFs(true); }));
   $("mapExit").addEventListener("click", () => setFs(false));
   window.addEventListener("popstate", () => { if (fs) setFs(false, true); });
   $("mapCard").addEventListener("keydown", (e) => {
@@ -821,7 +828,7 @@ function wireBelow() {
     else if (b.dataset.pgCat) { const id = b.dataset.pgCat; if (pg.open.has(id)) pg.open.delete(id); else pg.open.add(id); renderBelow(); }
     else if (b.dataset.pgMore) { pg.limit.set(b.dataset.pgMore, (pg.limit.get(b.dataset.pgMore) || 20) + 40); renderBelow(); }
     else if (b.dataset.pgPick) {
-      await ensureMap();
+      await ready();
       const m = D?.byId.get(b.dataset.pgPick);
       if (!m) return;
       if (!fs) $("mapCard").scrollIntoView({ block: "start", behavior: mq("(prefers-reduced-motion: reduce)") ? "auto" : "smooth" });
@@ -854,7 +861,7 @@ function goTo(m, rel = 3) {
 }
 
 async function findMe() {
-  await ensureMap();
+  await ready();
   if (!map) return;
   const route = getRoute();
   const { next } = stopStates(route, store.isDone);
@@ -913,6 +920,7 @@ export function renderMap() {
   scheduleBelow();
   if (!D || !map) return;
   if (!visible()) { dirty = true; return; }
+  if (layersFor(scope()).some((l) => !D.loaded.has(l))) { ready().then(() => visible() && layersFor(scope()).every((l) => D.loaded.has(l)) && renderMap()); return; }
   if (selected?.phase && Boolean(PHASES.find((p) => p.id === selected.phase)?.dlc) !== (world() === "dlc")) selected = null;
   if (mode() !== shown) setMode(mode());
   else { refreshPins(); refreshItems(); cv.redraw(); if (selected) showSheet(selected, true); }
@@ -971,7 +979,7 @@ export function initMap() {
   $("phaseList").addEventListener("click", async (e) => {
     const t = e.target.closest("[data-phase]");
     if (!t) return;
-    await ensureMap();
+    await ready();
     if (!map) return;
     selectPhase(t.dataset.phase);
     if (!fs) $("mapPhaseCard").scrollIntoView({ block: "nearest", behavior: mq("(prefers-reduced-motion: reduce)") ? "auto" : "smooth" });
@@ -988,7 +996,7 @@ export function initMap() {
   wireBelow();
   $("mapGo").addEventListener("change", (e) => { goPlace(e.target.value); e.target.value = ""; });
   wireFs();
-  $("mapFilterBtn").addEventListener("click", () => ensureMap().then(() => { if (D) setPanel($("mapPanel").hidden); }));
+  $("mapFilterBtn").addEventListener("click", () => ready().then(() => { if (D) setPanel($("mapPanel").hidden); }));
   $("mapWorld").addEventListener("click", (e) => {
     const b = e.target.closest("button");
     if (!b || !map) return;
@@ -1093,7 +1101,7 @@ export function initMap() {
     if (!visible()) return;
     // On phones the header sits above the map, so bring the toolbar to the top.
     if (!mq("(min-width: 980px)")) document.querySelector("#v-map .mapcard").scrollIntoView({ block: "start", behavior: "auto" });
-    ensureMap().then(() => {
+    ready().then(() => {
       if (!map) return;
       map.invalidateSize({ animate: false });
       if (mode() !== shown) setMode(mode());
@@ -1108,7 +1116,7 @@ export function initMap() {
   // Route steps can emit("locate", stepId) to open the map at the step's first location.
   on("mapphase", async (pid) => {
     emit("tab", "map");
-    await ensureMap();
+    await ready();
     if (!map) return;
     map.invalidateSize({ animate: false });
     selectPhase(pid);
@@ -1116,7 +1124,7 @@ export function initMap() {
   // The Goals tab counters ask the map to show every Scadutree Fragment or Revered Spirit Ash.
   on("mapcat", async (cat) => {
     emit("tab", "map");
-    await ensureMap();
+    await ready();
     const list = map && D.list.filter((m) => m.cat === String(cat) && allowed(m.layer));
     if (!list?.length) return;
     map.invalidateSize({ animate: false });
@@ -1127,7 +1135,7 @@ export function initMap() {
   });
   on("locate", async (stepId) => {
     emit("tab", "map");
-    await ensureMap();
+    await ready();
     const m = map && (D.stepLocs[stepId] || []).map((i) => D.byId.get(i)).find((x) => x && allowed(x.layer));
     if (!m) return;
     map.invalidateSize({ animate: false });
