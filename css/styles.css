@@ -446,7 +446,7 @@ button.jump::after { content: ""; position: absolute; inset: -12px -6px; }
   .mapcard:not(.fs) .mapctl { top: 66px; }
   /* maximized: one row (Layers, then the cluster at the top right); the rest is a bottom sheet */
   .mapcard.fs .maptools { grid-template-columns: auto minmax(0, 1fr); row-gap: 0; }
-  .mapcard.fs .mt-layers { display: inline-flex; align-items: center; gap: 8px; grid-column: 1; grid-row: 1; }
+  .mapcard.fs .mt-layers { display: inline-flex; align-items: center; justify-content: center; gap: 8px; grid-column: 1; grid-row: 1; }
   .mapcard.fs .mt-tools { grid-column: 2; grid-row: 1; }
   @container (max-width: 21rem) { .mapcard.fs .mt-layers { width: 44px; padding: 0; justify-content: center; } .mapcard.fs .mt-layers span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; } }
   .mapcard.fs .mt-left { display: none; }
@@ -644,7 +644,7 @@ button:focus-visible, .phaselist button:focus-visible, .swatches button:focus-vi
 .mapgo select:disabled { opacity: .55; cursor: default; }
 .mapfs, #mapHere { display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
 .mapexit { font-weight: 700; }
-.mapexit { display: inline-flex; align-items: center; gap: 8px; }
+.mapexit { display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
 .minimap { position: absolute; z-index: 1000; left: 10px; bottom: 10px; touch-action: none; cursor: crosshair; border: 2px solid var(--edge); border-radius: var(--r-md); overflow: hidden; background: #0b0a08; box-shadow: 0 2px 10px rgb(0 0 0 / .5); }
 .minimap[hidden] { display: none; }
 .minimap canvas { display: block; }
