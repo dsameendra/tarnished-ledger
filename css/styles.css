@@ -295,6 +295,31 @@ ol.steps { list-style: none; margin: 0; padding: 0 10px 10px; display: flex; fle
 .links { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 6px; }
 .links a { font-size: var(--fs-sm); padding: 4px 0; text-decoration: none; border-bottom: 1px solid color-mix(in srgb, var(--accent) 40%, transparent); }
 
+/* lighter step rows on phones: tick, text, one muted meta line; wiki and map sit behind "More" (always open on the current step) */
+.step .meta, .step .more { display: none; }
+@media (max-width: 699.98px) {
+  ol.steps { padding: 0 8px 8px; gap: 5px; }
+  .step:not(.tip) { grid-template-columns: auto 1fr auto; gap: 10px; padding: 7px 2px 7px 11px; }
+  .step:not(.tip) .txt p { line-height: 1.38; }
+  .step:not(.tip) .ico, .step:not(.tip) .chip:not(.miss), .step:not(.tip) .links { display: none; }
+  .step:not(.tip) .chips { margin-top: 4px; }
+  .step .meta { display: block; margin: 3px 0 0; font-size: .8rem; line-height: 1.3; color: var(--muted); }
+  .step.warn .chips + .meta { margin-top: 3px; }
+  .step .more { display: grid; place-items: center; position: relative; width: 30px; height: 30px; margin-top: -2px; border: 0; border-radius: 8px; background: transparent; color: var(--muted); cursor: pointer; padding: 0; }
+  .step .more::after { content: ""; position: absolute; inset: -6px -6px -6px -6px; }
+  .step .more svg { width: 20px; height: 20px; fill: currentColor; }
+  .step .more[aria-expanded="true"] { background: var(--accent-soft); color: var(--accent); }
+  .step.open .links, .step.cur .links { display: flex; }
+  .step.cur .more { display: none; }
+  .step.cur:not(.checked) { border-color: color-mix(in srgb, var(--accent) 55%, var(--line)); }
+  .step .links a, .step .links .maplink { min-height: 44px; display: inline-flex; align-items: center; padding-block: 0; }
+  .step.checked .meta, .step.checked .links, .step.checked .more, .step.checked .chips { display: none; }
+  .toolbar .btn { padding-inline: 8px; white-space: nowrap; }
+  .toolbar .btn[aria-pressed="true"] { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); }
+  .compact .step .meta { display: none; }
+  .compact .step:not(.tip) { grid-template-columns: auto 1fr auto; padding: 5px 4px 5px 10px; }
+}
+
 /* lists */
 .group { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-lg); padding: 4px 14px 6px; margin-bottom: 12px; }
 .group h3 { font-family: var(--display); font-weight: 500; font-size: var(--fs-lg); margin: 10px 0 4px; display: flex; justify-content: space-between; align-items: center; gap: 8px; }

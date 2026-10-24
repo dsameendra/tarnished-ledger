@@ -38,13 +38,27 @@ function links(s) {
   return wiki || map ? `<div class="links">${wiki}${map}</div>` : "";
 }
 
+// One muted line for phones, built from the same data as the chips.
+function metaLine(s) {
+  const k = { boss: "Boss", quest: "Quest", map: "Map fragment", key: "Key item" }[s.kind];
+  const m = [];
+  if (k) m.push(k);
+  if (s.opts.c) m.push(`Legendary: ${collectibleName[s.opts.c]}`);
+  if (s.opts.g) m.push(`DLC goal: ${goalName[s.opts.g]}`);
+  if (s.opts.tr) m.push(`${trophyWord()}: ${trophyName[s.opts.tr]}`);
+  return m.length ? `<p class="meta">${m.join(" · ")}</p>` : "";
+}
+
+const MORE_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg>';
+
 function stepHTML(s) {
   if (s.kind === "tip") return `<li class="step tip" data-text="${attr(s.text)}"><span class="tipmark" aria-hidden="true">✦</span><div class="txt"><p>${s.text}</p></div></li>`;
   const done = store.isDone(s.id);
+  const lk = links(s).replace('<div class="links">', `<div class="links" id="l-${s.id}">`);
   return `<li class="step ${s.kind === "warn" ? "warn" : ""} ${done ? "checked" : ""}" data-kind="${s.kind}" data-id="${s.id}" id="s-${s.id}" data-text="${attr(s.text)}">
 <button type="button" class="check" aria-label="Done: ${short(plain(s.text))}" aria-pressed="${done}">${tickSVG}</button>
 <span class="ico" aria-hidden="true">${ico(stepIcon(s))}</span>
-<div class="txt"><p>${s.text}</p>${chips(s)}${links(s)}</div></li>`;
+<div class="txt"><p>${s.text}</p>${chips(s)}${metaLine(s)}${lk}</div>${lk ? `<button type="button" class="more" data-more aria-expanded="false" aria-controls="l-${s.id}" aria-label="More for this step: wiki and map">${MORE_SVG}</button>` : ""}</li>`;
 }
 
 // A long step would be read twice (as the button name, then as the paragraph), so the button carries the start of it.
@@ -75,6 +89,7 @@ export function applyView() {
   box.classList.toggle("hide-done", store.setting("hide"));
   box.classList.toggle("no-tips", !store.setting("tips"));
   box.classList.toggle("compact", store.setting("compact"));
+  $("compactBtn").setAttribute("aria-pressed", String(store.setting("compact")));
   $("hideBtn").setAttribute("aria-pressed", String(store.setting("hide")));
   $("hideBtn").textContent = store.setting("hide") ? "Show done" : "Hide done";
 }
@@ -88,6 +103,10 @@ export function updateRoute() {
     li.classList.toggle("checked", done);
     li.querySelector(".check").setAttribute("aria-pressed", String(done));
   });
+  const now = scopedSteps().find((s) => !store.isDone(s.id));
+  $$(".step.cur").forEach((li) => li.classList.remove("cur"));
+  const nowLi = now && $("s-" + now.id);
+  if (nowLi) nowLi.classList.add("cur");
   PHASES.forEach((p, pi) => {
     const [d, t] = phaseCounts(pi);
     const el = $("p-" + p.id);
@@ -243,6 +262,14 @@ export function initRoute() {
   const box = $("phases");
   box.addEventListener("click", (e) => {
     if (e.target.closest("a")) return;
+    const mo = e.target.closest("[data-more]");
+    if (mo) {
+      const li = mo.closest(".step");
+      const open = !li.classList.contains("open");
+      li.classList.toggle("open", open);
+      mo.setAttribute("aria-expanded", String(open));
+      return;
+    }
     const pa = e.target.closest("[data-phaseall]");
     if (pa) { togglePhase(pa.dataset.phaseall); return; }
     const mp = e.target.closest("[data-mapphase]");
@@ -271,6 +298,7 @@ export function initRoute() {
     el.scrollIntoView({ block: "start", behavior: "auto" });
     el.querySelector("summary").focus({ preventScroll: true });
   });
+  $("compactBtn").addEventListener("click", () => store.setSetting("compact", !store.setting("compact")));
   $("hideBtn").addEventListener("click", () => store.setSetting("hide", !store.setting("hide")));
   $("foldBtn").addEventListener("click", () => {
     const ds = $$("details.phase");
