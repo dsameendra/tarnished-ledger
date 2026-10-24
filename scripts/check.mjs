@@ -11,6 +11,8 @@ import { STEP_LOCS, PHASE_FOCUS, TROPHY_LOCS, COLLECT_LOCS, GOAL_LOCS } from "..
 import { PINS, DLC_PINS, DLC_EDGES, DLC_AREAS, AREAS } from "../js/data/map.js";
 import { parseSw, shellHash } from "./shell-hash.mjs";
 import { COUNTER_MAX } from "../js/lib/store.js";
+import { COUNTER_MARKERS, COUNTER_QTY } from "../js/data/counter-markers.js";
+import { counterMarkersSource, readRows } from "./counter-markers.mjs";
 
 const errors = [];
 const err = (m) => errors.push(m);
@@ -67,10 +69,17 @@ for (const c of COUNTERS) {
   if (c.levels.at(-1) !== c.max) err(`counter ${c.id}: last level ${c.levels.at(-1)} != max ${c.max}`);
   if (c.levels.some((v, i) => i > 0 && v <= c.levels[i - 1])) err(`counter ${c.id}: levels are not strictly increasing`);
 }
+// Blessing counters: markers found on the map add their quantity, and finding them all must give exactly the maximum.
+for (const [id, list] of Object.entries(COUNTER_MARKERS)) {
+  const total = list.reduce((n, m) => n + (COUNTER_QTY[m] || 1), 0);
+  if (total !== COUNTER_MAX[id]) err(`counter ${id}: map markers add up to ${total}, not ${COUNTER_MAX[id]}`);
+}
 const root = fileURLToPath(new URL("..", import.meta.url));
 const read = (f) => readFileSync(join(root, f), "utf8");
 const blessTotal = Number(/blessings: \[[^\]]*,\s*(\d+)\]/.exec(read("js/lib/model.js"))?.[1]);
 if (blessTotal !== COUNTERS.reduce((n, c) => n + c.max, 0)) err(`model.js blessings total ${blessTotal} != sum of counter maxima`);
+
+if (read("js/data/counter-markers.js") !== counterMarkersSource(readRows())) err("js/data/counter-markers.js is out of date: run node scripts/counter-markers.mjs");
 
 // The service worker precache list must match what ships.
 const swSrc = read("sw.js");
