@@ -30,9 +30,9 @@ const arm = () => { clearTimeout(timer); timer = setTimeout(hideToast, SHOW_MS);
 
 export function initToast() {
   // stay while the pointer is over it or focus is inside it
-  $("toast").addEventListener("mouseenter", () => clearTimeout(timer));
+  $("toast").addEventListener("pointerenter", (e) => { if (e.pointerType === "mouse") clearTimeout(timer); });
   $("toast").addEventListener("focusin", () => clearTimeout(timer));
-  $("toast").addEventListener("mouseleave", () => { if (!$("toast").hidden) arm(); });
+  $("toast").addEventListener("pointerleave", (e) => { if (e.pointerType === "mouse" && !$("toast").hidden) arm(); });
   $("toast").addEventListener("focusout", () => { if (!$("toast").hidden) arm(); });
   // Ctrl/Cmd+Z undoes the last tick while the toast is showing, so the keyboard does not have to reach it
   document.addEventListener("keydown", (e) => {
