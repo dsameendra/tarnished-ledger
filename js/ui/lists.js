@@ -1,8 +1,8 @@
 import * as store from "../lib/store.js";
-import { $, emit } from "../lib/dom.js";
+import { $, emit, on } from "../lib/dom.js";
 import { PHASES, TROPHIES, COLLECTIONS, GOALS, byTrophy, byCollectible, byGoal, trophyDone, goalDone, phaseLabel, scope, wikiUrl } from "../lib/model.js";
 import { COUNTERS } from "../data/dlc-goals.js";
-import { tickSVG, ico, medal, COLLECTION_ICON } from "../lib/icons.js";
+import { tickSVG, lockSVG, ico, medal, COLLECTION_ICON } from "../lib/icons.js";
 import { hasGrades, trophiesWord } from "../lib/labels.js";
 import { toggle } from "./route.js";
 
@@ -12,10 +12,10 @@ const GRADES = { p: "Platinum", g: "Gold", s: "Silver", b: "Bronze" };
 const esc = (x) => String(x).replace(/<[^>]*>/g, "").replace(/"/g, "&quot;");
 
 function row({ done, name, sub, stepId, tog, lead, cls = "" }) {
-  const jump = stepId ? ` · <button type="button" class="jump" data-jump="${stepId}" aria-label="Show step for ${esc(name)} in the route">Show step</button>` : "";
+  const jump = stepId ? `&nbsp;· <button type="button" class="jump" data-jump="${stepId}" aria-label="Show step for ${esc(name)} in the route">Show step</button>` : "";
   const box = tog && stepId
-    ? `<button type="button" class="check" role="checkbox" aria-checked="${done}" aria-label="${esc(name)}">${tickSVG}</button>`
-    : `<span class="check" aria-hidden="true">${tickSVG}</span>`;
+    ? `<button type="button" class="check" aria-pressed="${done}" aria-label="Done: ${esc(name)}">${tickSVG}</button>`
+    : `<span class="check lock" aria-hidden="true">${tickSVG.replace("<svg ", '<svg class="tk" ')}${lockSVG}</span>`;
   return `<div class="row ${cls} ${done ? "checked" : ""}" ${tog && stepId ? `data-tog="${stepId}"` : ""}>
 ${box}${lead}
 <div style="min-width:0"><div class="row-name">${name}</div><div class="row-where">${sub}${jump}</div></div></div>`;
@@ -53,8 +53,11 @@ export function renderTrophies() { keepFocus(drawTrophies); }
 function drawTrophies() {
   const sc = scope();
   paintFilter(sc);
-  $("troTitle").textContent = sc === "dlc" ? "DLC goals" : trophiesWord();
-  $("troNote").textContent = sc === "dlc" ? NOTE_DLC : NOTE_TRO;
+  // On phones in Main game and DLC mode the Trophies | Legendary | DLC switch splits this tab in two
+  const split = sc === "both" && matchMedia("(max-width: 979.98px)").matches;
+  const dlcPart = sc === "dlc" || (split && $("v-tro").dataset.sub === "dlc");
+  $("troTitle").textContent = dlcPart ? "DLC goals" : sc === "both" && !split ? `${trophiesWord()} and DLC goals` : trophiesWord();
+  $("troNote").textContent = dlcPart ? NOTE_DLC : sc === "both" && !split ? NOTE_TRO + " Shadow of the Erdtree has no trophies, so its goals are listed after them." : NOTE_TRO;
   $("troList").hidden = sc === "dlc";
   if (sc === "dlc") { $("troList").innerHTML = ""; drawGoals(); return; }
   drawGoals();
@@ -62,8 +65,8 @@ function drawTrophies() {
   const keep = (t) => filter === "all" || (filter === "done") === trophyDone(t[0]);
   const rowFor = (t) => {
     const step = byTrophy[t[0]];
-    const where = COLLECTIONS[t[0]] ? "Collect every item on the Legendaries tab" : step ? PHASES[step.pi].n : "Unlocks when all others are done";
-    return row({ done: trophyDone(t[0]), name: t[1], sub: `${t[2]} · ${where}`, stepId: step && step.id, tog: Boolean(step), lead: medal(t, grades), cls: "tr" });
+    const where = COLLECTIONS[t[0]] ? "Collect every item on the Legendary tab" : step ? PHASES[step.pi].n : "Unlocks when all others are done";
+    return row({ done: trophyDone(t[0]), name: t[1], sub: `${t[2]}&nbsp;· ${where}`, stepId: step && step.id, tog: Boolean(step), lead: medal(t, grades), cls: "tr" });
   };
   let html = "";
   if (grades) {
@@ -112,7 +115,7 @@ function drawGoals() {
     if (!list.length) return "";
     const rows = list.map(([k, name, where]) => {
       const s = byGoal[k];
-      return row({ done: goalDone(k), name, sub: `${where} · ${phaseLabel(s.pi)}`, stepId: s.id, tog: true, lead: `<span class="lico">${ico(s.kind)}</span>`, cls: "tr" });
+      return row({ done: goalDone(k), name, sub: `${where}&nbsp;· ${phaseLabel(s.pi)}`, stepId: s.id, tog: true, lead: `<span class="lico">${ico(s.kind)}</span>`, cls: "tr" });
     }).join("");
     return `<div class="group">${groupHead(title, done, items.length)}<div class="cols two">${rows}</div></div>`;
   }).join("") || emptyMsg("goal");
@@ -121,7 +124,7 @@ function drawGoals() {
   const counters = COUNTERS.map((c) => `<div class="counter" data-counter="${c.id}">
 <div class="c-head"><b>${c.name}</b><span class="lvl" aria-live="polite"></span></div>
 <div class="c-ctl"><button type="button" class="btn dec" aria-label="One fewer ${c.name}">−</button><input type="number" inputmode="numeric" min="0" max="${c.max}" enterkeyhint="done" aria-label="${c.name} collected, out of ${c.max}"><span class="of">/ ${c.max}</span><button type="button" class="btn inc" aria-label="One more ${c.name}">+</button></div>
-<p class="note">${c.note} Ticking one on the map adds 1 here.</p><button type="button" class="maplink" data-mapcat="${c.id === "sf" ? 11317 : 11316}">Show on map</button></div>`).join("");
+<p class="note">${c.note} Ticking one on the map adds its quantity here (a pile marked x2 adds 2).</p><button type="button" class="maplink" data-mapcat="${c.id === "sf" ? 11317 : 11316}">Show on map</button></div>`).join("");
   box.innerHTML = `${sc === "both" ? '<h2 class="view-h sub">Shadow of the Erdtree</h2>' : ""}<div class="group counters" id="counters"><h3><span>Blessings</span></h3>${counters}</div><div id="goalGroups">${groups}</div>`;
   renderCounters();
 }
@@ -129,13 +132,14 @@ function drawGoals() {
 export function renderCollect() { keepFocus(drawCollect); }
 
 function drawCollect() {
+  $("colNote").textContent = `Four ${trophiesWord().toLowerCase()} need a full set: Legendary Armaments (9), Ashen Remains (6), Sorceries and Incantations (7) and Talismans (8). Nothing else in the game has to be collected.`;
   $("colList").innerHTML = Object.entries(COLLECTIONS).map(([key, [title, items]]) => {
     const done = items.filter(([id]) => store.isDone(byCollectible[id].id)).length;
     const rows = items.map(([id, name]) => {
       const s = byCollectible[id];
       return row({
         done: store.isDone(s.id), name,
-        sub: `${PHASES[s.pi].n} · <a class="jump" href="${wikiUrl(name)}" target="_blank" rel="noopener">Wiki ↗</a>`,
+        sub: `${PHASES[s.pi].n}&nbsp;· <a class="jump" href="${wikiUrl(name)}" target="_blank" rel="noopener">Wiki ↗</a>`,
         stepId: s.id, tog: true, lead: `<span class="lico">${ico(COLLECTION_ICON[key])}</span>`,
       });
     }).join("");
@@ -144,14 +148,25 @@ function drawCollect() {
 }
 
 export function initLists() {
-  const handle = (e) => {
+  // the heading follows the DLC segment of the phone switch and the screen width
+  on("shown", (id) => { if (id === "tro") renderTrophies(); });
+  matchMedia("(max-width: 979.98px)").addEventListener("change", () => { if (!$("v-tro").hidden) renderTrophies(); });
+  // a tap on the text of a row or step on a touch screen does not tick it: pulse the box that does
+  document.addEventListener("click", (e) => {
+    if (!matchMedia("(pointer: coarse)").matches || e.target.closest(".check, a, button, .moresheet, .counter")) return;
+    const box = e.target.closest(".step[data-id]:not(.tip), .row[data-tog]");
+    const c = box && box.querySelector("button.check");
+    if (!c) return;
+    c.classList.remove("hint"); void c.offsetWidth; c.classList.add("hint");
+    setTimeout(() => c.classList.remove("hint"), 1300);
+  });  const handle = (e) => {
     if (e.target.closest("a")) return;
     const all = e.target.closest(".empty [data-v]");
     if (all) { setFilter(all.dataset.v); return; }
     const j = e.target.closest("[data-jump]");
     if (j) { e.stopPropagation(); emit("jump", j.dataset.jump); return; }
     const r = e.target.closest("[data-tog]");
-    if (r) toggle(r.dataset.tog);
+    if (r && (!matchMedia("(pointer: coarse)").matches || e.target.closest(".check"))) toggle(r.dataset.tog);
   };
   const setFilter = (v) => {
     filter = v;
@@ -160,7 +175,11 @@ export function initLists() {
   };
   const step = (el, d) => store.setCounter(el.dataset.counter, store.counter(el.dataset.counter) + d);
   let hold = null, held = false;
-  const stop = () => { clearTimeout(hold); clearInterval(hold); hold = null; };
+  const stop = () => {
+    clearTimeout(hold); clearInterval(hold); hold = null;
+    // a release outside the button gives no click, so forget the hold shortly after (a release on it clicks first)
+    if (held) setTimeout(() => { held = false; }, 60);
+  };
   $("dlcGoals").addEventListener("pointerdown", (e) => {
     const b = e.target.closest(".inc, .dec");
     if (!b || e.button || b.disabled) return;
@@ -171,6 +190,7 @@ export function initLists() {
   });
   ["pointerup", "pointercancel", "pointerleave"].forEach((t) => $("dlcGoals").addEventListener(t, stop));
   document.addEventListener("pointerup", stop);
+  document.addEventListener("pointercancel", stop);
   $("dlcGoals").addEventListener("contextmenu", (e) => { if (e.target.closest(".inc, .dec")) e.preventDefault(); });
   $("troList").addEventListener("click", handle);
   $("dlcGoals").addEventListener("click", (e) => {

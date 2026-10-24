@@ -1,14 +1,17 @@
 import * as store from "../lib/store.js";
 import { $, $$, emit, on } from "../lib/dom.js";
-import { PHASES, steps, tickSteps, scopedSteps, inScope, phaseLabel, stepById, currentPhase, phaseCounts, collectibleName, collectibleGroup, trophyName, wikiUrl, goalList } from "../lib/model.js";
+import { PHASES, steps, tickSteps, scopedSteps, inScope, phaseLabel, stepById, currentPhase, phaseCounts, collectibleName, collectibleGroup, trophyName, trophyDone, goalDone, wikiUrl, goalList } from "../lib/model.js";
 import { ico, tickSVG, COLLECTION_ICON } from "../lib/icons.js";
 import { BOSS_TERMS } from "../data/links.js";
 import { STEP_LOCS } from "../data/map-guide.js";
 import { AREAS, DLC_AREAS } from "../data/map.js";
 import { trophyWord } from "../lib/labels.js";
+import { showToast } from "./toast.js";
 
-let programmatic = false;
+let userToggle = null; // the phase whose summary the player just pressed (only those changes are remembered)
 let query = "";
+let trailOpen = false; // the folded run of finished phases is expanded
+const FOLD_AFTER = 3; // up to this many finished phases stay as their own green rows; a longer run folds into one row
 
 const smooth = () => (matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth");
 const goalName = Object.fromEntries(goalList.map(([k, n]) => [k, n]));
@@ -37,16 +40,33 @@ function links(s) {
   return wiki || map ? `<div class="links">${wiki}${map}</div>` : "";
 }
 
+// One muted line for phones, built from the same data as the chips.
+function metaLine(s) {
+  const k = { boss: "Boss", quest: "Quest", map: "Map fragment", key: "Key item" }[s.kind];
+  const m = [];
+  if (k) m.push(k);
+  if (s.opts.c) m.push(`Legendary: ${collectibleName[s.opts.c]}`);
+  if (s.opts.g) m.push(`DLC goal: ${goalName[s.opts.g]}`);
+  if (s.opts.tr) m.push(`${trophyWord()}: ${trophyName[s.opts.tr]}`);
+  return m.length ? `<p class="meta">${m.join("&nbsp;· ")}</p>` : "";
+}
+
+const MORE_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg>';
+
 function stepHTML(s) {
   if (s.kind === "tip") return `<li class="step tip" data-text="${attr(s.text)}"><span class="tipmark" aria-hidden="true">✦</span><div class="txt"><p>${s.text}</p></div></li>`;
   const done = store.isDone(s.id);
-  return `<li class="step ${s.kind === "warn" ? "warn" : ""} ${done ? "checked" : ""}" data-id="${s.id}" id="s-${s.id}" data-text="${attr(s.text)}">
-<button type="button" class="check" aria-label="${plain(s.text)}" aria-pressed="${done}">${tickSVG}</button>
+  const lk = links(s).replace('<div class="links">', `<div class="links" id="l-${s.id}">`);
+  return `<li class="step ${s.kind === "warn" ? "warn" : ""} ${done ? "checked" : ""}" data-kind="${s.kind}" data-id="${s.id}" id="s-${s.id}" data-text="${attr(s.text + " " + chipNames(s))}">
+<button type="button" class="check" aria-label="Done: ${short(plain(s.text))}" aria-pressed="${done}">${tickSVG}</button>
 <span class="ico" aria-hidden="true">${ico(stepIcon(s))}</span>
-<div class="txt"><p>${s.text}</p>${chips(s)}${links(s)}</div></li>`;
+<div class="txt"><p>${s.text}</p>${chips(s)}${metaLine(s)}${lk}</div>${lk ? `<button type="button" class="more" data-more aria-expanded="false" aria-controls="l-${s.id}" aria-label="More for this step: wiki and map">${MORE_SVG}</button>` : ""}</li>`;
 }
 
+// A long step would be read twice (as the button name, then as the paragraph), so the button carries the start of it.
+const short = (t) => (t.length > 60 ? t.slice(0, 59).replace(/\s+\S*$/, "") + "…" : t);
 const plain = (t) => t.replace(/<[^>]+>/g, "").replace(/"/g, "&quot;");
+const chipNames = (s) => [s.opts.c && collectibleName[s.opts.c], s.opts.g && goalName[s.opts.g], s.opts.tr && trophyName[s.opts.tr]].filter(Boolean).join(" ");
 const attr = (t) => plain(t).toLowerCase();
 
 function phaseHTML(p, pi, openId) {
@@ -60,9 +80,11 @@ ${area}<ol class="steps">${items}</ol></details>`;
 }
 
 export function renderRoute() {
-  $("phases").innerHTML = PHASES.map((p, pi) => (inScope(pi) ? phaseHTML(p, pi, currentPhase()) : "")).join("");
+  $("phases").innerHTML = '<div class="trail" id="trail" hidden></div><div class="missable" id="missable" hidden></div>' + PHASES.map((p, pi) => (inScope(pi) ? phaseHTML(p, pi, currentPhase()) : "")).join("");
+  $("jumpPhase").innerHTML = '<option value="">Jump to…</option>' + PHASES.map((p, pi) => (inScope(pi) ? `<option value="${p.id}">${phaseLabel(pi)} · ${p.n}</option>` : "")).join("");
   applyView();
   updateRoute();
+  setQuery($("q").value); // the search box keeps its text across a re-render, so the filter has to follow
   foldLabel();
 }
 
@@ -71,6 +93,7 @@ export function applyView() {
   box.classList.toggle("hide-done", store.setting("hide"));
   box.classList.toggle("no-tips", !store.setting("tips"));
   box.classList.toggle("compact", store.setting("compact"));
+  $("compactBtn").setAttribute("aria-pressed", String(store.setting("compact")));
   $("hideBtn").setAttribute("aria-pressed", String(store.setting("hide")));
   $("hideBtn").textContent = store.setting("hide") ? "Show done" : "Hide done";
 }
@@ -84,6 +107,11 @@ export function updateRoute() {
     li.classList.toggle("checked", done);
     li.querySelector(".check").setAttribute("aria-pressed", String(done));
   });
+  const now = scopedSteps().find((s) => !store.isDone(s.id));
+  $$(".step.cur").forEach((li) => li.classList.remove("cur"));
+  const nowLi = now && $("s-" + now.id);
+  if (nowLi) nowLi.classList.add("cur");
+  const fold = pastRun(cur).length > FOLD_AFTER && !trailOpen;
   PHASES.forEach((p, pi) => {
     const [d, t] = phaseCounts(pi);
     const el = $("p-" + p.id);
@@ -93,32 +121,109 @@ export function updateRoute() {
     el.querySelector(".ph-bar i").style.width = (t ? (d / t) * 100 : 0) + "%";
     el.classList.toggle("done", t > 0 && d === t);
     const all = el.querySelector("[data-phaseall]");
-    if (all) { all.hidden = !t; all.textContent = d === t ? "Mark phase not done" : "Mark phase done"; all.setAttribute("aria-pressed", String(d === t)); }
+    if (all) { all.hidden = !t; all.textContent = d === t ? "Clear this phase" : "Mark phase done"; all.setAttribute("aria-pressed", String(d === t)); }
     el.classList.toggle("current", pi === cur);
+    // The road: finished phases are green stops (a long run folds into one row), phases after the current one are quiet stops.
+    const past = cur < 0 || pi < cur;
+    el.classList.toggle("past", past);
+    el.classList.toggle("ahead", !past && pi > cur);
+    el.classList.toggle("folded", past && fold);
   });
   renderNext();
+  renderTrail(cur);
 }
 
+const pastRun = (cur) => PHASES.map((p, pi) => pi).filter((pi) => inScope(pi) && (cur < 0 || pi < cur));
+const CHECK_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
+
+// One row for a long run of finished phases at the top, and one line pointing at the next "Don't miss" step once it is close.
+function renderTrail(cur) {
+  const t = $("phases").querySelector(".trail");
+  const m = $("phases").querySelector(".missable");
+  if (!t || !m) return;
+  const run = pastRun(cur);
+  t.hidden = run.length <= FOLD_AFTER;
+  if (!t.hidden) {
+    const set = new Set(run);
+    const n = tickSteps.filter((s) => set.has(s.pi)).length;
+    const first = phaseLabel(run[0]);
+    const label = run.length === 1 ? `Phase ${first} done` : `Phases ${first} to ${phaseLabel(run[run.length - 1])} done`;
+    const sig = run.length + ":" + first + ":" + n;
+    if (t.dataset.sig !== sig) {
+      t.dataset.sig = sig;
+      t.innerHTML = `<button type="button" class="trail-btn" aria-expanded="false" aria-controls="phases"><span class="num">${CHECK_SVG}</span><span class="ph-title"><b class="ph-t">${label}</b><small>${n} ${n === 1 ? "step" : "steps"}</small><span class="ph-bar"><i></i></span></span><span class="count trail-verb"></span><svg class="chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 10l5 5 5-5"/></svg></button>`;
+    }
+    t.querySelector(".trail-btn").setAttribute("aria-expanded", String(trailOpen));
+    t.querySelector(".trail-verb").textContent = trailOpen ? "Hide" : "Show";
+  }
+  // Only when the player is within one phase of the missable (the phase before it or the phase itself), and until it is ticked.
+  const next = scopedSteps().find((s) => s.kind === "warn" && !store.isDone(s.id));
+  const before = next ? PHASES.map((p, pi) => pi).filter((pi) => inScope(pi) && pi < next.pi).pop() : undefined;
+  const w = next && (before === undefined || cur < 0 || cur >= before) ? next : null;
+  m.hidden = !w;
+  if (w) m.innerHTML = `<button type="button" class="missable-btn" data-missable="${w.id}"><b>Next missable:</b> Phase ${phaseLabel(w.pi)} · ${shortText(w.text)}</button>`;
+}
+
+// First sentence of a step, cut to a line or two for the "Next missable" row.
+function shortText(t) {
+  const p = plain(t);
+  const first = (p.match(/^.*?[.!?](?=\s|$)/) || [p])[0];
+  const cut = first.length > 100 ? first.slice(0, 100).replace(/\s+\S*$/, "") + "…" : first;
+  return cut;
+}
+
+function unfold(ph) {
+  if (!ph || !ph.classList.contains("folded")) return;
+  trailOpen = true;
+  updateRoute();
+}
+
+// The Up next card is updated in place, so the button keyboard focus is on survives a tick. Its handlers are
+// delegated from initRoute.
 function renderNext() {
   const n = scopedSteps().find((s) => !store.isDone(s.id));
   const el = $("next");
+  const hadFocus = el.contains(document.activeElement) && document.activeElement !== el;
   if (!n) {
-    el.innerHTML = '<div class="eyebrow">Complete</div><div class="where">Every step is done</div><p>Nothing left to do in this route. Untick a step if you need to revisit it.</p>';
+    delete el.dataset.step;
+    el.innerHTML = '<div class="where">Every step is done</div><p>Nothing left to do in this route. Untick a step if you need to revisit it.</p><p class="ticked" id="nextTicked" role="status"></p>';
+    if (hadFocus) { el.tabIndex = -1; el.focus({ preventScroll: true }); }
     return;
   }
-  el.innerHTML = `<div class="eyebrow">Up next · Phase ${phaseLabel(n.pi)}</div><div class="where">${PHASES[n.pi].n}</div><p>${n.text}</p>
-<div class="acts"><button type="button" class="btn primary" id="nextDone">Mark done</button><button type="button" class="btn" id="nextShow">Show in route</button></div>`;
-  $("nextDone").onclick = () => toggle(n.id);
-  $("nextShow").onclick = () => jump(n.id);
+  if (!$("nextDone")) {
+    el.innerHTML = `<div class="where"></div><p class="next-text"></p>
+<div class="acts"><button type="button" class="btn primary" id="nextDone">Mark done</button><button type="button" class="btn" id="nextShow">Show in route</button></div><p class="ticked" id="nextTicked" role="status"></p>`;
+  }
+  el.dataset.step = n.id;
+  el.querySelector(".where").innerHTML = `Up next: ${PHASES[n.pi].n}<small>Phase ${phaseLabel(n.pi)}</small>`;
+  el.querySelector(".next-text").innerHTML = n.text;
+}
+
+let tickedTimer = 0;
+function clearTicked() {
+  clearTimeout(tickedTimer);
+  const t = $("nextTicked");
+  if (t) t.textContent = "";
+}
+
+// "Ticked: ... Undo" inside the Up next card for about 8 seconds, so a mistaken tap on a phone can be taken back right there.
+function showTicked(id, undo) {
+  const t = $("nextTicked");
+  const s = stepById.get(id);
+  if (!t || !s) return;
+  clearTimeout(tickedTimer);
+  t.textContent = "";
+  const b = Object.assign(document.createElement("button"), { type: "button", className: "ticked-undo", textContent: "Undo" });
+  b.addEventListener("click", () => { clearTicked(); undo(); $("nextDone")?.focus({ preventScroll: true }); });
+  t.append(`Ticked: ${short(plain(s.text).replace(/&quot;/g, '"'))} `, b);
+  tickedTimer = setTimeout(clearTicked, 8000);
 }
 
 export function ensureCurrentOpen() {
   const cur = currentPhase();
   if (!store.setting("autoopen") || query || cur < 0) return;
-  programmatic = true;
   const el = $("p-" + PHASES[cur].id);
   if (el) el.open = true;
-  programmatic = false;
 }
 
 // Tick or untick every step of a phase. A phase that is fully done is unticked, otherwise it is completed.
@@ -127,30 +232,60 @@ export function togglePhase(pid) {
   const ids = tickSteps.filter((s) => s.pi === pi).map((s) => s.id);
   if (!ids.length) return;
   const before = currentPhase();
-  store.setDoneMany(ids, !ids.every((id) => store.isDone(id)));
+  const prev = ids.map((id) => store.isDone(id));
+  const value = !prev.every(Boolean);
+  store.setDoneMany(ids, value);
+  const changed = prev.filter((d) => d !== value).length;
   const after = currentPhase();
-  if (store.setting("autoopen") && after !== before && after >= 0 && !query) {
-    programmatic = true;
-    const b = PHASES[before] && $("p-" + PHASES[before].id);
-    const a = $("p-" + PHASES[after].id);
-    if (b) b.open = false;
-    if (a) a.open = true;
-    programmatic = false;
-  }
+  showToast(`${value ? "Ticked" : "Cleared"} ${changed} step${changed === 1 ? "" : "s"} in ${PHASES[pi].n}`, () => {
+    store.setDoneMany(ids.filter((_, i) => prev[i]), true);
+    store.setDoneMany(ids.filter((_, i) => !prev[i]), false);
+    // Auto-open moved on to the next phase when this one was completed: Undo brings the previous phase back
+    if (currentPhase() === before) moveOpen(after, before);
+  });
+  moveOpen(before, after);
+  if (!$("toast").hidden) $("toastUndo").focus({ preventScroll: true }); // keyboard focus lands on Undo instead of the top of the page
 }
 
+// Auto-open follows the current phase: close the one that was current and open the new one (and the same in reverse on Undo).
+function moveOpen(from, to) {
+  if (!store.setting("autoopen") || from === to || to < 0 || query) return;
+  const f = PHASES[from] && $("p-" + PHASES[from].id);
+  const t = $("p-" + PHASES[to].id);
+  if (f) f.open = false;
+  if (t) t.open = true;
+}
+
+// What else a tick completed (a trophy, a legendary item, a DLC goal), so the cross-linking is visible when it happens.
+function alsoTicked(step) {
+  const o = step.opts, out = [];
+  if (o.tr && trophyDone(o.tr)) out.push(`${trophyWord().toLowerCase()} ${trophyName[o.tr]}`);
+  if (o.c && collectibleName[o.c]) out.push(collectibleName[o.c]);
+  const goal = o.g && goalDone(o.g) ? goalList.find((g) => g[0] === o.g) : null;
+  if (goal) out.push(`goal ${goal[1]}`);
+  return out;
+}
+
+let lastUndo = null;
+let lastTick = null; // { fn, t }: what Ctrl/Cmd+Z undoes, for a few seconds and only on the Route tab
+export const clearLastTick = () => { lastTick = null; };
+const LAST_TICK_MS = 10000;
+
 export function toggle(id) {
+  clearTicked();
   const before = currentPhase();
-  store.setDone(id, !store.isDone(id));
+  const prev = store.isDone(id);
+  store.setDone(id, !prev);
+  const step = stepById.get(id);
   const after = currentPhase();
-  if (store.setting("autoopen") && after !== before && after >= 0 && !query) {
-    programmatic = true;
-    const b = PHASES[before] && $("p-" + PHASES[before].id);
-    const a = $("p-" + PHASES[after].id);
-    if (b) b.open = false;
-    if (a) a.open = true;
-    programmatic = false;
-  }
+  // No message for a single tick (one tap reverses it); Ctrl/Cmd+Z undoes the last one. A step that also earned a
+  // trophy, legendary item or goal gets a brief outline instead of a notice.
+  const undo = () => { store.setDone(id, prev); if (currentPhase() === before) moveOpen(after, before); };
+  lastTick = { fn: undo, t: Date.now() };
+  lastUndo = undo;
+  const li = step && !prev && alsoTicked(step).length ? document.getElementById("s-" + id) : null;
+  if (li) { li.classList.add("earned"); setTimeout(() => li.classList.remove("earned"), 1400); }
+  moveOpen(before, after);
 }
 
 export function jump(id) {
@@ -159,10 +294,9 @@ export function jump(id) {
   if (!s) return;
   if (query) { $("q").value = ""; setQuery(""); }
   if (store.setting("hide") && store.isDone(id)) store.setSetting("hide", false);
-  programmatic = true;
   const ph = $("p-" + PHASES[s.pi].id);
   if (ph) ph.open = true;
-  programmatic = false;
+  unfold(ph);
   requestAnimationFrame(() => {
     const li = $("s-" + id);
     if (!li) return;
@@ -176,9 +310,8 @@ function focusPhase(pid) {
   emit("tab", "route");
   const d = $("p-" + pid);
   if (!d) return;
-  programmatic = true;
   d.open = true;
-  programmatic = false;
+  unfold(d);
   requestAnimationFrame(() => d.scrollIntoView({ behavior: smooth(), block: "start" }));
 }
 
@@ -193,9 +326,10 @@ function setQuery(q) {
       if (hit) hits++;
     });
     d.classList.toggle("nomatch", hits === 0);
-    if (query && hits) { programmatic = true; d.open = true; programmatic = false; }
+    if (query && hits) d.open = true;
     if (hits) any = true;
   });
+  $("phases").classList.toggle("searching", Boolean(query));
   $("noResults").hidden = any || !query;
   $("qClear").hidden = !query;
   const n = $$(".step[data-id]:not(.nomatch)").length;
@@ -205,13 +339,26 @@ function setQuery(q) {
 }
 
 function foldLabel() {
-  $("foldBtn").textContent = $$("details.phase").some((d) => d.open) ? "Collapse all" : "Expand all";
+  $("foldBtn").textContent = $$("details.phase:not(.folded)").some((d) => d.open) ? "Collapse all" : "Expand all";
 }
 
 export function initRoute() {
   const box = $("phases");
   box.addEventListener("click", (e) => {
+    const sm = e.target.closest("summary");
+    if (sm) userToggle = sm.parentElement.dataset.pid;
     if (e.target.closest("a")) return;
+    const mo = e.target.closest("[data-more]");
+    if (mo) {
+      const li = mo.closest(".step");
+      const open = !li.classList.contains("open");
+      li.classList.toggle("open", open);
+      mo.setAttribute("aria-expanded", String(open));
+      return;
+    }
+    if (e.target.closest(".trail-btn")) { trailOpen = !trailOpen; updateRoute(); foldLabel(); return; }
+    const mb = e.target.closest("[data-missable]");
+    if (mb) { jump(mb.dataset.missable); return; }
     const pa = e.target.closest("[data-phaseall]");
     if (pa) { togglePhase(pa.dataset.phaseall); return; }
     const mp = e.target.closest("[data-mapphase]");
@@ -219,22 +366,50 @@ export function initRoute() {
     const loc = e.target.closest("[data-locate]");
     if (loc) { emit("locate", loc.dataset.locate); return; }
     const li = e.target.closest(".step[data-id]");
-    if (li) toggle(li.dataset.id);
+    // on a touch screen only the tick box ticks, so a scroll flick or a stray tap on the text cannot
+    if (li && (!matchMedia("(pointer: coarse)").matches || e.target.closest(".check"))) toggle(li.dataset.id);
   });
   box.addEventListener("toggle", (e) => {
     if (!e.target.matches("details.phase")) return;
     foldLabel();
-    if (programmatic) return;
-    if (!store.setting("autoopen")) store.setClosed(e.target.dataset.pid, !e.target.open);
+    // only a press on the summary is the player's choice; opens made by search, Jump or Expand all are not remembered
+    const mine = userToggle === e.target.dataset.pid;
+    userToggle = null;
+    if (mine && !store.setting("autoopen")) store.setClosed(e.target.dataset.pid, !e.target.open);
   }, true);
+  $("next").addEventListener("click", (e) => {
+    const id = $("next").dataset.step;
+    if (!id) return;
+    if (e.target.closest("#nextDone")) { toggle(id); showTicked(id, lastUndo); }
+    else if (e.target.closest("#nextShow")) jump(id);
+  });
+  on("shown", () => { lastTick = null; });
   $("q").addEventListener("input", (e) => setQuery(e.target.value));
+  document.addEventListener("keydown", (e) => {
+    if (!(e.ctrlKey || e.metaKey) || e.shiftKey || e.key.toLowerCase() !== "z" || !lastTick || !$("toast").hidden) return;
+    if (Date.now() - lastTick.t > LAST_TICK_MS || $("v-route").hidden) { lastTick = null; return; }
+    if (/^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement?.tagName || "")) return;
+    e.preventDefault();
+    const fn = lastTick.fn;
+    lastTick = null;
+    clearTicked();
+    fn();
+  });
+  $("jumpPhase").addEventListener("change", (e) => {
+    const el = $("p-" + e.target.value);
+    e.target.value = "";
+    if (!el) return;
+    if (query) { $("q").value = ""; setQuery(""); }
+    el.open = true;
+    el.scrollIntoView({ block: "start", behavior: "auto" });
+    el.querySelector("summary").focus({ preventScroll: true });
+  });
+  $("compactBtn").addEventListener("click", () => store.setSetting("compact", !store.setting("compact")));
   $("hideBtn").addEventListener("click", () => store.setSetting("hide", !store.setting("hide")));
   $("foldBtn").addEventListener("click", () => {
-    const ds = $$("details.phase");
+    const ds = $$("details.phase:not(.folded)");
     const anyOpen = ds.some((d) => d.open);
-    programmatic = true;
     ds.forEach((d) => { d.open = !anyOpen; });
-    programmatic = false;
     foldLabel();
   });
   $("q").addEventListener("keydown", (e) => { if (e.key === "Escape" && $("q").value) { $("q").value = ""; setQuery(""); } });

@@ -25,5 +25,17 @@ export function renderRail() {
   $("ring").setAttribute("aria-label", `Overall progress: ${done} of ${total} steps, ${Math.round(frac * 100)}%`);
   $("ringVal").style.strokeDashoffset = 276.46 * (1 - frac);
   $("lblTro").textContent = trophiesWord();
+  $("welcomeTr").textContent = trophiesWord().toLowerCase().replace(/s$/, "");
+  $("heroSum").setAttribute("aria-label", `Overall progress: ${done} of ${total} steps. Show or hide the breakdown`);
+  $("heroSumText").textContent = done === 0 ? `Nothing ticked yet · ${total} steps` : `${done}/${total} steps · ${sc === "dlc" ? `${c.goals[0]}/${c.goals[1]} goals` : `${c.trophies[0]}/${c.trophies[1]} ${trophiesWord().toLowerCase()}`}`;
   $("rail-sub").textContent = sc === "dlc" ? "Shadow of the Erdtree route" : sc === "both" ? "Elden Ring and Shadow of the Erdtree" : "Elden Ring 100% route";
+}
+
+// On a phone the progress card is one line; this opens the per-category bars.
+export function initRail() {
+  $("heroSum").addEventListener("click", () => {
+    const open = !document.querySelector(".hero").classList.contains("open");
+    document.querySelector(".hero").classList.toggle("open", open);
+    $("heroSum").setAttribute("aria-expanded", String(open));
+  });
 }

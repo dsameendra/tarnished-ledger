@@ -2,6 +2,7 @@ import * as store from "../lib/store.js";
 import * as sync from "../lib/sync.js";
 import { $, $$, emit, on } from "../lib/dom.js";
 import { currentTab } from "./nav.js";
+import { clearLastTick } from "./route.js";
 import { validIds } from "../lib/model.js";
 import { SOURCES } from "../data/links.js";
 
@@ -43,7 +44,7 @@ export function paintStorage() {
 
 export function paintWake(state) {
   const pill = $("wakePill");
-  pill.hidden = state === "off" && !store.setting("awake");
+  pill.hidden = !(store.setting("awake") && (state === "blocked" || state === "unsupported"));
   pill.classList.toggle("on", state === "on");
   const text = { on: "Screen stays on", off: "Screen may dim", unsupported: "Keep-awake unsupported", blocked: "Keep-awake blocked" }[state];
   pill.querySelector("span").textContent = text;
@@ -105,19 +106,64 @@ export function refreshBackup() {
 
 let pending = null;
 
+const plural = (n, w) => `${n} ${w}${n === 1 ? "" : "s"}`;
+
 function restore(text, kind) {
-  try { say(`Restored ${store.importData(text, validIds)} done steps from the ${kind}.`); if (kind === "code") $("importBox").value = ""; refreshBackup(); }
-  catch { say(kind === "file" ? "That file is not a Ledger backup." : "That code was not recognised.", true); }
+  let n;
+  try { store.previewImport(text, validIds); } catch { say(kind === "file" ? "That file is not a Ledger backup." : "That code was not recognised.", true); return; }
+  try {
+    n = store.importData(text, validIds);
+  } catch (e) {
+    console.error("restore failed", e);
+    say("Restoring failed part-way. Use Undo last reset or restore below to bring back what you had.", true);
+    refreshBackup();
+    paintRecovery();
+    return;
+  }
+  clearLastTick();
+  say(`Restored ${plural(n, "done step")} from the ${kind}.`);
+  if (kind === "code") $("importBox").value = "";
+  refreshBackup();
+  paintRecovery();
 }
 
+// Read the pasted code or chosen file first, so the question can say what it holds.
 function askRestore(text, kind) {
-  const n = store.doneIds().length;
-  if (!n) return restore(text, kind);
+  let p;
+  try { p = store.previewImport(text, validIds); } catch { say(kind === "file" ? "That file is not a Ledger backup." : "That code was not recognised.", true); return; }
+  const have = store.progressInfo();
+  if (!have.any) return restore(text, kind);
   pending = { text, kind };
   say("");
-  $("restoreText").textContent = `Restoring replaces the ${n} done step${n === 1 ? "" : "s"} on this device with the ${kind}'s progress${sync.isConnected() ? " and syncs to your other devices" : ""}.`;
+  const mine = [plural(have.steps, "done step"), have.found ? plural(have.found, "found map marker") : "", have.counters ? plural(have.counters, "blessing counter") + " you set" : ""].filter(Boolean);
+  const lost = p.found === null ? "Found map markers and blessing counters stay as they are." : "Found map markers and blessing counters are replaced too.";
+  $("restoreText").textContent = `This ${kind} has ${plural(p.steps, "done step")}; you have ${mine.join(", ")}. Restoring replaces your done steps. ${lost}${sync.isConnected() ? " It syncs to your other devices." : ""} You can undo it afterwards from Settings.`;
   $("restoreConfirm").hidden = false;
   $("restoreNo").focus();
+}
+
+// "Undo last reset or restore" and the notice for a save that could not be read.
+export function paintRecovery() {
+  const b = store.beforeInfo();
+  $("undoRow").hidden = !b;
+  $("undoHint").hidden = !b;
+  if (b) $("undoHint").textContent = `Brings back ${plural(b.steps, "done step")}${b.found ? ` and ${plural(b.found, "found map marker")}` : ""} from before the ${b.reason} on ${new Date(b.at).toLocaleString()}.`;
+  const bad = Boolean(store.corruptCopy());
+  $("corruptNote").hidden = !bad;
+  let near = document.getElementById("nextCorrupt");
+  if (bad && !near) {
+    near = $("corruptNote").cloneNode(true);
+    near.id = "nextCorrupt";
+    near.hidden = false;
+    near.style.marginBottom = "10px";
+    $("next").before(near);
+  }
+  if (!bad && near) near.remove();
+}
+
+function downloadCorrupt() {
+  const raw = store.corruptCopy();
+  if (raw) download(`tarnished-ledger-unreadable-${new Date().toISOString().slice(0, 10)}.txt`, raw);
 }
 
 const WELCOME = "tarnished-ledger:welcome";
@@ -134,15 +180,24 @@ function dismissWelcome() {
 
 function tabPanels() {
   const tabs = () => $$("#tabs button");
+  const phone = matchMedia("(max-width: 979.98px)");
+  // on phones the Checklists / More aliases label the panels they stand for; elsewhere each view has its own tab
+  const owner = (view) => {
+    const own = tabs().find((b) => b.dataset.tab === view);
+    const alias = phone.matches && tabs().find((b) => (b.dataset.views || "").split(" ").includes(view));
+    return alias || own;
+  };
   const wire = () => {
-    tabs().forEach((b) => {
-      b.id = "tab-" + b.dataset.tab;
-      const panel = $("v-" + b.dataset.tab);
+    tabs().forEach((b) => { b.id = "tab-" + b.dataset.tab; });
+    ["route", "tro", "col", "map", "guide", "set"].forEach((view) => {
+      const b = owner(view);
+      const panel = $("v-" + view);
       panel.setAttribute("role", "tabpanel");
-      panel.setAttribute("aria-labelledby", b.id);
+      if (b) panel.setAttribute("aria-labelledby", b.id); else panel.removeAttribute("aria-labelledby");
     });
   };
   new MutationObserver(wire).observe($("tabs"), { childList: true, subtree: true, attributeFilter: ["aria-selected"] });
+  phone.addEventListener("change", wire);
   wire();
 }
 
@@ -204,14 +259,26 @@ export function initSettings() {
     try { await navigator.clipboard.writeText(code()); say("Code copied."); } catch { $("exportBox").select(); say("Select the code and copy it by hand.", true); }
   });
   $("importBtn").addEventListener("click", () => askRestore($("importBox").value, "code"));
-  $("restoreYes").addEventListener("click", () => { $("restoreConfirm").hidden = true; restore(pending.text, pending.kind); });
+  $("restoreYes").addEventListener("click", () => { $("restoreConfirm").hidden = true; restore(pending.text, pending.kind); paintRecovery(); });
+  $("undoLast").addEventListener("click", () => {
+    const r = store.undoLast();
+    clearLastTick();
+    paintRecovery();
+    refreshBackup();
+    say(r ? `Undone: ${plural(r.steps, "done step")} back from before the ${r.reason}.` : "Nothing to undo.", !r);
+  });
+  document.addEventListener("click", (e) => {
+    if (e.target.closest("[data-corrupt-download]")) downloadCorrupt();
+    if (e.target.closest("[data-corrupt-dismiss]")) { store.dismissCorrupt(); paintRecovery(); }
+  });
   $("restoreNo").addEventListener("click", () => { $("restoreConfirm").hidden = true; say("Restore cancelled. Nothing changed."); });
 
   $("resetBtn").addEventListener("click", () => {
-    const n = store.doneIds().length;
-    if (!n) { $("resetMsg").textContent = "Nothing to clear yet."; return; }
+    const have = store.progressInfo();
+    if (!have.any) { $("resetMsg").textContent = "Nothing to clear yet."; return; }
     $("resetMsg").textContent = "";
-    $("resetText").textContent = `Clear ${n} done step${n === 1 ? "" : "s"} on this device? This cannot be undone${sync.isConnected() ? " and will sync to your other devices" : ""}.`;
+    const what = [plural(have.steps, "done step"), have.found ? plural(have.found, "found map marker") : "", have.counters ? plural(have.counters, "blessing counter") + " you set" : ""].filter(Boolean).join(", ");
+    $("resetText").textContent = `Clear ${what} on this device?${sync.isConnected() ? " This syncs to your other devices. If it is a mistake, Undo in Backup and restore brings it back, and your gist's Revisions on GitHub keep older versions for a while." : " You can undo it afterwards from Backup and restore."}`;
     $("resetBtn").hidden = true;
     $("resetConfirm").hidden = false;
     $("resetNo").focus();
@@ -221,13 +288,16 @@ export function initSettings() {
   $("resetConfirm").addEventListener("keydown", (e) => { if (e.key === "Escape") closeReset(); });
   $("resetYes").addEventListener("click", () => {
     store.resetProgress([...validIds]);
+    clearLastTick();
     closeReset();
-    $("resetMsg").textContent = "Progress cleared.";
+    $("resetMsg").textContent = "Progress cleared. Undo last reset or restore is in Backup and restore.";
     refreshBackup();
+    paintRecovery();
   });
 
   $("sources").innerHTML = SOURCES.map(([n, u]) => `<li><a href="${u}" target="_blank" rel="noopener">${n} ↗</a></li>`).join("");
   paintSettings();
   paintStorage();
   refreshBackup();
+  paintRecovery();
 }

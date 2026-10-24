@@ -46,7 +46,7 @@ Shadow of the Erdtree can be switched on in Settings. The DLC has no trophies, s
     <td width="50%"><img src="docs/screenshots/goals-phone-light.webp" alt="Shadow of the Erdtree goals and blessing counters on a phone, light theme"></td>
   </tr>
   <tr>
-    <td align="center"><sub>Route: finished, half-done and untouched phases at a glance</sub></td>
+    <td align="center"><sub>Route on a phone: finished phases fold into one row, the current phase leads</sub></td>
     <td align="center"><sub>Shadow of the Erdtree goals and counters</sub></td>
   </tr>
 </table>
@@ -146,7 +146,7 @@ Corrections to the route are very welcome. Open an issue with the step, what is 
 
 ## Credits
 
-The base-game route follows the community [Elden Ring 100% Achievement Guide by ponkberry](https://steamcommunity.com/sharedfiles/filedetails/?id=2785187510) on Steam. Shadow of the Erdtree facts were checked against the Elden Ring wiki. Icons, trophy medals and the map marker glyphs are original drawings. The Map tab uses map images made from in-game map screenshots and marker data from MapGenie's public data (see `docs/MAP-DATA.md`); that artwork belongs to its owners and is used here in an unofficial fan project. The map images are the shared maps by Eziolambo on Reddit ([Lands Between and underground](https://www.reddit.com/r/Eldenring/comments/tyn3f8/elden_ring_map_1623_mb_and_underground_920_kb/), [Shadow of the Erdtree](https://www.reddit.com/r/Eldenring/comments/1dthvpe/high_quality_elden_ring_sote_dlc_map_all_grace/)).
+The base-game route follows the community [Elden Ring 100% Achievement Guide by ponkberry](https://steamcommunity.com/sharedfiles/filedetails/?id=2785187510) on Steam. Shadow of the Erdtree facts were checked against the Elden Ring wiki. Icons, trophy medals and the map marker glyphs are original drawings. Text is set in [Alegreya Sans](https://fonts.google.com/specimen/Alegreya+Sans) and headings in [Cinzel](https://fonts.google.com/specimen/Cinzel), both under the SIL Open Font License and served from this site (see `assets/fonts`). The Map tab uses map images made from in-game map screenshots and marker data from MapGenie's public data (see `docs/MAP-DATA.md`); that artwork belongs to its owners and is used here in an unofficial fan project. The map images are the shared maps by Eziolambo on Reddit ([Lands Between and underground](https://www.reddit.com/r/Eldenring/comments/tyn3f8/elden_ring_map_1623_mb_and_underground_920_kb/), [Shadow of the Erdtree](https://www.reddit.com/r/Eldenring/comments/1dthvpe/high_quality_elden_ring_sote_dlc_map_all_grace/)).
 
 ## Disclaimer
 

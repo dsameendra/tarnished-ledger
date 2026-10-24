@@ -25,9 +25,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" href="assets/icons/icon-64.png">
 <link rel="apple-touch-icon" href="assets/icons/icon-180.png">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Alegreya+Sans:ital,wght@0,400;0,500;0,700;1,400&display=swap">
+<link rel="preload" href="assets/fonts/AlegreyaSans-400.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="css/styles.css">
 <script>
   // Apply saved appearance before first paint to avoid a flash.
@@ -46,10 +44,10 @@
 <a class="skip" href="#main">Skip to content</a>
 <div class="shell">
 
-  <aside class="rail">
+  <aside class="rail" aria-label="Progress">
     <div class="top">
       <img src="assets/icons/icon-180.png" alt="" width="44" height="44">
-      <h1>Tarnished's Ledger<small id="rail-sub">Elden Ring 100% route</small></h1>
+      <h1>Tarnished's Ledger <small id="rail-sub">Elden Ring 100% route</small></h1>
     </div>
     <div class="pills">
       <span class="pill" id="savePill"><i></i><span>Saved on this device</span></span>
@@ -62,10 +60,11 @@
         <svg viewBox="0 0 100 100" aria-hidden="true"><circle class="trk" cx="50" cy="50" r="44"/><circle class="val" id="ringVal" cx="50" cy="50" r="44" stroke-dasharray="276.46" stroke-dashoffset="276.46"/><circle class="inner" cx="50" cy="50" r="36"/></svg>
         <b><div><div id="pct">0%</div><span>done</span></div></b>
       </div>
-      <div class="minis">
+      <button type="button" class="hero-sum" id="heroSum" aria-expanded="false" aria-controls="minis"><span id="heroSumText"></span><svg class="chev" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+      <div class="minis" id="minis">
         <div class="mini"><span>Steps</span><span id="sSteps">0/0</span><div class="bar"><i id="bSteps"></i></div></div>
         <div class="mini" id="mTro"><span id="lblTro">Trophies</span><span id="sTro">0/42</span><div class="bar"><i id="bTro"></i></div></div>
-        <div class="mini" id="mLeg"><span>Legendaries</span><span id="sLeg">0/30</span><div class="bar"><i id="bLeg"></i></div></div>
+        <div class="mini" id="mLeg"><span>Legendary items</span><span id="sLeg">0/30</span><div class="bar"><i id="bLeg"></i></div></div>
         <div class="mini" id="mGoal" hidden><span>DLC goals</span><span id="sGoal">0/0</span><div class="bar"><i id="bGoal"></i></div></div>
         <div class="mini" id="mBless" hidden><span>Blessings</span><span id="sBless">0/75</span><div class="bar"><i id="bBless"></i></div></div>
       </div>
@@ -75,30 +74,31 @@
   </aside>
 
   <main id="main" tabindex="-1">
-    <aside class="welcome" id="welcome" hidden aria-labelledby="welcomeH">
-      <h2 id="welcomeH">Welcome, Tarnished</h2>
-      <ul>
-        <li><b>Ticking:</b> tap a step to mark it done. Ticks save instantly on this device, and finishing a step ticks its trophies for you.</li>
-        <li><b>Expansion:</b> Settings has a switch for Shadow of the Erdtree, which adds its own route and goals.</li>
-        <li><b>Sync:</b> Settings can link a private GitHub gist so your phone and computer share ticks, counters and map progress.</li>
-      </ul>
-      <div class="acts"><button type="button" class="btn primary" id="welcomeOk">Got it</button><button type="button" class="btn" id="welcomeSet">Open settings</button></div>
-    </aside>
-    <section id="v-route" aria-labelledby="t-route">
+    <section id="v-route">
+      <h2 class="sr">Route</h2>
       <div class="next" id="next"></div>
+      <aside class="welcome" id="welcome" hidden aria-labelledby="welcomeH">
+        <h2 id="welcomeH">Welcome, Tarnished</h2>
+        <p>Tick the box beside a step when you finish it. Ticks save on this device, and finishing a step ticks its <span id="welcomeTr">trophy</span> for you. Playing Shadow of the Erdtree, or using a second device? Settings has both.</p>
+        <div class="acts"><button type="button" class="btn primary" id="welcomeOk">Got it</button><button type="button" class="btn" id="welcomeSet">Open settings</button></div>
+      </aside>
       <div class="toolbar">
         <label class="search"><span class="sr">Search the route</span>
           <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>
-          <input id="q" type="search" placeholder="Search steps, bosses, items" autocomplete="off" enterkeyhint="search" aria-controls="phases">
+          <input id="q" type="search" placeholder="Search the route" autocomplete="off" enterkeyhint="search" aria-controls="phases">
           <button type="button" class="qclear" id="qClear" aria-label="Clear search" hidden>&times;</button>
         </label>
-        <button class="btn" id="hideBtn" type="button" aria-pressed="false">Hide done</button>
+        <label class="jumpph"><span class="sr">Jump to a phase</span><select id="jumpPhase" aria-label="Jump to a phase"></select></label>
+        <button class="btn" id="compactBtn" type="button" title="Compact steps: tighter rows without icons or tags" aria-pressed="false">Compact</button>
+        <button class="btn" id="hideBtn" type="button" title="Hide completed steps" aria-pressed="false">Hide done</button>
         <button class="btn" id="foldBtn" type="button">Collapse all</button>
       </div>
       <p class="qcount" id="qCount" role="status" aria-live="polite" hidden></p>
       <div id="phases"></div>
       <p class="empty" id="noResults" hidden>No steps match that search. Try a boss, place or item name.</p>
     </section>
+
+    <div class="seg ckswitch" id="ckSwitch" role="group" aria-label="Checklist" hidden></div>
 
     <section id="v-tro" hidden>
       <h2 class="view-h" id="troTitle">Trophies</h2>
@@ -113,8 +113,8 @@
     </section>
 
     <section id="v-col" hidden>
-      <h2 class="view-h">Legendaries</h2>
-      <p class="note">Four trophies need a full set: Legendary Armaments (9), Ashen Remains (6), Sorceries and Incantations (7) and Talismans (8). Nothing else in the game has to be collected.</p>
+      <h2 class="view-h">Legendary items</h2>
+      <p class="note" id="colNote">Four trophies need a full set: Legendary Armaments (9), Ashen Remains (6), Sorceries and Incantations (7) and Talismans (8). Nothing else in the game has to be collected.</p>
       <div id="colList"></div>
     </section>
 
@@ -123,25 +123,36 @@
       <p class="note" id="mapNote">Drag to pan, pinch or scroll to zoom. Numbered pins are route phases. Tap a marker for details and to tick it off.</p>
       <div class="mapcard" id="mapCard">
         <div class="maptools">
-          <button type="button" class="btn mapexit" id="mapExit" hidden aria-label="Restore the map to its normal size"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg> Restore</button>
+          <button type="button" class="btn mt-layers" id="mapLayersBtn" aria-expanded="false" aria-controls="mapLeft"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M12 3l9 5-9 5-9-5zM3 13l9 5 9-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Layers</span></button>
+          <div class="mt-left" id="mapLeft" role="group" aria-label="Map layers">
+          <div class="mt-sheet-h"><b>Map layers</b><button type="button" class="mp-x" id="mapLayersX" aria-label="Close map layers">&times;</button></div>
+          <div class="mt-modes">
+          <div class="mt-chips">
           <div class="seg" id="mapWorld" role="group" aria-label="World" hidden><button type="button" data-v="base" aria-pressed="true">Lands Between</button><button type="button" data-v="dlc" aria-pressed="false">Realm of Shadow</button></div>
-          <div class="seg" id="mapLayer" role="group" aria-label="Map layer"><button type="button" data-v="base" aria-pressed="true">Surface</button><button type="button" data-v="under" aria-pressed="false">Underground</button><button type="button" data-v="hub" aria-pressed="false" aria-label="Roundtable Hold" title="Roundtable Hold">Hub</button></div>
+          <div class="seg" id="mapLayer" role="group" aria-label="Map layer"><button type="button" data-v="base" aria-pressed="true">Surface</button><button type="button" data-v="under" aria-pressed="false">Underground</button><button type="button" data-v="hub" aria-pressed="false" aria-label="Roundtable Hold" title="Roundtable Hold">Roundtable</button></div>
+          </div>
           <div class="seg mt-subs" id="mapSubs" role="group" aria-label="Jump to an underground region" hidden><button type="button" data-v="ainsel">Ainsel</button><button type="button" data-v="siofra">Siofra</button><button type="button" data-v="deeproot">Deeproot</button><button type="button" data-v="all">All</button></div>
+          </div>
+          </div>
+          <div class="mt-tools" id="mapTools" role="group" aria-label="Find a place, locate yourself, maximize">
           <label class="mapgo mt-go"><span class="sr">Go to a place</span><select id="mapGo" aria-label="Go to a place" disabled><option value="">Go to&hellip;</option></select></label>
-          <button type="button" class="btn" id="mapHere">Find me</button>
-          <button type="button" class="btn mapfs" id="mapFs" aria-pressed="false" aria-label="Maximize the map"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Maximize</span></button>
-          <button type="button" class="btn" id="mapFilterBtn" aria-expanded="false" aria-controls="mapPanel">Markers <span id="mapFilterCount"></span></button>
+          <button type="button" class="btn" id="mapHere"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><circle cx="12" cy="12" r="3.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><span class="lbl">Find me</span></button>
+          <button type="button" class="btn mapfs" id="mapFs" aria-pressed="false" aria-label="Maximize the map"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="lbl">Maximize</span></button>
+          <button type="button" class="btn mapexit" id="mapExit" hidden aria-label="Restore the map to its normal size"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="lbl">Restore</span></button>
+          </div>
         </div>
+        <div class="mt-scrim" id="mapScrim" hidden></div>
+        <button type="button" class="skipmap" id="mapSkip">Skip the map controls</button>
         <p class="mapstatus" id="mapStatus" role="status" aria-live="polite"></p>
         <div class="mapwrap" id="mapWrap">
           <div class="mapstage">
-            <div id="map" aria-label="Interactive map. Drag to pan, plus and minus keys to zoom."></div>
+            <p class="sr" id="mapHelp">Markers on the map cannot be focused. To open one, use Find a marker, Go to, or the lists under Map progress. Arrow keys pan the map and plus and minus zoom it.</p>
+            <div id="map" role="group" aria-label="Interactive map. Drag to pan, plus and minus keys to zoom." aria-describedby="mapHelp"></div>
             <div class="mapsearch">
               <input type="search" id="mapSearch" placeholder="Find a marker by name" aria-label="Find a marker by name" autocomplete="off" disabled>
               <ul id="mapResults" aria-label="Matching markers" hidden></ul>
             </div>
-            <div class="mapctl" id="mapZoom" role="group" aria-label="Zoom"><button type="button" data-z="in" aria-label="Zoom in">+</button><button type="button" data-z="out" aria-label="Zoom out">&minus;</button><button type="button" data-z="fit" aria-label="Fit the whole map">&#x2922;</button><button type="button" data-z="mini" id="mapMiniBtn" aria-label="Show or hide the overview" aria-pressed="true"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><rect x="11" y="10" width="7" height="6" fill="currentColor" opacity=".8"/></svg></button></div>
-            <output class="mapscale" id="mapScale" aria-label="Zoom level">1×</output>
+            <div class="mapctl" id="mapZoom" role="group" aria-label="Map controls"><button type="button" id="mapFilterBtn" class="mc-filter" aria-expanded="false" aria-controls="mapPanel" aria-label="Marker filters" title="Marker filters"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M4 5h16l-6 7.5V19l-4-2v-4.5L4 5z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg><span id="mapFilterCount" class="sr"></span></button><button type="button" data-z="in" aria-label="Zoom in">+</button><button type="button" data-z="out" aria-label="Zoom out">&minus;</button><button type="button" data-z="fit" aria-label="Fit the whole map"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><rect x="8" y="6" width="8" height="12" rx="1.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M2.5 12H6M4.5 10l-2 2 2 2M21.5 12H18M19.5 10l2 2-2 2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button><button type="button" data-z="mini" id="mapMiniBtn" aria-label="Show or hide the overview" aria-pressed="true"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><rect x="11" y="10" width="7" height="6" fill="currentColor" opacity=".8"/></svg></button><output class="mapscale" id="mapScale" aria-label="Zoom level">1×</output></div>
             <div class="minimap" id="mapMini" hidden role="group" aria-label="Overview map. Tap or drag to move the view."><canvas id="mmCanvas" aria-hidden="true"></canvas><div class="mm-view" id="mmView"></div></div>
             <div class="maptip" id="mapTip" hidden></div>
             <div class="maploading" id="mapLoading" role="status">Loading map&hellip;</div>
@@ -225,19 +236,23 @@
       <div class="group">
         <h3>Backup and restore</h3>
         <div class="set stack">
+          <div class="callout" id="corruptNote" hidden role="alert"><p style="margin:0 0 8px"><b>Your saved progress could not be read.</b> This device started a fresh run, but a copy of the unreadable data was kept. Download it before you tick anything else if you want to recover it, or turn on sync to bring your progress back.</p><div class="acts" style="margin-top:0"><button type="button" class="btn primary" data-corrupt-download>Download the unreadable copy</button><button type="button" class="btn" data-corrupt-dismiss>Dismiss</button></div></div>
           <span class="hint" id="backupHint">Download a file you can keep anywhere, or copy a short code.</span>
           <div class="acts"><button type="button" class="btn" id="exportFile">Download backup</button><button type="button" class="btn" id="importFileBtn">Restore from file</button><input type="file" id="importFile" accept="application/json,.json" hidden></div>
           <label class="lbl" for="exportBox">Your progress code</label>
           <textarea id="exportBox" readonly></textarea>
           <div class="acts"><button type="button" class="btn" id="copyBtn">Copy code</button></div>
           <label class="lbl" for="importBox">Restore from a code</label>
-          <textarea id="importBox" placeholder="Paste a progress code here"></textarea>
+          <textarea id="importBox" placeholder="Paste a progress code here" aria-describedby="importHint"></textarea>
+          <span class="hint" id="importHint">A progress code carries done steps only. Found map markers and blessing counters stay as they are; a backup file restores those too.</span>
           <div class="acts"><button type="button" class="btn" id="importBtn">Restore code</button></div>
           <div class="callout" id="restoreConfirm" hidden role="alertdialog" aria-labelledby="restoreText">
             <p id="restoreText" style="margin:0 0 8px"></p>
             <div class="acts" style="margin-top:0"><button type="button" class="btn danger" id="restoreYes">Replace my progress</button><button type="button" class="btn" id="restoreNo">Cancel</button></div>
           </div>
           <div class="msg" id="ioMsg" role="status"></div>
+          <div class="acts" id="undoRow" hidden><button type="button" class="btn" id="undoLast">Undo last reset or restore</button></div>
+          <span class="hint" id="undoHint" hidden></span>
         </div>
       </div>
 
@@ -247,6 +262,7 @@
           <span class="hint" id="storeStatus">Every tick saves instantly in this browser.</span>
           <span class="hint">An installed home-screen app on iPhone has its own storage, separate from Safari. Use sync or a backup to bring your progress across.</span>
         </div>
+        <div class="set stack"><span class="lbl">Undo a tick</span><span class="hint">On a computer, Ctrl or Cmd+Z undoes the last tick on the Route tab. On a phone, use Undo in the Up next card right after you tick.</span></div>
         <div class="set"><span class="lbl" id="l-awake">Keep screen on</span><button type="button" class="switch" role="switch" data-sw="awake" aria-labelledby="l-awake" aria-describedby="wakeHint"></button><span class="hint" id="wakeHint">Stops the screen dimming while this page is open.</span></div>
         <div class="set stack" id="installRow"><span class="lbl">Install as an app</span>
           <span class="hint" id="installHint">On iPhone: open this page in Safari, tap Share, then Add to Home Screen. On Android or desktop Chrome: use the browser menu, then Install app.</span>
@@ -256,7 +272,7 @@
 
       <div class="group danger-zone">
         <h3>Reset</h3>
-        <div class="set stack"><span class="hint">Clears every tick, both blessing counters and your map progress on this device. Appearance and other settings stay. If sync is on, the reset syncs to your other devices too, so download a backup first if you might want it back.</span>
+        <div class="set stack"><span class="hint">Clears every tick, both blessing counters and your map progress on this device. Appearance and other settings stay. If sync is on, the reset syncs to your other devices too, so download a backup first if you might want it back. Reset keeps a copy you can bring back with Undo in Backup and restore. Synced progress can also be recovered from your gist's Revisions tab on GitHub for a while.</span>
           <div class="acts"><button type="button" class="btn danger" id="resetBtn">Reset progress…</button></div>
           <div class="callout" id="resetConfirm" hidden role="alertdialog" aria-labelledby="resetText">
             <p id="resetText" style="margin:0 0 8px"></p>
@@ -278,5 +294,6 @@
     </section>
   </main>
 </div>
+<div class="toast" id="toast" role="status" aria-live="polite" hidden><span id="toastMsg"></span><button type="button" class="toast-undo" id="toastUndo">Undo</button></div>
 </body>
 </html>

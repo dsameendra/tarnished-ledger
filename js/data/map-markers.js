@@ -9,7 +9,7 @@ const cache = new Map();
 // Loads one layer ("base", "under", "dlc" or "hub") once and returns its rows.
 export function loadMarkers(layer, base = new URL("../../", import.meta.url)) {
   if (!cache.has(layer)) {
-    cache.set(layer, fetch(new URL(MARKER_FILES[layer], base)).then((r) => { if (!r.ok) throw new Error("markers " + layer + ": " + r.status); return r.json(); }));
+    cache.set(layer, fetch(new URL(MARKER_FILES[layer], base)).then((r) => { if (!r.ok) throw new Error("markers " + layer + ": " + r.status); return r.json(); }).catch((e) => { cache.delete(layer); throw e; }));
   }
   return cache.get(layer);
 }

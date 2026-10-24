@@ -120,6 +120,7 @@ The base-game Roundtable Hold has no part of the world map, so it is its own lay
 - `js/data/twins.js` lists route steps that are the same fact in two places (Radahn and Mohg in the base route and in D1). Ticking one ticks the other, and merges settle each pair by the newer timestamp. Ticking the boss on the map reaches both through the markers they share.
 - Finding a Scadutree Fragment or Revered Spirit Ash on the map adds 1 to its Goals counter, and un-finding takes 1 off. The counter can still be set by hand.
 - `PATH_SKIP` in `js/data/map-guide.js` lists steps that stay linked (Show on map, ticking) but are not drawn as a stop on the route, such as a vague "head toward the castle" step that would send the line the wrong way.
+- A step can also have no marker on purpose. `limw.3` (ride into Stormhill toward Stormveil) is left unlinked because the castle cannot be entered until Margit is defeated; the Stormveil Castle pin belongs to the Stormveil Castle phase.
 
 ## Installed iPhone/iPad app (top of the page)
 

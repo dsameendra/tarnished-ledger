@@ -1,0 +1,45 @@
+import { test } from "node:test";
+import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+
+const js = readFileSync(new URL("../js/ui/route.js", import.meta.url), "utf8");
+const css = readFileSync(new URL("../css/styles.css", import.meta.url), "utf8");
+
+test("finished phases are green road stops; a long run folds into one row styled like them", () => {
+  assert.match(js, /class="trail-btn" aria-expanded="false" aria-controls="phases"><span class="num">/);
+  assert.match(js, /Phases \$\{first\} to \$\{phaseLabel\(run\[run\.length - 1\]\)\} done/);
+  assert.match(js, /classList\.toggle\("past", past\)/);
+  assert.match(js, /classList\.toggle\("folded", past && fold\)/);
+  assert.match(js, /const FOLD_AFTER = 3/);
+  assert.match(css, /details\.phase\.past \.num/);
+  assert.match(css, /details\.phase\.past\.done \.num \{ background: var\(--ok\)/);
+  assert.match(css, /details\.phase\.past:not\(\[open\]\) > summary::before/);
+  assert.match(css, /\.trail-btn \.num \{[^}]*background: var\(--ok\)/);
+  assert.match(js, /classList\.toggle\("ahead", !past && pi > cur\)/);
+  assert.match(css, /\.phase\.folded \{ display: none; \}/);
+});
+
+test("search reveals matching steps inside folded phases, and hide-done drops the trail", () => {
+  assert.match(css, /\.searching \.phase\.folded:not\(\.nomatch\) \{ display: block; \}/);
+  assert.match(css, /\.hide-done \.trail/);
+  assert.match(js, /classList\.toggle\("searching", Boolean\(query\)\)/);
+});
+
+test("jumping to a step in a folded phase unfolds the trail", () => {
+  assert.match(js, /function unfold\(ph\)/);
+  assert.match(js, /unfold\(ph\);/);
+});
+
+test("the next missable row jumps to the next undone warn step", () => {
+  assert.match(js, /s\.kind === "warn" && !store\.isDone\(s\.id\)/);
+  assert.match(js, /data-missable="\$\{w\.id\}"/);
+  assert.match(js, /jump\(mb\.dataset\.missable\)/);
+  // shown only from the phase before the missable until it is ticked
+  assert.match(js, /cur >= before/);
+});
+
+test("current phase is loud, upcoming phases are quiet stops joined by a line", () => {
+  assert.match(css, /details\.phase\.current \.num \{ background: var\(--accent\)/);
+  assert.match(css, /details\.phase\.ahead \.num/);
+  assert.match(css, /details\.phase\.ahead:not\(\[open\]\) > summary::before/);
+});

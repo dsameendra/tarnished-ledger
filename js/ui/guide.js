@@ -65,7 +65,7 @@ export function renderGuide() {
 
 <div class="prose" id="g-keys">
   <h3>Stonesword Keys</h3>
-  <p>Pick up every key you find. Around 6 to 8 are used on this route.</p>
+  <p>Pick up every key you find. Five are needed on this route. Spare keys are for optional treasure.</p>
   <table class="keytable"><thead><tr><th>Where</th><th>You get</th><th>Keys</th></tr></thead><tbody>${STONESWORD.map(([a, b, c]) => `<tr><td>${a}</td><td>${b}</td><td>${c}</td></tr>`).join("")}</tbody></table>
 </div>
 

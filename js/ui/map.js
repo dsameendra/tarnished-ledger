@@ -31,7 +31,6 @@ let picked = ms.filter.world || null;
 let lay = ms.filter.lay || (ms.filter.under ? "under" : "base"); // which map of the base game: base | under | hub
 let selected = null; // { m } or { phase }
 let enabled = new Set();
-let dirty = false;
 let restoring = false;
 let statusTimer = 0;
 const mq = (q) => matchMedia(q).matches;
@@ -98,8 +97,15 @@ function ensureMap() {
   return boot;
 }
 
+// Resolves when the map is up and holds every marker layer the current scope can show. Layers outside the scope
+// (the Realm of Shadow for a base-game run, the base maps for a DLC-only run) are fetched the first time the scope needs them.
+function ready() {
+  return ensureMap().then(() => (D && map ? D.ensure(layersFor(scope())) : null))
+    .catch((e) => { console.warn("Markers failed to load", e); status("Some markers could not be loaded. Check your connection, then try again."); });
+}
+
 async function start() {
-  [, D] = await Promise.all([loadLeaflet(), loadMapData()]);
+  [, D] = await Promise.all([loadLeaflet(), loadMapData(layersFor(scope()))]);
   L = window.L;
   const calm = mq("(prefers-reduced-motion: reduce)");
   map = L.map("map", {
@@ -249,7 +255,10 @@ function refreshItems() {
   const n = {};
   for (const m of D.byLayer[shown]) if (!(f.hideFound && doneOf(m))) n[m.cat] = (n[m.cat] || 0) + 1;
   $("mapPanel").querySelectorAll("[data-n]").forEach((e) => { e.textContent = n[e.dataset.n] || 0; });
+  const ln = $("mapLayerNote");
+  if (ln) ln.textContent = `Counts are for this layer: ${LAYER_NAME[shown]}.`;
   $("mapFilterCount").textContent = f.on ? `· ${list.length}` : "· off";
+  $("mapFilterBtn").title = `Marker filters ${f.on ? `(${list.length} shown)` : "(off)"}`;
 }
 
 function setCats(ids) {
@@ -265,6 +274,7 @@ function buildPanel() {
     `<label class="mp-row"><input type="checkbox" data-cat="${esc(c.id)}"><img src="${iconURL(c.glyph, c.color)}" alt="" width="22" height="22"><span>${esc(c.title)}</span><em data-n="${esc(c.id)}">0</em></label>`).join("");
   $("mapPanel").innerHTML = `
     <div class="mp-h"><b>Markers</b><button type="button" class="mp-x" data-close aria-label="Close marker filters">&times;</button></div>
+    <p class="note" id="mapLayerNote"></p>
     <label class="mp-row mp-sw"><input type="checkbox" data-f="on"><span>Show markers</span></label>
     <div class="seg" role="group" aria-label="Marker presets"><button type="button" data-preset="essentials">Essentials</button><button type="button" data-preset="guide">Guide</button><button type="button" data-preset="all">Everything</button><button type="button" data-preset="none">None</button></div>
     <label class="mp-row"><input type="checkbox" data-f="hideFound"><span>Hide completed</span></label>
@@ -273,7 +283,7 @@ function buildPanel() {
     <p class="note" id="mapSaveNote"></p>`;
   paintSaveNote();
   syncPanel();
-  setPanel(ms.filter.panel ?? mq("(min-width: 900px)"), false);
+  setPanel(ms.filter.panel === true, false);
 }
 
 function paintSaveNote() {
@@ -335,8 +345,9 @@ function goPlace(v) {
   const p = (PLACES[shown] || [])[Number(v)];
   if (!p) return;
   const z = Math.min(map.getMaxZoom(), fitZ + 1.9);
-  if (mq("(prefers-reduced-motion: reduce)")) map.setView([-p[2], p[1]], z, { animate: false });
-  else map.flyTo([-p[2], p[1]], z, { duration: 0.8 });
+  const at = aim([-p[2], p[1]], z);
+  if (mq("(prefers-reduced-motion: reduce)")) map.setView(at, z, { animate: false });
+  else map.flyTo(at, z, { duration: 0.8 });
 }
 
 // The overview is a small copy of the art with a box showing what the main map displays.
@@ -406,6 +417,7 @@ let fsReturn = null, panelBefore = null, pushed = false;
 function setFs(on, fromHistory = false) {
   if (on === fs || (on && !map)) return;
   fs = on;
+  setLayers(false, false);
   const card = $("mapCard");
   document.documentElement.classList.toggle("map-fs", on);
   card.classList.toggle("fs", on);
@@ -441,8 +453,26 @@ function setFs(on, fromHistory = false) {
   }
 }
 
+// Maximized on a phone: World, Layer and Markers live in a bottom sheet behind the Layers button
+function setLayers(open, restore = true) {
+  const card = $("mapCard");
+  if (open === card.classList.contains("layers-open")) return;
+  card.classList.toggle("layers-open", open);
+  $("mapLayersBtn").setAttribute("aria-expanded", String(open));
+  $("mapScrim").hidden = !open;
+  $("mapTools").inert = open;
+  $("mapWrap").inert = open;
+  if (open) ($("mapLeft").querySelector('[aria-pressed="true"]') || $("mapLeft").querySelector("button")).focus();
+  else if (restore) $("mapLayersBtn").focus();
+}
+
 function wireFs() {
-  $("mapFs").addEventListener("click", () => ensureMap().then(() => { if (map) setFs(true); }));
+  $("mapLayersBtn").addEventListener("click", () => setLayers(!$("mapCard").classList.contains("layers-open")));
+  $("mapLayersX").addEventListener("click", () => setLayers(false));
+  $("mapScrim").addEventListener("click", () => setLayers(false));
+  matchMedia("(max-width: 699.98px)").addEventListener("change", () => setLayers(false, false));
+  $("mapFilterBtn").addEventListener("click", () => setLayers(false, false));
+  $("mapFs").addEventListener("click", () => ready().then(() => { if (map) setFs(true); }));
   $("mapExit").addEventListener("click", () => setFs(false));
   window.addEventListener("popstate", () => { if (fs) setFs(false, true); });
   $("mapCard").addEventListener("keydown", (e) => {
@@ -458,7 +488,8 @@ function wireFs() {
   document.addEventListener("keydown", (e) => {
     if (!visible() || e.ctrlKey || e.metaKey || e.altKey) return;
     const typing = /^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement?.tagName || "");
-    if (e.key === "Escape" && fs && $("mapSheet").hidden && $("mapResults").hidden) setFs(false);
+    if (e.key === "Escape" && fs && $("mapCard").classList.contains("layers-open")) { e.preventDefault(); setLayers(false); }
+    else if (e.key === "Escape" && fs && $("mapSheet").hidden && $("mapResults").hidden) setFs(false);
     else if (!typing && (e.key === "m" || e.key === "M") && map) setFs(!fs);
     else if (!typing && e.key === "/" && !$("mapSearch").disabled) { e.preventDefault(); $("mapSearch").focus(); }
   });
@@ -475,9 +506,11 @@ let breaksShown = [];
 
 function getRoute() {
   const w = world();
-  if (routeCache.key !== w) {
+  // keyed on the loaded layers too: a route built before its layers arrived (a sync changed the scope) must be rebuilt
+  const key = w + ":" + [...D.loaded].sort().join();
+  if (routeCache.key !== key) {
     const phases = PHASES.filter((p) => Boolean(p.dlc) === (w === "dlc"));
-    routeCache = { key: w, route: buildRoute({ byId: D.byId, stepLocs: D.stepLocs }, phases, allSteps, (p) => PHASES.indexOf(p)) };
+    routeCache = { key, route: buildRoute({ byId: D.byId, stepLocs: D.stepLocs }, phases, allSteps, (p) => PHASES.indexOf(p)) };
   }
   return routeCache.route;
 }
@@ -574,19 +607,35 @@ function refreshPins() {
 function closeSheet() {
   selected = null;
   $("mapSheet").hidden = true;
+  $("mapSheet").dataset.phaseShown = "";
   if (cv) cv.setSelected(null);
   paintPhaseCard();
   refreshExtra();
   if (map) refreshPins();
 }
 
+// A route checklist opens at the next step to do: the ticked ones are above it, out of the way.
+function nextStepIntoView(box) {
+  const list = box.querySelector(".ps-list");
+  const li = list?.querySelector("li.ps:not(.done):not(.tip)");
+  if (!list) return;
+  requestAnimationFrame(() => {
+    const inner = list.scrollHeight > list.clientHeight + 1 && getComputedStyle(list).overflowY !== "visible";
+    const sc = inner ? list : box;
+    sc.scrollTop = li ? Math.max(0, li.offsetTop - (inner ? list.offsetTop : 0) - (inner ? 6 : 90)) : 0;
+  });
+}
+
 function showSheet(sel, keep = false) {
   selected = sel;
   const box = $("mapSheet");
+  const fresh = Boolean(sel.phase) && box.dataset.phaseShown !== sel.phase;
+  box.dataset.phaseShown = sel.phase || "";
   const active = document.activeElement?.closest?.("#mapSheet") ? document.activeElement.dataset.pstep : null;
   const scrolled = box.querySelector(".ps-list")?.scrollTop || 0;
   try { renderSheet(sel, box); } finally {
     if (box.querySelector(".ps-list")) box.querySelector(".ps-list").scrollTop = scrolled;
+    if (fresh && fs) nextStepIntoView(box);
     if (active) box.querySelector(`[data-pstep="${CSS.escape(active)}"]`)?.focus({ preventScroll: true });
   }
 }
@@ -709,7 +758,7 @@ function focusStep(stepId) {
   if (list.length === 1 || list.some((m) => m.layer !== first.layer)) { goTo(first); selectMarker(first, from); return; }
   if (first.layer !== shown) { if (first.layer !== "dlc") lay = first.layer; saveLayer(); syncChrome(); setMode(mode()); }
   const ll = list.map((m) => [-m.y, m.x]);
-  const o = { padding: [70, 70], maxZoom: Math.min(map.getMaxZoom(), fitZ + 3), animate: !mq("(prefers-reduced-motion: reduce)"), duration: 0.7 };
+  const o = { paddingTopLeft: [70, 70], paddingBottomRight: [70, 70 + coveredBottom()], maxZoom: Math.min(map.getMaxZoom(), fitZ + 3), animate: !mq("(prefers-reduced-motion: reduce)"), duration: 0.7 };
   map.flyToBounds(ll, o);
   status(`${list.length} places for this step, ringed on the map.`);
 }
@@ -741,14 +790,21 @@ function setMarkerDone(m, on) {
   const was = ms.isFound(m.id);
   ms.setFound(m.id, on);
   const cid = COUNTER_OF[m.cat];
+  let msg = "";
   if (cid && was !== on) {
     const c = cid === "sf" ? ["Scadutree Fragments", 50] : ["Revered Spirit Ashes", 25];
-    status(`${c[0]}: ${store.counter(cid)} of ${c[1]} on the Goals counter.`);
+    msg = `${c[0]}: ${store.counter(cid)} of ${c[1]} on the Goals counter.`;
+    status(msg);
   }
+  // Route steps that have only this marker follow it (one record: ticking a boss here ticks it in the route and the twin steps), and the map says so
+  let n = 0;
   for (const id of D.stepsOf.get(m.id) || []) {
     const s = stepById.get(id);
-    if (s && s.kind !== "tip" && D.stepLocs[id]?.length === 1 && store.isDone(id) !== on) store.setDone(id, on);
+    if (!s || s.kind === "tip" || D.stepLocs[id]?.length !== 1 || store.isDone(id) === on) continue;
+    store.setDone(id, on);
+    n++;
   }
+  if (n) status(`${msg ? msg + " " : ""}Also ${on ? "ticked" : "cleared"} ${n} route step${n === 1 ? "" : "s"}.`);
 }
 
 // ---- progress section below the map ----
@@ -821,7 +877,7 @@ function wireBelow() {
     else if (b.dataset.pgCat) { const id = b.dataset.pgCat; if (pg.open.has(id)) pg.open.delete(id); else pg.open.add(id); renderBelow(); }
     else if (b.dataset.pgMore) { pg.limit.set(b.dataset.pgMore, (pg.limit.get(b.dataset.pgMore) || 20) + 40); renderBelow(); }
     else if (b.dataset.pgPick) {
-      await ensureMap();
+      await ready();
       const m = D?.byId.get(b.dataset.pgPick);
       if (!m) return;
       if (!fs) $("mapCard").scrollIntoView({ block: "start", behavior: mq("(prefers-reduced-motion: reduce)") ? "auto" : "smooth" });
@@ -841,20 +897,42 @@ function wireBelow() {
 
 // ---- navigation ----
 
-function goTo(m, rel = 3) {
+// On a phone the details sheet, the route steps and the filters rise from the bottom and hide the lower part of the map.
+// `coveredBottom` is how many pixels of the map they hide (or half the map when a sheet is about to open), and `aim`
+// moves the centre so the place lands in the middle of what is still visible, a bit above the true centre.
+function coveredBottom(pending = false) {
+  const st = document.querySelector(".mapstage");
+  if (!st) return 0;
+  const s = st.getBoundingClientRect();
+  let c = 0;
+  for (const el of document.querySelectorAll(".mapsheet:not([hidden]), .mappanel:not([hidden])")) {
+    const r = el.getBoundingClientRect();
+    if (!r.height || r.width < s.width * 0.6 || r.top < s.top + s.height * 0.25) continue;
+    c = Math.max(c, Math.min(s.bottom, r.bottom) - Math.max(s.top, r.top));
+  }
+  if (!c && pending && mq("(max-width: 699.98px)")) c = s.height * 0.5;
+  return c;
+}
+function aim(ll, z, pending = false) {
+  const c = coveredBottom(pending);
+  const at = L.latLng(ll);
+  return c ? map.unproject(map.project(at, z).add([0, c / 2]), z) : at;
+}
+
+function goTo(m, rel = 3, pending = true) {
   if (scope() === "both") picked = m.layer === "dlc" ? "dlc" : "base";
   if (m.layer !== "dlc") lay = m.layer;
   saveLayer();
   syncChrome();
   if (mode() !== shown) setMode(mode());
   const z = Math.min(map.getMaxZoom(), map.getMinZoom() + 0.3 + rel);
-  const ll = [-m.y, m.x];
+  const ll = aim([-m.y, m.x], z, pending);
   if (mq("(prefers-reduced-motion: reduce)")) map.setView(ll, z, { animate: false });
   else map.flyTo(ll, z, { duration: 0.8 });
 }
 
 async function findMe() {
-  await ensureMap();
+  await ready();
   if (!map) return;
   const route = getRoute();
   const { next } = stopStates(route, store.isDone);
@@ -896,6 +974,14 @@ function syncChrome() {
   [...$("mapWorld").children].forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.v === w)));
   $("mapLayer").hidden = w === "dlc";
   [...$("mapLayer").children].forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.v === lay)));
+  // on a phone the chips scroll sideways: keep the chosen one in view
+  const ch = document.querySelector(".mt-chips");
+  const lb = $("mapLayer").querySelector('[aria-pressed="true"]');
+  if (ch.scrollWidth > ch.clientWidth && lb) {
+    const l = lb.offsetLeft + $("mapLayer").offsetLeft - ch.offsetLeft, r = l + lb.offsetWidth; // only scroll when the chosen chip is cut off
+    if (r > ch.scrollLeft + ch.clientWidth - 28) ch.scrollLeft = Math.max(0, l - 8);
+    else if (l < ch.scrollLeft) ch.scrollLeft = Math.max(0, l - 8);
+  }
 }
 
 function renderPhaseList() {
@@ -912,7 +998,8 @@ export function renderMap() {
   renderPhaseList();
   scheduleBelow();
   if (!D || !map) return;
-  if (!visible()) { dirty = true; return; }
+  if (!visible()) return;
+  if (layersFor(scope()).some((l) => !D.loaded.has(l))) { ready().then(() => visible() && layersFor(scope()).every((l) => D.loaded.has(l)) && renderMap()); return; }
   if (selected?.phase && Boolean(PHASES.find((p) => p.id === selected.phase)?.dlc) !== (world() === "dlc")) selected = null;
   if (mode() !== shown) setMode(mode());
   else { refreshPins(); refreshItems(); cv.redraw(); if (selected) showSheet(selected, true); }
@@ -971,7 +1058,7 @@ export function initMap() {
   $("phaseList").addEventListener("click", async (e) => {
     const t = e.target.closest("[data-phase]");
     if (!t) return;
-    await ensureMap();
+    await ready();
     if (!map) return;
     selectPhase(t.dataset.phase);
     if (!fs) $("mapPhaseCard").scrollIntoView({ block: "nearest", behavior: mq("(prefers-reduced-motion: reduce)") ? "auto" : "smooth" });
@@ -984,10 +1071,11 @@ export function initMap() {
     else if (b.dataset.z === "fit") fitAll(); else map.setZoom(map.getZoom() + (b.dataset.z === "in" ? 1 : -1));
   });
   $("mapHere").addEventListener("click", findMe);
+  $("mapSkip").addEventListener("click", () => { $("mapBelowBtn").focus(); $("mapBelowBtn").scrollIntoView({ block: "center" }); });
   wireBelow();
   $("mapGo").addEventListener("change", (e) => { goPlace(e.target.value); e.target.value = ""; });
   wireFs();
-  $("mapFilterBtn").addEventListener("click", () => ensureMap().then(() => { if (D) setPanel($("mapPanel").hidden); }));
+  $("mapFilterBtn").addEventListener("click", () => ready().then(() => { if (D) setPanel($("mapPanel").hidden); }));
   $("mapWorld").addEventListener("click", (e) => {
     const b = e.target.closest("button");
     if (!b || !map) return;
@@ -1092,7 +1180,7 @@ export function initMap() {
     if (!visible()) return;
     // On phones the header sits above the map, so bring the toolbar to the top.
     if (!mq("(min-width: 980px)")) document.querySelector("#v-map .mapcard").scrollIntoView({ block: "start", behavior: "auto" });
-    ensureMap().then(() => {
+    ready().then(() => {
       if (!map) return;
       map.invalidateSize({ animate: false });
       if (mode() !== shown) setMode(mode());
@@ -1100,14 +1188,13 @@ export function initMap() {
       sizeStage();
       map.invalidateSize({ animate: false });
       scheduleBelow();
-      dirty = false;
     });
   };
   on("shown", (id) => { if (id === "map") shown_(); else if (fs) setFs(false); });
   // Route steps can emit("locate", stepId) to open the map at the step's first location.
   on("mapphase", async (pid) => {
     emit("tab", "map");
-    await ensureMap();
+    await ready();
     if (!map) return;
     map.invalidateSize({ animate: false });
     selectPhase(pid);
@@ -1115,18 +1202,18 @@ export function initMap() {
   // The Goals tab counters ask the map to show every Scadutree Fragment or Revered Spirit Ash.
   on("mapcat", async (cat) => {
     emit("tab", "map");
-    await ensureMap();
+    await ready();
     const list = map && D.list.filter((m) => m.cat === String(cat) && allowed(m.layer));
     if (!list?.length) return;
     map.invalidateSize({ animate: false });
     if (!enabled.has(String(cat))) setCats([...enabled, String(cat)]);
     if (!ms.prefs().on) { ms.setPref({ on: true }); syncPanel(); refreshItems(); }
-    goTo(list[0], 0);
+    goTo(list[0], 0, false);
     status(`${list.length} on the map. ${list.filter(doneOf).length} found.`);
   });
   on("locate", async (stepId) => {
     emit("tab", "map");
-    await ensureMap();
+    await ready();
     const m = map && (D.stepLocs[stepId] || []).map((i) => D.byId.get(i)).find((x) => x && allowed(x.layer));
     if (!m) return;
     map.invalidateSize({ animate: false });

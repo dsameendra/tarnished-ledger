@@ -131,3 +131,7 @@ writeFileSync(join(root, "js/data/map-markers.js"), js);
 const total = Object.values(sizes).reduce((a, s) => ({ n: a.n + s.n, bytes: a.bytes + s.bytes, gzip: a.gzip + s.gzip }), { n: 0, bytes: 0, gzip: 0 });
 console.log(sizes, total);
 console.log(`dropped ${stats.dropped.length}`, stats.dropped.slice(0, 3), `duplicates ${stats.dup}`);
+
+// The blessing counters are derived from the dlc layer just written.
+const { counterMarkersSource, FILE: COUNTER_FILE } = await import("./counter-markers.mjs");
+writeFileSync(COUNTER_FILE, counterMarkersSource(out.dlc));

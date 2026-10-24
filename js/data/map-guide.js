@@ -8,7 +8,7 @@ export const STEP_LOCS = {
   "limw.0": [163926], // Gatefront (base)
   "limw.1": [163926, 309690], // Gatefront (base); Melina (base)
   "limw.2": [163927], // Map: Limgrave, West (base)
-  "limw.3": [164053], // Stormveil Castle (base)
+  // limw.3 (ride into Stormhill toward Stormveil) has no marker on purpose: the castle cannot be entered until Margit is defeated (limw.4), so it is pinned by the Stormveil Castle phase instead.
   "limw.4": [163938], // Margit, the Fell Omen (base)
   "limw.5": [164042, 166212], // Stormveil Main Gate (base); Table of Lost Grace (base)
   "limw.6": [167503], // Fia, Deathbed Companion (base)
@@ -251,7 +251,7 @@ export const PHASE_FOCUS = {
 
 // Steps that stay linked (Show on map, ticking) but are not a stop on the drawn path: vague "head toward X" steps
 // whose place is reached later by a more specific step, or that are the same stop as a later one.
-export const PATH_SKIP = ["limw.3", "cael.4", "prep.2", "d3.2"];
+export const PATH_SKIP = ["cael.4", "prep.2", "d3.2"];
 
 // Steps whose places are listed in the order you walk them (far.0 names its graces west to east, d4.3 goes Dragon's Pit,
 // Terminus, then Charo's). Every other step with several places is visited nearest-first from where you are.

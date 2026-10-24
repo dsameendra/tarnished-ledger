@@ -9,7 +9,10 @@ import { TROPHIES, COLLECTIONS } from "../js/data/trophies.js";
 import { CATS } from "../js/data/map-categories.js";
 import { STEP_LOCS, PHASE_FOCUS, TROPHY_LOCS, COLLECT_LOCS, GOAL_LOCS } from "../js/data/map-guide.js";
 import { PINS, DLC_PINS, DLC_EDGES, DLC_AREAS, AREAS } from "../js/data/map.js";
+import { parseSw, shellHash } from "./shell-hash.mjs";
 import { COUNTER_MAX } from "../js/lib/store.js";
+import { COUNTER_MARKERS, COUNTER_QTY } from "../js/data/counter-markers.js";
+import { counterMarkersSource, readRows } from "./counter-markers.mjs";
 
 const errors = [];
 const err = (m) => errors.push(m);
@@ -66,10 +69,17 @@ for (const c of COUNTERS) {
   if (c.levels.at(-1) !== c.max) err(`counter ${c.id}: last level ${c.levels.at(-1)} != max ${c.max}`);
   if (c.levels.some((v, i) => i > 0 && v <= c.levels[i - 1])) err(`counter ${c.id}: levels are not strictly increasing`);
 }
+// Blessing counters: markers found on the map add their quantity, and finding them all must give exactly the maximum.
+for (const [id, list] of Object.entries(COUNTER_MARKERS)) {
+  const total = list.reduce((n, m) => n + (COUNTER_QTY[m] || 1), 0);
+  if (total !== COUNTER_MAX[id]) err(`counter ${id}: map markers add up to ${total}, not ${COUNTER_MAX[id]}`);
+}
 const root = fileURLToPath(new URL("..", import.meta.url));
 const read = (f) => readFileSync(join(root, f), "utf8");
 const blessTotal = Number(/blessings: \[[^\]]*,\s*(\d+)\]/.exec(read("js/lib/model.js"))?.[1]);
 if (blessTotal !== COUNTERS.reduce((n, c) => n + c.max, 0)) err(`model.js blessings total ${blessTotal} != sum of counter maxima`);
+
+if (read("js/data/counter-markers.js") !== counterMarkersSource(readRows())) err("js/data/counter-markers.js is out of date: run node scripts/counter-markers.mjs");
 
 // The service worker precache list must match what ships.
 const swSrc = read("sw.js");
@@ -88,6 +98,7 @@ const lazy = (f) => f.startsWith("assets/map/tiles/") || mapPack.includes(f);
 for (const f of walk("assets/map")) if (!f.startsWith("assets/map/tiles/") && !f.endsWith(".DS_Store") && !mapPack.includes(f)) err(`${f} ships but is not in the sw.js MAP_PACK`);
 const shipped = ["js", "css", "assets", "vendor"].flatMap(walk).filter((f) => !f.endsWith(".DS_Store") && !f.endsWith("LICENSE") && !lazy(f));
 for (const f of [...shipped, "manifest.webmanifest"]) if (!shellSet.has(f)) err(`${f} ships but is not in the sw.js SHELL`);
+if (parseSw(swSrc).hash !== shellHash(swSrc)) err("files the service worker serves cache-first changed since the last bump: run `npm run bump`");
 if (!/const CACHE = PREFIX \+ "v\d+"/.test(swSrc)) err('sw.js CACHE must be PREFIX + "v<number>"');
 
 // index.html: local links exist, ids are unique, and every id the code looks up by name is present.
@@ -100,7 +111,7 @@ const idList = [...html.matchAll(/\sid="([^"]+)"/g)].map((m) => m[1]);
 const dup = idList.filter((v, i) => idList.indexOf(v) !== i);
 if (dup.length) err(`index.html has duplicate ids: ${[...new Set(dup)]}`);
 const ids = new Set(idList);
-const made = new Set(["counters", "goalGroups", "mapSaveNote", "nextDone", "nextShow"]); // created by JavaScript
+const made = new Set(["counters", "goalGroups", "mapSaveNote", "nextDone", "nextShow", "nextTicked", "mapLayerNote"]); // created by JavaScript
 for (const f of shipped.filter((f) => f.endsWith(".js") && !f.includes("data"))) {
   for (const m of read(f).matchAll(/\$\("([A-Za-z][\w-]*)"\)/g)) {
     if (!ids.has(m[1]) && !made.has(m[1])) err(`${f}: looks up #${m[1]} which is not in index.html`);
