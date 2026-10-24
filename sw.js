@@ -11,7 +11,7 @@ const SHELL = [
   "js/lib/store.js", "js/lib/sync.js", "js/lib/icons.js", "js/lib/wake.js", "js/lib/dom.js", "js/lib/labels.js", "js/lib/model.js",
   "js/ui/nav.js", "js/ui/rail.js", "js/ui/route.js", "js/ui/lists.js", "js/ui/map.js", "js/ui/map-canvas.js", "js/ui/map-data.js", "js/ui/map-glyphs.js", "js/ui/map-state.js",
   "vendor/leaflet/leaflet.js", "vendor/leaflet/leaflet.css", "js/ui/guide.js", "js/ui/settings.js",
-  "assets/fonts/AlegreyaSans-400.woff2", "assets/fonts/AlegreyaSans-400i.woff2", "assets/fonts/AlegreyaSans-500.woff2", "assets/fonts/AlegreyaSans-700.woff2", "assets/fonts/Cinzel.woff2", "assets/fonts/OFL-AlegreyaSans.txt", "assets/fonts/OFL-Cinzel.txt",
+  "assets/fonts/AlegreyaSans-400.woff2", "assets/fonts/AlegreyaSans-500.woff2", "assets/fonts/AlegreyaSans-700.woff2", "assets/fonts/Cinzel.woff2", "assets/fonts/OFL-AlegreyaSans.txt", "assets/fonts/OFL-Cinzel.txt",
   "assets/icons/icon-64.png", "assets/icons/icon-180.png", "assets/icons/icon-192.png", "assets/icons/icon-512.png", "assets/icons/icon-maskable-512.png",
 ];
 // The map pack (about 2.5 MB): images and marker data for every map. Fetched after the app itself is installed and
