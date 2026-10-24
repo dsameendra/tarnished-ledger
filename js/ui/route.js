@@ -6,7 +6,7 @@ import { BOSS_TERMS } from "../data/links.js";
 import { STEP_LOCS } from "../data/map-guide.js";
 import { AREAS, DLC_AREAS } from "../data/map.js";
 import { trophyWord } from "../lib/labels.js";
-import { showToast } from "./toast.js";
+import { showToast, clip } from "./toast.js";
 
 let programmatic = false;
 let query = "";
@@ -135,19 +135,25 @@ export function togglePhase(pid) {
   const value = !prev.every(Boolean);
   store.setDoneMany(ids, value);
   const changed = prev.filter((d) => d !== value).length;
+  const after = currentPhase();
   showToast(`${value ? "Ticked" : "Cleared"} ${changed} step${changed === 1 ? "" : "s"} in ${PHASES[pi].n}`, () => {
     store.setDoneMany(ids.filter((_, i) => prev[i]), true);
     store.setDoneMany(ids.filter((_, i) => !prev[i]), false);
+    // Auto-open moved on to the next phase when this one was completed: Undo brings the previous phase back
+    if (currentPhase() === before) moveOpen(after, before);
   });
-  const after = currentPhase();
-  if (store.setting("autoopen") && after !== before && after >= 0 && !query) {
-    programmatic = true;
-    const b = PHASES[before] && $("p-" + PHASES[before].id);
-    const a = $("p-" + PHASES[after].id);
-    if (b) b.open = false;
-    if (a) a.open = true;
-    programmatic = false;
-  }
+  moveOpen(before, after);
+}
+
+// Auto-open follows the current phase: close the one that was current and open the new one (and the same in reverse on Undo).
+function moveOpen(from, to) {
+  if (!store.setting("autoopen") || from === to || to < 0 || query) return;
+  programmatic = true;
+  const f = PHASES[from] && $("p-" + PHASES[from].id);
+  const t = $("p-" + PHASES[to].id);
+  if (f) f.open = false;
+  if (t) t.open = true;
+  programmatic = false;
 }
 
 // What else a tick completed (a trophy, a legendary item, a DLC goal), so the cross-linking is visible when it happens.
@@ -165,20 +171,17 @@ export function toggle(id) {
   const prev = store.isDone(id);
   store.setDone(id, !prev);
   const step = stepById.get(id);
-  if (step) {
-    const text = step.text.length > 48 ? step.text.slice(0, 47).trimEnd() + "…" : step.text;
-    const extra = !prev ? alsoTicked(step) : [];
-    showToast(`${prev ? "Unticked" : "Ticked"}: ${text}${extra.length ? ` · also ticked ${extra.join(", ")}` : ""}`, () => store.setDone(id, prev));
-  }
   const after = currentPhase();
-  if (store.setting("autoopen") && after !== before && after >= 0 && !query) {
-    programmatic = true;
-    const b = PHASES[before] && $("p-" + PHASES[before].id);
-    const a = $("p-" + PHASES[after].id);
-    if (b) b.open = false;
-    if (a) a.open = true;
-    programmatic = false;
+  if (step) {
+    // long names are cut at a word boundary; "also ticked" lists at most two items, the rest is counted
+    const extra = !prev ? alsoTicked(step).map((x) => clip(x, 34)) : [];
+    const more = extra.length > 2 ? ` and ${extra.length - 2} more` : "";
+    showToast(`${prev ? "Unticked" : "Ticked"}: ${clip(step.text)}${extra.length ? ` · also ticked ${extra.slice(0, 2).join(", ")}${more}` : ""}`, () => {
+      store.setDone(id, prev);
+      if (currentPhase() === before) moveOpen(after, before);
+    });
   }
+  moveOpen(before, after);
 }
 
 export function jump(id) {

@@ -23,7 +23,41 @@ test("Settings controls reach 44px on touch screens", () => {
   const coarse = css.slice(css.indexOf("@media (pointer: coarse)"));
   assert.match(coarse, /\.seg button \{ min-height: 44px; min-width: 44px; \}/);
   assert.match(coarse, /\.swatches button \{ width: 44px; height: 44px; \}/);
-  assert.match(coarse, /\.switch::before \{[^}]*inset: -7px 0/);
+  assert.match(coarse, /\.switch::before \{[^}]*inset: -8px 0/);
+});
+
+test("ticks, switches and standalone links reach a 44px hit area on touch, and 200% zoom does not overflow", () => {
+  const block = css.slice(css.indexOf("/* Touch targets and reflow leftovers"));
+  // the abs-positioned inset is measured inside the border: 24px box + 2 x 2px border + 2 x 12px = 44px
+  assert.match(block, /\.row button\.check::after \{ inset: -12px; \}/);
+  assert.match(css, /\.step \.check::after \{ content: ""; position: absolute; inset: -10px; \}/); // 28px box
+  assert.match(block, /\.jump::after \{[^}]*inset: -13px -6px/);
+  assert.match(block, /\.ph-links a \{ padding-block: 12px; margin-block: -4px; \}/);
+  assert.match(block, /\.set a, \.prose a, \.note a, \.hint a, \.mapcredit a, #sources a \{ padding-block: 13px; \}/);
+  // narrow screens: the bottom tabs, the counters and long words wrap instead of widening the page
+  assert.match(block, /\.nav button span \{[^}]*min-width: 0; overflow-wrap: anywhere/);
+  assert.match(block, /\.counter, \.counter \.c-head > \* \{ min-width: 0; overflow-wrap: anywhere; \}/);
+  assert.match(block, /@media \(max-width: 260px\) \{ body \{ overflow-wrap: anywhere; \} \}/);
+});
+
+test("the map is a labelled group (not an application, which would switch off screen reader browsing)", () => {
+  assert.match(html, /<div id="map" role="group" aria-label="Interactive map/);
+});
+
+test("toast: names are cut at a word boundary, and map ticks have an Undo", async () => {
+  const toast = readFileSync(new URL("../js/ui/toast.js", import.meta.url), "utf8");
+  const map = readFileSync(new URL("../js/ui/map.js", import.meta.url), "utf8");
+  const route = readFileSync(new URL("../js/ui/route.js", import.meta.url), "utf8");
+  const clip = new Function(`${toast.match(/export function clip[\s\S]*?\n\}/)[0].replace("export ", "")}; return clip;`)();
+  assert.equal(clip("Defeat Margit"), "Defeat Margit");
+  const long = clip("Speak to Roderika at the Roundtable Hold and give her the Smithing Stones", 48);
+  assert.ok(long.length <= 48 && long.endsWith("…") && !/\s…$/.test(long), long);
+  assert.equal(long, "Speak to Roderika at the Roundtable Hold and…");
+  assert.equal(clip("Supercalifragilisticexpialidocious_and_more_words", 20).length, 20); // one long word: hard cut
+  assert.doesNotMatch(route, /slice\(0, 47\)/);
+  assert.match(route, /Undo brings the previous phase back/);
+  assert.match(map, /showToast\(`\$\{on \? "Ticked" : "Unticked"\}: \$\{clip\(m\.title\)\}`/);
+  assert.match(toast, /mapsheet:not\(\[hidden\]\)/);
 });
 
 test("the map explains how to reach markers without a pointer, and can be skipped", () => {

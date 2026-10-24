@@ -16,6 +16,7 @@ import { summarize, progressHTML, layersFor, markerDone } from "./map-progress.j
 import { buildRoute, phaseStarts, stopStates } from "./map-route.js";
 import * as ms from "./map-state.js";
 import * as sync from "../lib/sync.js";
+import { showToast, clip } from "./toast.js";
 
 const LAYER_NAME = { base: "Lands Between", under: "Underground", dlc: "Realm of Shadow", hub: "Roundtable Hold" };
 // Non-black region of each image [x0, y0, x1, y1] in image pixels, measured from the art, and the underground sub-maps.
@@ -745,9 +746,17 @@ function setMarkerDone(m, on) {
     const c = cid === "sf" ? ["Scadutree Fragments", 50] : ["Revered Spirit Ashes", 25];
     status(`${c[0]}: ${store.counter(cid)} of ${c[1]} on the Goals counter.`);
   }
+  const stepsBefore = [];
   for (const id of D.stepsOf.get(m.id) || []) {
     const s = stepById.get(id);
-    if (s && s.kind !== "tip" && D.stepLocs[id]?.length === 1 && store.isDone(id) !== on) store.setDone(id, on);
+    if (s && s.kind !== "tip" && D.stepLocs[id]?.length === 1 && store.isDone(id) !== on) { stepsBefore.push([id, !on]); store.setDone(id, on); }
+  }
+  // Same Undo as ticks in the route. The counters (Scadutree Fragments, Revered Spirit Ashes) derive from the found markers, so restoring them restores the counters.
+  if (was !== on || stepsBefore.length) {
+    showToast(`${on ? "Ticked" : "Unticked"}: ${clip(m.title)}`, () => {
+      ms.setFound(m.id, was);
+      for (const [id, prev] of stepsBefore) store.setDone(id, prev);
+    });
   }
 }
 
